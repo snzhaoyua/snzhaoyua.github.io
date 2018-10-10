@@ -2,6 +2,8 @@
 menu:
   Home: /
   Archives: /archives
+  categories: /categories
+  tags: /tags
 rss: /atom.xml
 
 # Content
@@ -35,7 +37,3 @@ twitter:
 google_plus:
 fb_admins:
 fb_app_id:
-
-
-local_search:
-enable: true
