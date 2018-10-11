@@ -395,19 +395,19 @@ valine:
 
 # Support for LiveRe comments system.
 # You can get your uid from https://livere.com/insight/myCode (General web site)
-#livere_uid: your uid
+livere_uid: MTAyMC80MDI1OS8xNjc4Ng==
 
 # Gitment
 # Introduction: https://imsun.net/posts/gitment-introduction/
 # You can get your Github ID from https://api.github.com/users/<Github username>
 gitment:
-  enable: true
+  enable: false
   mint: true # RECOMMEND, A mint on Gitment, to support count, language and proxy_gateway
   count: true # Show comments count in post meta area
   lazy: false # Comments lazy loading with a button
   cleanly: false # Hide 'Powered by ...' on footer, and more
   language: # Force language, or auto switch by theme
-  github_user: 15191577 # MUST HAVE, Your Github ID
+  github_user: snzhaoyua # MUST HAVE, Your Github ID
   github_repo: snzhaoyua.github.io # MUST HAVE, The repo you use to store Gitment comments
   client_id: fbae7f92983f7d68716c # MUST HAVE, Github client id for the Gitment
   client_secret: cfb833b84636c3d0777342b5520d17cae28dbcaa # EITHER this or proxy_gateway, Github access secret token for the Gitment
