@@ -79,7 +79,7 @@ theme: next
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  repository: https://github.com/snzhaoyua/snzhaoyua.github.io.git
+  repository: git@github.com:snzhaoyua/snzhaoyua.github.io.git
   type: git
   branch: master
 
