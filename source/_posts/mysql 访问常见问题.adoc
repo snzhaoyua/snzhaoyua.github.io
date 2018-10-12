@@ -9,14 +9,14 @@ tags:
 
 [qanda]
 只能从本机访问::
-    lsof -i:3306 查看发现，mysql 只监听本机。
-    解决：以我本机为例，在 /etc/mysql/mysql.conf.d/mysqld.cnf 中，将以下行注释掉
-    ```txt
-    bind-address:127.0.0.1
-    ```
+        lsof -i:3306 查看发现，mysql 只监听本机。
+        解决：以我本机为例，在 /etc/mysql/mysql.conf.d/mysqld.cnf 中，将以下行注释掉
+        
+        bind-address:127.0.0.1
+
 
 无法从外部机器使用某一用户访问::
     登陆 mysql，创建远程访问用户，以 root 为例。
-```mysql
-  mysql> `grant all privileges on *.* to 'root'@'%' identified by 'password' with grant option;`
-```
+
+        mysql> `grant all privileges on *.* to 'root'@'%' identified by 'password' with grant option;`
+
