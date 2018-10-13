@@ -1,6 +1,8 @@
 ---
 title: 免密码 ssh 到其它机器
-categories: 备忘
+categories:  
+- 备忘
+- 技术
 tags: 
 - Linux
 ---

@@ -1,6 +1,8 @@
 ---
 title: vmware clone 机器地址重复_ubuntu18.04地址配置
-categories: 备忘
+categories:  
+- 备忘
+- 技术
 tags: 
 - Ubuntu 18.04
 - Linux

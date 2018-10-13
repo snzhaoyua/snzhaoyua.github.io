@@ -1,6 +1,8 @@
 ---
 title: 右键添加在此处打开cygwin
-categories: 备忘
+categories:  
+- 备忘
+- 技术
 tags: 
 - Cygwin
 - Windows
@@ -9,7 +11,7 @@ tags:
 系统：windows 10
 目标：在空白处点击右键菜单，显示如图菜单项，点击后可以打开 cygwin 并切换到当前所在目录
 
-![效果](https://img-blog.csdn.net/20180730221756934?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![效果](https://img-blog.categories:  - 备忘 - 技术.net/20180730221756934?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
 方法一：
 ======
@@ -22,9 +24,9 @@ tags:
     计算机\HKEY_CLASSES_ROOT\Directory\Background\shell\Cygwin\command
     ```
 3. 新建项和字符串到如下图所示
-    ![cygwin 菜单](https://img-blog.csdn.net/20180730222237404?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+    ![cygwin 菜单](https://img-blog.categories:  - 备忘 - 技术.net/20180730222237404?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 
-    ![命令](https://img-blog.csdn.net/20180730221920537?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+    ![命令](https://img-blog.categories:  - 备忘 - 技术.net/20180730221920537?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3l1aXN5dQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 4. 默认值填写
     ```bat
     C:\cygwin64\bin\mintty.exe -e /bin/bash --login -i -c "cd '%V';exec bash

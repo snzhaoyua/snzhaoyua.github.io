@@ -1,6 +1,8 @@
 ---
 title: ubuntu 18.04 更改 hostname
-categories: 备忘
+categories:  
+- 备忘
+- 技术
 tags: 
 - Ubuntu 18.04
 - Linux

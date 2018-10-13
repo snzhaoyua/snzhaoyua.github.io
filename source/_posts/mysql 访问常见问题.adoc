@@ -1,6 +1,8 @@
 ---
 title: mysql 访问常见问题
-categories: 备忘
+categories:  
+- 备忘
+- 技术
 tags: 
 - Mysql
 ---
