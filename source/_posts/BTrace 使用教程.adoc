@@ -1,0 +1,107 @@
+----
+title: BTrace 使用教程
+categories:
+- 备忘
+- 技术
+tags:
+- Java
+- btrace
+----
+
+= BTrace 使用教程
+
+*BTrace* 是 Java 的一个安全、动态追踪工具。
+
+== BTrace 术语
+
+[quota]
+Probe Point::
+    位置
+Trace Actions or Actions::
+    sdf
+Action Methods::
+    sdf
+
+== BTrace 程序结构
+一个 *BTrace 程序* 是一个 Java 类，包含数个由 `BTrace 注解` 注释的 `public static void` 方法。这些注解被用来指定被追踪程序的 *Probe Point*. *Tracing Actions* 在这些静态方法内定义。这些静态方法也即上文提到的 *Action Methods*。
+
+== BTrace 的限制
+sdf
+
+== 一个简单的 `BTrace 程序` 演示
+.Tracer.java
+[source, java]
+-----
+// 导入所有 BTrace 注解。
+import com.sun.btrace.annotations.*;
+// 导入 BTraceUtils 的静态方法。
+import static com.sun.btrace.BTraceUtils.*;
+
+// @BTrace annotation tells that this is a BTrace program
+@BTrace
+public class HelloWorld {
+ 
+    // @OnMethod 注解表明 Probe Point(位置)。
+    // 在这个例子中，我们对进入 Thread.start() 方法感兴趣。 
+    @OnMethod(
+        clazz="java.lang.Thread",
+        method="start"
+    )
+    public static void func() {
+        // println 是 BTraceUtils 的静态方法
+        println("about to start a thread!");
+        //        System.out.println("123"); //错误: Tracer.java:21:method calls are not allowed - only calls to BTraceUtils are allowed
+//        new Tracer(); //Tracer.java:9: 错误: Tracer.java:22:object creation is not allowed
+    }
+}
+-----
+
+.Target.java
+[source, java]
+----
+import java.util.concurrent.TimeUnit;
+
+public class Target {
+    public static void main(String[] args) throws InterruptedException {
+        try {
+            TimeUnit.SECONDS.sleep(15);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("start main method...");
+        while(true) {
+            System.out.println("starting new thread...");
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            TimeUnit.SECONDS.sleep(5);
+        }
+    }
+}
+----
+
+运行 Target.java 后，使用 jps -v 查看该程序 pid 号。
+----
+> jps -v
+
+21952 Target -javaagent:D:\program\JetBrains\IntelliJ IDEA017.2.2\lib\idea_rt.jar=55132:D:\program\JetBrains\IntelliJ
+IDEA 2017.2.2\bin -Dfile.encoding=UTF-8
+----
+
+使用 btrace 启用 Tracer.java。
+----
+## 首先切换到 Tracer.java 所在目录，然后执行
+> btrace -v 21952 Tracer.java 
+----
+
+可以看到在 Target.java 和 BTrace 的窗口都输出了调试信息。在 Target 中一旦一个新线程被创建，BTrace 便可以打印出相关信息。
+
+== 
+
+待续
