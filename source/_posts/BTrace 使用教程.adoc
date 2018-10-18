@@ -9,8 +9,9 @@ tags:
 ----
 
 = BTrace 使用教程
+:icons: font
 
-*BTrace* 是 Java 的一个安全、动态追踪工具。
+*BTrace* 是 Java 的一个诊断工具，可以在不重启应用的情况下，对应用进行时间耗费、参数及结果跟踪、方法调用跟踪等分析。
 
 == BTrace 术语
 
@@ -23,13 +24,30 @@ Action Methods::
     sdf
 
 == BTrace 程序结构
+
 一个 *BTrace 程序* 是一个 Java 类，包含数个由 `BTrace 注解` 注释的 `public static void` 方法。这些注解被用来指定被追踪程序的 *Probe Point*. *Tracing Actions* 在这些静态方法内定义。这些静态方法也即上文提到的 *Action Methods*。
 
 == BTrace 的限制
-sdf
+
+1. 只能调用 BTraceUtils 中的方法
+2. 不能创建对象
+3. 不能使用数组
+4. 不能抛出或捕获异常
+5. 不能使用循环
+6. 不能使用synchronized关键字
+7. 属性和方法必须使用static修饰
+
+[WARNING]
+====
+虽然不需要重启就可以使用 BTrace, 但是使用不当仍然会导致应用终止，比如发生下面这种错误
+====
+
+
+
+Exception in thread "main" java.lang.NoSuchMethodError: com.foo.btraceDemo.Target.$btrace$com$foo$btraceDemo$Tracer$func(Ljava/lang/Object;IJII)V
 
 == 一个简单的 `BTrace 程序` 演示
-.Tracer.java
+.Tracer.java -- BTrace 要执行的程序（脚本）
 [source, java]
 -----
 // 导入所有 BTrace 注解。
@@ -50,13 +68,16 @@ public class HelloWorld {
     public static void func() {
         // println 是 BTraceUtils 的静态方法
         println("about to start a thread!");
-        //        System.out.println("123"); //错误: Tracer.java:21:method calls are not allowed - only calls to BTraceUtils are allowed
-//        new Tracer(); //Tracer.java:9: 错误: Tracer.java:22:object creation is not allowed
+        // System.out.println("123"); <1> 
+        // new Tracer(); : <2> 
     }
 }
 -----
 
-.Target.java
+<1> 错误: Tracer.java:21:method calls are not allowed - only calls to BTraceUtils are allowed
+<2> 错误: Tracer.java:22:object creation is not allowed
+
+.Target.java -- 模拟的线上应用
 [source, java]
 ----
 import java.util.concurrent.TimeUnit;
@@ -97,11 +118,31 @@ IDEA 2017.2.2\bin -Dfile.encoding=UTF-8
 使用 btrace 启用 Tracer.java。
 ----
 ## 首先切换到 Tracer.java 所在目录，然后执行
-> btrace -v 21952 Tracer.java 
+> btrace -v 21952 Tracer.java <1>
 ----
+<1> -v 打印出 DEBUG 信息，无 -v 只输出你自己想要输出的信息
 
 可以看到在 Target.java 和 BTrace 的窗口都输出了调试信息。在 Target 中一旦一个新线程被创建，BTrace 便可以打印出相关信息。
 
-== 
+== 进阶 -- BTrace 注解
 
-待续
+假设我们想诊断这样一个方法：
+
+.Target.java
+[source, java]
+----
+public int add (int a, int b)   {  
+    int sum=a+b;  
+    System.out.println("和："+sum);  
+    return a+b;  
+}  
+----
+
+
+
+* @OnMethod
+
+更多解释请参考 wiki
+[bibliography]
+- 所有的注解都在其托管的 github 仓库 https://github.com/btraceio/btrace/wiki/BTrace-Annotations[wiki 页面]
+
