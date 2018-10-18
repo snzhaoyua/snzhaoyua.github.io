@@ -19,9 +19,9 @@ tags:
 Probe Point::
     位置
 Trace Actions or Actions::
-    sdf
+    追踪语句
 Action Methods::
-    sdf
+    追踪语句所在的静态方法
 
 == BTrace 程序结构
 
@@ -29,22 +29,26 @@ Action Methods::
 
 == BTrace 的限制
 
-1. 只能调用 BTraceUtils 中的方法
-2. 不能创建对象
-3. 不能使用数组
-4. 不能抛出或捕获异常
-5. 不能使用循环
-6. 不能使用synchronized关键字
-7. 属性和方法必须使用static修饰
+1. 不能 创建对象，数组。
+1. 不能 抛出、捕获异常。
+1. 不能 调用任意实例或静态方法，只能调用 BTraceUtils 中的方法。
+1. 不能 修改目标程序的静态或实例变量，不过 BTrace 程序自己不做限制。
+1. 不能 有实例变量或方法，方法不能有返回值类型，BTrace 程序的所有方法必须是 public static 1. oid 的，所有的字段都必须是 static 的。
+1. 不能 有 outer, inner, nested 或 local 类。
+1. 不能 用 synchronized 关键字。
+1. 不能 有循环 (for, while, do..while)。
+1. 不能 继承任何类 (即父类只能是 java.lang.Object)。
+1. 不能 实现接口。
+1. 不能 包含 assert 语句.
+1. 不能 使用 class literals.
 
 [WARNING]
 ====
-虽然不需要重启就可以使用 BTrace, 但是使用不当仍然会导致应用终止，比如发生下面这种错误
+虽然不需要重启就可以使用 BTrace, 但是使用不当仍然会导致应用终止，比如目标程序可能会发生下面这种错误:
 ====
-
-
-
+....
 Exception in thread "main" java.lang.NoSuchMethodError: com.foo.btraceDemo.Target.$btrace$com$foo$btraceDemo$Tracer$func(Ljava/lang/Object;IJII)V
+....
 
 == 一个简单的 `BTrace 程序` 演示
 .Tracer.java -- BTrace 要执行的程序（脚本）
@@ -56,7 +60,7 @@ import com.sun.btrace.annotations.*;
 import static com.sun.btrace.BTraceUtils.*;
 
 // @BTrace annotation tells that this is a BTrace program
-@BTrace
+@BTrace <3>
 public class HelloWorld {
  
     // @OnMethod 注解表明 Probe Point(位置)。
@@ -76,6 +80,7 @@ public class HelloWorld {
 
 <1> 错误: Tracer.java:21:method calls are not allowed - only calls to BTraceUtils are allowed
 <2> 错误: Tracer.java:22:object creation is not allowed
+<3> 不要忘记 @BTrace 注解
 
 .Target.java -- 模拟的线上应用
 [source, java]
@@ -124,25 +129,248 @@ IDEA 2017.2.2\bin -Dfile.encoding=UTF-8
 
 可以看到在 Target.java 和 BTrace 的窗口都输出了调试信息。在 Target 中一旦一个新线程被创建，BTrace 便可以打印出相关信息。
 
-== 进阶 -- BTrace 注解
+== 继续 -- BTrace 注解
 
-假设我们想诊断这样一个方法：
+假设我们想诊断这样一个 add 方法：
 
 .Target.java
 [source, java]
 ----
-public int add (int a, int b)   {  
-    int sum=a+b;  
-    System.out.println("和："+sum);  
-    return a+b;  
-}  
+package com.foo.btraceDemo;
+
+import java.lang.management.ManagementFactory;
+import java.util.concurrent.TimeUnit;
+
+public class Target {
+    private static final String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("pid: " + pid);
+        while(true) {
+            System.out.println("准备调用 add 方法...");
+            add(3, 5);
+            System.out.println("调用 add 方法结束...");
+        }
+    }
+
+    public static int add(int a, int b) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(5);
+        a = a + a;
+        System.out.println("dododo");
+        a = a / 2;
+        return a + b;
+    }
+}
 ----
 
+== Method Annotations 方法注释
+
+. @OnMethod
++
+.Tracer.java:func
+[source, java]
+----
+@OnMethod(clazz="com.foo.btraceDemo.Target", method="add",      location = @Location(Kind.RETURN))
+    public static void func(@Return int result, @Duration long     time, int paramA, int paramB) {
+        println("param:" + paramA + ", " + paramB);
+        println("result:" + result);
+        println("costs(ms):" + time/1000/1000);
+    }
+----
++
+输出结果
++
+----
+param:3, 5
+result:8
+costs(ms):5020
+param:3, 5
+result:8
+costs(ms):5013
+----
+  .. 如何通过 clazz/method 指定要诊断的方法 
+    ... 全限定名
+
+    clazz="com.foo.btraceDemo.Target", method="add"
+
+    ... 正则表达式
+
+    clazz = "+java.sql.Statement", method = "/execute($|Update|Query|Batch)/"
+
+    ... 接口/父类，注解
+
+    clazz = "+java.sql.Statement" // 匹配所有实现该接口或父类的类
+    clazz = "@org.springframework.stereotype.Controller" // 匹配所有 @Controller 注解的类
+
+    ... 构造函数
+
+    clazz="java.lang.Throwable",method="<init>",
+        location=@Location(Kind.RETURN) // 匹配任何异常被构造完成准备抛出
+
+    ... 静态内部类
+
+    clazz="com.foo.bar$YourInnerClass", method="mName")
+
+    ... 重载方法区别方法见下文
+  .. 如何通过 @Location 指定诊断方法的时机
+    ... Kind.Entry Kind.Return
+
+    * Kind.Entry 方法进入时，为默认值。
+    * Kind.Return 方法完成时, 指定此 Kind 可以使用 @Duration 获取方法耗时, @Return 获取方法返回结果
++
+[source, java]
+----
+@OnMethod(clazz="com.foo.btraceDemo.Target", method="add",    ocation = @Location(Kind.RETURN))
+public static void func(@Return int result, @Duration long me,     int paramA, int paramB) {
+          println("param:" + paramA + ", " + paramB);
+    println("result:" + result);
+    println("costs(ms):" + time/1000/1000);
+}
+----
+    ... Kind.Error, Kind.Throw和 Kind.Catch
+
+    * Kind.Error: 异常抛出方法之外
+    * Kind.Throw: 异常被 throw 之处
+    * Kind.Catch: 异常被 catch 之处
++
+[source, java]
+----
+@OnMethod(clazz = "java.net.ServerSocket", method = "bind", ocation = @Location(Kind.ERROR))  
+public static void onBind(Throwable exception, @Duration long uration) // 这种写法待验证
+----
+    ... Kind.Call与Kind.Line
+
+    Kind.ENTRY （默认值）只关注目标方法（OnMethod 的clazz/method），Kind.CALL 关注目标方法中，调用的其它哪些类哪些方法（Location的class，method）。注意，一般网上的教程，在描述 Kind.ENTRY 和 Kind.CALL 时，会将 CALL 描述为“还关注目标方法中其它方法的调用”，但是经过验证，此处不是“还”的关系，而是过滤的逻辑。也就是说，指定了这里的 clazz 和 method（例如 MethodB），将忽略目标方法（MethodA）的其它逻辑的时间。示例代码如下：
++
+.Target.java -- add
+[source,java]
+----
+public int add(int a, int b) throws InterruptedException {
+    TimeUnit.SECONDS.sleep(5);
+    a = a + a;
+    System.out.println("dododo");
+    a = a / 2;
+    return a + b;
+}
+----
++
+.Kind.ENTRY
+[source,java]
+----
+@OnMethod(clazz = "com.foo.btraceDemo.Target", method = "add", location = @Location(value = Kind.RETURN))
+public static void add1(@Duration long time, int a, int b) {
+    print("add1 costs1(ns):" + time);
+    totalTime += time;
+    counter ++;
+    println(", average(ns): " + (totalTime/counter));
+}
+----
++
+----
+add1 costs1(ns):5053722750, average(ns): 5053722750
+add1 costs1(ns):5050729632, average(ns): 5052226191
+add1 costs1(ns):5036155712, average(ns): 5046869364
+----
++
+.KIND.CALL 匹配 println
+[source,java]
+----
+@OnMethod(clazz = "com.foo.btraceDemo.Target", method = "add",
+            location = @Location(value = Kind.CALL, clazz = "java.io.PrintStream", method = "println", where = Where.AFTER))
+public static void add2(@Duration long time) {
+    print("add2 costs(ns):" + time);
+    totalTime += time;
+    counter ++;
+    println(", average(ns): " + (totalTime/counter));
+}
+----
++
+----
+add2 costs(ns):148064, average(ns): 148064
+add2 costs(ns):91911, average(ns): 119987
+add2 costs(ns):143314, average(ns): 127763
+----
++
+.KIND.CALL 匹配 * 
+[source,java]
+----
+@OnMethod(clazz = "com.foo.btraceDemo.Target", method = "add",
+            location = @Location(value = Kind.CALL, clazz = "/.*/", method = "/.*/", where = Where.AFTER))
+public static void add3(@Duration long time) {
+    print("add3 costs(ns):" + time);
+    totalTime += time;
+    counter ++;
+    println(", average(ns): " + (totalTime/counter));
+}
+----
++
+----
+add3 costs(ns):5166920098, average(ns): 5166920098 <1>
+add3 costs(ns):81295, average(ns): 2583500696
+add3 costs(ns):5160914306, average(ns): 3442638566
+add3 costs(ns):68445, average(ns): 2581996036
+add3 costs(ns):5075955184, average(ns): 3080787865 
+add3 costs(ns):67048, average(ns): 2567334396
+add3 costs(ns):5060307945, average(ns): 2923473474
+add3 costs(ns):115098, average(ns): 2558053677
+add3 costs(ns):5276136213, average(ns): 2860062848
+add3 costs(ns):93308, average(ns): 2574065894
+----
+<1> 注意这种写法打印的时间，你看出什么规律了吗?
+
+. @OnTimer
+ 定时任务，单位 ms, 没有什么好解释的。
++
+[source, java]
+----
+@OnTimer(5000)
+public static void run(){
+    println(counter);
+}
+----
+
+. @OnEvent
++
+[source, java]
+----
+@OnEvent
+public static void defalutEvent(){
+    println("default event sent...");
+}
+@OnEvent("speak")
+public static void namedEvent(){
+    println("speak something...");
+}
+----
++
+输出结果
++
+....
+Please enter your option:
+        1. exit
+        2. send an event
+        3. send a named event
+        4. flush console output
+>3
+Please enter the event name: >speak
+speak something...
+>1
+default event sent...
+....
+ 
+. @OnError
++
 
 
-* @OnMethod
 
-更多解释请参考 wiki
+Arguments Annotations 参数注释::
+
+
+jstat -J-Djstat.showUnsupported=true -name btrace.com.sun.btrace.samples.ThreadCounter.count <pid>
+
+
+更多解释请参考 BTrace 本地安装路径下的帮助文档，或者 wiki
 [bibliography]
-- 所有的注解都在其托管的 github 仓库 https://github.com/btraceio/btrace/wiki/BTrace-Annotations[wiki 页面]
-
+- https://github.com/btraceio/btrace/wiki/BTrace-Annotations[wiki 页面]
+- https://blog.csdn.net/lirenzuo/article/details/76576064[Btrace使用小结]
+- http://agapple.iteye.com/blog/962119?spm=a2c4e.11153940.blogcont7569.25.3d5955c8anNsnZ[btrace记忆]
