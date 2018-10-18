@@ -27,20 +27,20 @@ Action Methods::
 
 一个 *BTrace 程序* 是一个 Java 类，包含数个由 `BTrace 注解` 注释的 `public static void` 方法。这些注解被用来指定被追踪程序的 *Probe Point*. *Tracing Actions* 在这些静态方法内定义。这些静态方法也即上文提到的 *Action Methods*。
 
-== BTrace 的限制
+== BTrace 的限制 +++<i class="fa fa-exclamation-triangle"></i>+++
 
 1. 不能 创建对象，数组。
-1. 不能 抛出、捕获异常。
-1. 不能 调用任意实例或静态方法，只能调用 BTraceUtils 中的方法。
-1. 不能 修改目标程序的静态或实例变量，不过 BTrace 程序自己不做限制。
-1. 不能 有实例变量或方法，方法不能有返回值类型，BTrace 程序的所有方法必须是 public static 1. oid 的，所有的字段都必须是 static 的。
-1. 不能 有 outer, inner, nested 或 local 类。
-1. 不能 用 synchronized 关键字。
-1. 不能 有循环 (for, while, do..while)。
-1. 不能 继承任何类 (即父类只能是 java.lang.Object)。
-1. 不能 实现接口。
-1. 不能 包含 assert 语句.
-1. 不能 使用 class literals.
+2. 不能 抛出、捕获异常。
+3. 不能 调用任意实例或静态方法，只能调用 BTraceUtils 中的方法。
+4. 不能 修改目标程序的静态或实例变量，不过 BTrace 程序自己不做限制。
+5. 不能 有实例变量或方法，方法不能有返回值类型，BTrace 程序的所有方法必须是 public static 1. oid 的，所有的字段都必须是 static 的。
+6. 不能 有 outer, inner, nested 或 local 类。
+7. 不能 用 synchronized 关键字。
+8. 不能 有循环 (for, while, do..while)。
+9. 不能 继承任何类 (即父类只能是 java.lang.Object)。
+10. 不能 实现接口。
+11. 不能 包含 assert 语句.
+12. 不能 使用 class literals.
 
 [WARNING]
 ====
