@@ -1,0 +1,79 @@
+----
+title: 在 Asciidoc 文档中使用 latex
+categories:
+- 备忘
+- Asciidoctor
+tags:
+- Asciidoctor
+- 线性代数
+----
+
+= 在 Asciidoc 文档中使用 latex【线性代数篇】
+:stem: latexmath
+:icons: font
+
+本文基于 asciidoctor 1.5.7.13，其通过 mathjax 实现 LaTex 字体的显示，方法和 markdown 差不多，区别是 markdown（不同差距实现方法不同）使用 +$$+ 或者 +$``$+ 包围 LaTex 语法，而 asciidoctor 使用 +stem:[]+ 包围 LaTex 语法。
+
+
+.单个符号对照表
+|===
+|渲染后 |源码
+| stem:[\cdot] |+stem:[\cdot]+
+| stem:[\times] |+stem:[\times]+
+| stem:[a^{\prime} a] | +stem:[a^{\prime} a]+
+| stem:[a’’] | +stem:[a’’]+
+| stem:[\hat{a}] | +stem:[\hat{a}]+
+| stem:[\bar{a}] | +stem:[\bar{a}]+
+| stem:[\grave{a}] | +stem:[\grave{a}]+
+| stem:[\acute{a}] | +stem:[\acute{a}]+
+| stem:[\dot{a}] | +stem:[\dot{a}]+
+| stem:[\ddot{a}] | +stem:[\ddot{a}]+
+| stem:[\not{a}] | +stem:[\not{a}]+
+| stem:[\mathring{a}] | +stem:[\mathring{a}]+
+| stem:[\overrightarrow{AB}] | +stem:[\overrightarrow{AB}]+
+| stem:[\overleftarrow{AB}] | +stem:[\overleftarrow{AB}]+
+| stem:[a’’’] | +stem:[a’’’]+
+| stem:[\overline{aaa}] | +stem:[\overline{aaa}]+
+| stem:[\check{a}] | +stem:[\check{a}]+
+| stem:[\vec{a}] | +stem:[\vec{a}]+
+| stem:[\underline{a}] | +stem:[\underline{a}]+
+| stem:[\color{red}x] | +stem:[\color{red}x]+
+| stem:[\pm] | +stem:[\pm]+
+| stem:[\mp] | +stem:[\mp]+
+| stem:[\int y \mathrm{d}x] | +stem:[\int y \mathrm{d}x]+
+| stem:[!] | +stem:[!]+
+| stem:[\int y\, \mathrm{d}x] | +stem:[\int y\, \mathrm{d}x]+
+| stem:[\dots] | +stem:[\dots]+
+| stem:[\ldots] | +stem:[\ldots]+
+| stem:[\cdots] | +stem:[\cdots]+
+| stem:[\vdots] | +stem:[\vdots]+
+| stem:[\ddots] | +stem:[\ddots]+
+|===
+
+
+.行列式
+[cols= "3a,3a"]
+|===
+|渲染后 |源码
+
+|[stem]
+++++
+\vec{a} =
+ \left[\begin{array}{rrrr}
+   15\\
+   7
+ \end{array}\right]
+++++
+|[source,latex]
+----
+\vec{a} =
+\left[\begin{array}{rrrr}  <1>
+  15\\
+  7
+\end{array}\right]         <2>
+----
+
+
+|Column 1, row 2
+|Column 2, row 2
+|===
