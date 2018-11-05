@@ -1,0 +1,159 @@
+----
+title: 线性代数快速复习[双语]
+categories:
+- 备忘
+- 数学
+tags:
+- 线性代数
+- 机器学习
+----
+
+
+= 线性代数快速复习[双语]
+:stem: latexmath
+
+向量加法与数乘 Addition and Scalar Multiplication::
+[latexmath]
+++++
+\vec{a} =
+\left[\begin{array}{rrrr}
+  x\\
+  y
+\end{array}\right]
+,
+\vec{b} =
+\left[\begin{array}{rrrr}
+  m\\
+  n
+\end{array}\right]
+\\
+
+\vec{a}+\vec{b}=
+\left[\begin{array}{rrrr}
+  x+m\\
+  y+n
+\end{array}\right]
+\\
+
+2\vec{a}=
+\left[\begin{array}{rrrr}
+  2x\\
+  2y
+\end{array}\right]
+++++
+
+向量的线性组合，向量张成的空间，基向量 Linear Combination, Span, bases::
+[latexmath]
+++++
+a\vec{i} + b\vec{j} \quad a,b 取所有实数
+++++
+
+线性相关 Linear Dependent::
+[latexmath]
+++++
+\vec{v} = b\vec{w} \quad 增加一个线性相关的向量，不会增加张成的空间
+++++
+
+所以向量空间的基，是可以张成该空间的一组线性无关的向量(的集合)
+
+A basis of a vector space is a set of linear independent vectors that span the full space.
+
+线性变换 Linear Transformation::
+[latexmath.text-left]
+++++
+把
+\left[\begin{array}{rrrr}
+  x_1 & x_2\\
+  y_1 & y_2
+\end{array}\right]
+看作是经过线性变换后的基向量组成的矩阵，其中
+\vec{i}=
+\left[\begin{array}{rrrr}
+  x_1\\
+  y_1
+\end{array}\right]
+,
+\vec{j}=
+\left[\begin{array}{rrrr}
+  x_2\\
+  y_2
+\end{array}\right]，而\\
+a_{input}\left[\begin{array}{rrrr}
+   x_1\\
+   y_1
+ \end{array}\right]
++b_{input}\left[\begin{array}{rrrr}
+    x_2\\
+    y_2
+  \end{array}\right]就可以看作用矩阵对
+\left[\begin{array}{rrrr}
+  a_{input}\\
+  b_{input}
+\end{array}\right]做变换。
+\\
+更形象的表示，就是
+\left[\begin{array}{llll}
+  a_{input}\\
+  b_{input}
+\end{array}\right]
+\to
+
+a_{input}\left[\begin{array}{rrrr}
+   x_1\\
+   y_1
+ \end{array}\right]
++b_{input}\left[\begin{array}{rrrr}
+    x_2\\
+    y_2
+  \end{array}\right]
+=
+
+\left[\begin{array}{llll}
+  a_{input}x_1+b_{input}x_2\\
+  a_{input}y_1+b_{input}y_2
+\end{array}\right]
+=
+\left[\begin{array}{llll}
+  a_{output}\\
+  a_{output}
+\end{array}\right]
+++++
+
+举例，如何描述将一个坐标轴逆时针旋转stem:[90^{\circ}]呢？::
+[latexmath]
+++++
+假设原空间的基础向量为
+\vec{i}=
+\left[\begin{array}{llll}
+  1\\
+  0
+\end{array}\right]
+,
+\vec{j}=
+\left[\begin{array}{llll}
+  0\\
+  1
+\end{array}\right]
+\\
+那么旋转90^{\circ}后，\vec{i}和\vec{j}变成了
+\vec{i_{new}}=
+\left[\begin{array}{llll}
+  0\\
+  1
+\end{array}\right]
+,
+\vec{j_{new}}=
+\left[\begin{array}{llll}
+  -1\\
+  0
+\end{array}\right]。可以画一张图来帮助理解。
+\\
+那么对于任意一个向量\vec{v}，其变换后的向量就可以用
+\left[\begin{array}{llll}
+  \vec{i_{new}}&\vec{j_{new}}
+\end{array}\right]\vec{v}表示。
+++++
+这种思想，也可以表述为，将变换后的基向量重新数乘后相加。
+
+
+
