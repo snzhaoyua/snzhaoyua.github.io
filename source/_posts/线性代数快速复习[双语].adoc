@@ -98,7 +98,7 @@ latexmath:[
   b_{input}
 \end{array}\right)
 ]做变换。
-
++
 更形象的表示，就是
 [latexmath]
 ++++
@@ -163,13 +163,13 @@ latexmath:[
   0
 \end{array}\right)
 ]。可以画一张图来帮助理解。
-
++
 那么对于任意一个向量latexmath:[\vec{v}]，其变换后的向量就可以用
 latexmath:[
 \left(\begin{array}{llll}
   \vec{i_{new}}&\vec{j_{new}}
 \end{array}\right)\vec{v}
 ]表示。
-
++
 这种思想，也可以表述为，将变换后的基向量重新数乘后相加。
 
