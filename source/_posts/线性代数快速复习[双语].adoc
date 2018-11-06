@@ -9,11 +9,12 @@ tags:
 ----
 
 
+
 = 线性代数快速复习[双语]
 :stem: latexmath
 
 向量加法与数乘 Addition and Scalar Multiplication::
-[latexmath]
+[latexmath,role="left_mathjax"]
 ++++
 \vec{a} =
 \left[\begin{array}{rrrr}
@@ -59,39 +60,48 @@ a\vec{i} + b\vec{j} \quad a,b 取所有实数
 A basis of a vector space is a set of linear independent vectors that span the full space.
 
 线性变换 Linear Transformation::
-[latexmath.text-left]
-++++
-把
-\left[\begin{array}{rrrr}
+
+把latexmath:[
+\left(\begin{array}{rrrr}
   x_1 & x_2\\
   y_1 & y_2
-\end{array}\right]
-看作是经过线性变换后的基向量组成的矩阵，其中
+\end{array}\right)
+]看作是经过线性变换后的基向量组成的矩阵，其中
+latexmath:[
 \vec{i}=
-\left[\begin{array}{rrrr}
+\left(\begin{array}{rrrr}
   x_1\\
   y_1
-\end{array}\right]
+\end{array}\right)
+]
 ,
+latexmath:[
 \vec{j}=
-\left[\begin{array}{rrrr}
+\left(\begin{array}{rrrr}
   x_2\\
   y_2
-\end{array}\right]，而\\
-a_{input}\left[\begin{array}{rrrr}
+\end{array}\right)
+]，而
+latexmath:[
+a_{input}\left(\begin{array}{rrrr}
    x_1\\
    y_1
- \end{array}\right]
-+b_{input}\left[\begin{array}{rrrr}
+ \end{array}\right)
++b_{input}\left(\begin{array}{rrrr}
     x_2\\
     y_2
-  \end{array}\right]就可以看作用矩阵对
-\left[\begin{array}{rrrr}
+  \end{array}\right)
+]就可以看作用矩阵对
+latexmath:[
+\left(\begin{array}{rrrr}
   a_{input}\\
   b_{input}
-\end{array}\right]做变换。
-\\
+\end{array}\right)
+]做变换。
+
 更形象的表示，就是
+[latexmath]
+++++
 \left[\begin{array}{llll}
   a_{input}\\
   b_{input}
@@ -120,40 +130,46 @@ a_{input}\left[\begin{array}{rrrr}
 ++++
 
 举例，如何描述将一个坐标轴逆时针旋转stem:[90^{\circ}]呢？::
-[latexmath]
-++++
+
 假设原空间的基础向量为
+latexmath:[
 \vec{i}=
-\left[\begin{array}{llll}
+\left(\begin{array}{llll}
   1\\
   0
-\end{array}\right]
+\end{array}\right)
+]
 ,
+latexmath:[
 \vec{j}=
-\left[\begin{array}{llll}
+\left(\begin{array}{llll}
   0\\
   1
-\end{array}\right]
-\\
-那么旋转90^{\circ}后，\vec{i}和\vec{j}变成了
+\end{array}\right)
+]
+那么旋转90^latexmath:[\circ]^后，latexmath:[\vec{i}]和latexmath:[\vec{j}]变成了
+latexmath:[
 \vec{i_{new}}=
-\left[\begin{array}{llll}
+\left(\begin{array}{llll}
   0\\
   1
-\end{array}\right]
+\end{array}\right)
+]
 ,
+latexmath:[
 \vec{j_{new}}=
-\left[\begin{array}{llll}
+\left(\begin{array}{llll}
   -1\\
   0
-\end{array}\right]。可以画一张图来帮助理解。
-\\
-那么对于任意一个向量\vec{v}，其变换后的向量就可以用
-\left[\begin{array}{llll}
+\end{array}\right)
+]。可以画一张图来帮助理解。
+
+那么对于任意一个向量latexmath:[\vec{v}]，其变换后的向量就可以用
+latexmath:[
+\left(\begin{array}{llll}
   \vec{i_{new}}&\vec{j_{new}}
-\end{array}\right]\vec{v}表示。
-++++
+\end{array}\right)\vec{v}
+]表示。
+
 这种思想，也可以表述为，将变换后的基向量重新数乘后相加。
-
-
 
