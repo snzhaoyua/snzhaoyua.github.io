@@ -97,6 +97,7 @@ latexmath:[
 ]做变换。
 +
 更形象的表示，就是
++
 [latexmath]
 ++++
 \left[\begin{array}{llll}
@@ -143,7 +144,7 @@ latexmath:[
   0\\
   1
 \end{array}\right)
-]
+]。
 那么旋转90^latexmath:[\circ]^后，latexmath:[\vec{i}]和latexmath:[\vec{j}]变成了
 latexmath:[
 \vec{i_{new}}=
@@ -161,12 +162,15 @@ latexmath:[
 \end{array}\right)
 ]。可以画一张图来帮助理解。
 +
-那么对于任意一个向量latexmath:[\vec{v}]，其变换后的向量就可以用
+那么对于任意一个向量latexmath:[\vec{v}=a\vec{i}+b\vec{j}]，其变换后的向量就可以用
 latexmath:[
 \left(\begin{array}{llll}
   \vec{i_{new}}&\vec{j_{new}}
-\end{array}\right)\vec{v}
+\end{array}\right)\cdot\vec{v}
+]即
+latexmath:[
+  a\cdot\vec{i_{new}}+b\cdot\vec{j_{new}}
 ]表示。
 +
-这种思想，也可以表述为，将变换后的基向量重新数乘后相加。
+这种思想，也可以理解为，将变换后的基向量重新数乘后相加。
 
