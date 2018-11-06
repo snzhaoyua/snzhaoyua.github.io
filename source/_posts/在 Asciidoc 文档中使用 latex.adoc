@@ -62,7 +62,7 @@ tags:
  \left[\begin{array}{rrrr}
    15\\
    7
- \end{array}\right]
+ \end{array}\right)
 ++++
 |[source,latex]
 ----
@@ -70,10 +70,51 @@ tags:
 \left[\begin{array}{rrrr}  <1>
   15\\
   7
-\end{array}\right]         <2>
+\end{array}\right)         <2>
 ----
 
 
-|Column 1, row 2
-|Column 2, row 2
+|[latexmath]
+++++
+\begin{cases}
+ \ u_{tt}(x,t)= b(t)\triangle u(x,t-4)&\\
+\ \hspace{42pt}- q(x,t)f[u(x,t-3)]+te^{-t}\sin^2 x,  &  t \neq t_k; \\
+ \ u(x,t_k^+) - u(x,t_k^-) = c_k u(x,t_k), & k=1,2,3\ldots ;\\
+ \ u_{t}(x,t_k^+) - u_{t}(x,t_k^-) =c_k u_{t}(x,t_k), &
+ k=1,2,3\ldots\ .
+\end{cases}
+]
+++++
+|[source,latex]
+----
+[latexmath]
+++++
+\begin{cases}
+ \ u_{tt}(x,t)= b(t)\triangle u(x,t-4)&\\
+\ \hspace{42pt}- q(x,t)f[u(x,t-3)]+te^{-t}\sin^2 x,  &  t \neq t_k; \\
+ \ u(x,t_k^+) - u(x,t_k^-) = c_k u(x,t_k), & k=1,2,3\ldots ;\\
+ \ u_{t}(x,t_k^+) - u_{t}(x,t_k^-) =c_k u_{t}(x,t_k), &
+ k=1,2,3\ldots\ .
+\end{cases}
+]
+++++
+----
+
+
+|[latexmath]
+++++
+q(x,t)=
+\begin{cases}(t-k+1)x^2,\quad \ \ &
+  t\in\big(k-1,k-\dfrac{1}{2}\big],\\
+  (k-t)x^2, \quad \ \ & t\in\big(k-\dfrac{1}{2},k\big],
+\end{cases}
+++++
+|[source,latex]
+----
+q(x,t)=
+\begin{cases}(t-k+1)x^2,\quad \ \ &
+  t\in\big(k-1,k-\dfrac{1}{2}\big],\\
+  (k-t)x^2, \quad \ \ & t\in\big(k-\dfrac{1}{2},k\big],
+\end{cases}
+----
 |===
