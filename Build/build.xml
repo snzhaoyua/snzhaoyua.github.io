@@ -1,0 +1,87 @@
+<project name= "myproject" basedir= "../" default="Clean_G_S_Open">
+
+    <property name="serverUrl" value="http://localhost:4000/"/>
+
+    <target name="hexo_clean">
+        <echo message="Hexo Cleaning"/>
+        <exec executable="cmd.exe">
+            <arg line="/c 'hexo clean'"/>
+        </exec>
+        <echo message="Hexo Cleaned."/>
+    </target>
+
+    <target name="hexo_g">
+        <echo message="Hexo generating"/>
+        <exec executable="cmd.exe">
+            <arg line="/c 'hexo g'"/>
+        </exec>
+        <echo message="Hexo generated."/>
+    </target>
+
+    <target name="hexo_s">
+        <echo message="Hexo server Starting"/>
+        <exec executable="cmd.exe">
+            <arg line="/c 'hexo s'"/>
+        </exec>
+        <echo message="Hexo server started."/>
+    </target>
+
+    <target name="hexo_d">
+        <echo message="Deploying to remote"/>
+        <exec executable="cmd.exe">
+            <arg line="/c 'hexo d'"/>
+        </exec>
+        <echo message="Public folder deployed."/>
+    </target>
+
+    <target name="Clean_G_S">
+        <echo message=""/>
+        <antcall target="hexo_clean"/>
+        <antcall target="hexo_g"/>
+        <antcall target="hexo_s"/>
+        <echo message=""/>
+    </target>
+
+    <target name="Clean_G_D">
+        <echo message=""/>
+        <antcall target="hexo_clean"/>
+        <antcall target="hexo_g"/>
+        <antcall target="hexo_d"/>
+        <echo message=""/>
+    </target>
+
+
+    <target name="openInBrowser">
+
+        <exec executable="cmd.exe">
+            <arg value="/c start ${serverUrl}"/>
+        </exec>
+    </target>
+
+    <target name="hexo_s_Open">
+
+        <parallel>
+            <sequential>
+                <antcall target="hexo_s"/>
+            </sequential>
+            <sequential>
+                <echo message="Waiting ${serverUrl} startup.."/>
+                <waitfor maxwait="10" maxwaitunit="second" checkevery="500">
+                    <http url="${serverUrl}"/> <!--其实不生效，就是等10s-->
+                </waitfor>
+                <echo message="${serverUrl} started."/>
+                <antcall target="openInBrowser"/>
+            </sequential>
+        </parallel>
+
+    </target>
+
+
+    <target name="Clean_G_S_Open">
+        <echo message=""/>
+        <antcall target="hexo_clean"/>
+        <antcall target="hexo_g"/>
+        <antcall target="hexo_s_Open"/>
+        <echo message=""/>
+    </target>
+</project>
