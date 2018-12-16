@@ -174,3 +174,92 @@ latexmath:[
 +
 这种思想，也可以理解为，将变换后的基向量重新数乘后相加。
 
+矩阵与向量相乘::
+
+由上得出，矩阵与向量相乘计算公式为
+
+[latexmath]
+++++
+\left[\begin{array}{llll}
+x_1 & x_2\\
+y_1 & y_2
+\end{array}\right]
+
+\left(\begin{array}{llll}
+a\\
+b
+\end{array}\right)
+=
+a\cdot\left(\begin{array}{llll}
+      x_1\\
+      y_1
+      \end{array}\right)
++
+b\cdot\left(\begin{array}{llll}
+      x_2\\
+      y_2
+      \end{array}\right)
+=
+\left(\begin{array}{llll}
+ax_1+bx_2\\
+ay_1+by_2
+\end{array}\right)
+++++
+
+
+矩阵与矩阵相乘::
+
+矩阵和矩阵相乘的几何意义，就是描述两个（或以上）线性变换的组合效果，并且最先变换的矩阵在最右边。
++
+对于latexmath:[
+\left(\begin{array}{llll}
+\vec{i_{second}} & \vec{j_{second}}
+\end{array}\right)
+\left(\begin{array}{llll}
+\vec{i_{first}} & \vec{j_{first}}
+\end{array}\right)
+]，可以考察最左侧变换，分别对latexmath:[\vec{i_{first}}]，latexmath:[\vec{i_{first}}]的影响，由此得出矩阵相乘公式为
++
+[latexmath]
+++++
+\left(\begin{array}{llll}
+\vec{i_{second}} & \vec{j_{second}}
+\end{array}\right)
+\left(\begin{array}{llll}
+\vec{i_{first}} & \vec{j_{first}}
+\end{array}\right)
+=
+\left[\begin{array}{llll}
+\left(\begin{array}{llll}
+\vec{i_{second}} & \vec{j_{second}}
+\end{array}\right)\vec{i_{first}}
+&
+\left(\begin{array}{llll}
+\vec{i_{second}} & \vec{j_{second}}
+\end{array}\right)\vec{j_{first}}
+\end{array}\right]
+++++
++
+通用写法即为
+[latexmath]
+++++
+\left[\begin{array}{llll}
+a & b\\
+c & d
+\end{array}\right]
+\left[\begin{array}{llll}
+e & f\\
+g & h
+\end{array}\right]
+=
+\left[\begin{array}{llll}
+ae+bg & af+bf\\
+ce+dg & cf+df
+\end{array}\right]
+++++
+
+[NOTE]
+====
+latexmath:[AB \neq BA\\
+A(BC)=(AB)C]
+====
