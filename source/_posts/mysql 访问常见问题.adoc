@@ -4,7 +4,7 @@ categories:
 - 备忘
 - 技术
 tags: 
-- Mysql
+- MySQL
 ---
 
 配置文件参见[如何确定 mysql 的配置文件](待补充)

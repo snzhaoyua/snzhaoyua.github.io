@@ -1,3 +1,12 @@
+---
+title: MySQL loaddata 数据膨胀（mysql 后台文件大小分析）
+categories:
+- 备忘
+- 技术
+tags: 
+- MySQL
+---
+
 # 1. 发现问题
 100w 100字段数据 后台膨胀系数较大。
 用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。

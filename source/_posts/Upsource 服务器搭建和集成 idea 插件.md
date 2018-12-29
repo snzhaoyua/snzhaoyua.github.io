@@ -1,3 +1,14 @@
+---
+title: Upsource 服务器搭建和集成 idea 插件
+categories:
+- 备忘
+- 技术
+tags: 
+- code review
+- Intellij Idea
+- Upsource
+---
+
 【客户端安装、配置篇】
 ====
 1. 安装 idea 插件 upsource
