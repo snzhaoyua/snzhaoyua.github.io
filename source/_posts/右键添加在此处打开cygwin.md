@@ -32,6 +32,27 @@ tags:
     C:\cygwin64\bin\mintty.exe -e /bin/bash --login -i -c "cd '%V';exec bash
     ```
 
+或使用下面的注册表文件（注意更改注册表文件中的路径）
+```
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\shell\Cygwin]
+@="在此处打开 Cygwin"
+"Icon"="C:\\cygwin64\\Cygwin.ico"
+
+[HKEY_CLASSES_ROOT\Directory\shell\Cygwin\command]
+@="C:\\cygwin64\\bin\\mintty.exe -e /bin/bash --login -i -c \"cd '%V';exec bash"
+
+
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\Cygwin]
+@="在此处打开 Cygwin"
+"Icon"="C:\\cygwin64\\Cygwin.ico"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\Cygwin\command]
+@="C:\\cygwin64\\bin\\mintty.exe -e /bin/bash --login -i -c \"cd '%V';exec bash"
+```
+
 方法二：
 ======
 
