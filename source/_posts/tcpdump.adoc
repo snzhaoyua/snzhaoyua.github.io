@@ -1,0 +1,32 @@
+----
+title: tcpdump 原理
+categories:
+- 备忘
+- 技术
+tags:
+- tcpdump
+- keepalived
+----
+
+= tcpdump 原理
+
+1. man tcpdump
+2. https://en.wikipedia.org/wiki/Multicast_address
+3. https://en.wikipedia.org/wiki/Subnetwork
+4. [ip address classes](http://www.vlsm-calc.net/ipclasses.php)
+
+== tcpdump usage
+
+```
+tcpdump
+# print number like ip and port
+tcpdump -n
+tcpdump -c 4
+tcpdump -i eth1
+tcpdump -i any
+tcpdump host 100.107.166.116
+tcpdump src host 100.107.166.116
+tcpdump -n -i any dst port 3306 or dst port 22
+tcpdump -n -i any 'dst port 3306 || dst port 22'
+tcpdump -n -i any '(dst port 3306 || dst port 22) and dst host 100.107.166.116'
+```
