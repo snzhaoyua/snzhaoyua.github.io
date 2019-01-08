@@ -13,7 +13,10 @@ tags:
 1. man tcpdump
 2. https://en.wikipedia.org/wiki/Multicast_address
 3. https://en.wikipedia.org/wiki/Subnetwork
-4. [ip address classes](http://www.vlsm-calc.net/ipclasses.php)
+4. [ip address classes]
+  (http://www.vlsm-calc.net/ipclasses.php)
+  +
+  http://vod.sjtu.edu.cn/help/Article_Print.asp?ArticleID=631
 
 == tcpdump usage
 
