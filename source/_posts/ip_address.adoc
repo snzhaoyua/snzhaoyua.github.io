@@ -1,0 +1,102 @@
+----
+title: ip_network.adoc
+categories:
+- 备忘
+- 技术
+tags:
+- ip address
+- network
+----
+
+= ip_network.adoc
+
+== terminology
+
+multicast::
+
+ip multicast::
+
+multicast address::
+
+subnetwork::
+
+subnetword mask::
+
+CIDR notation::
+[quote, wikipedia, https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation]
+
+   The IP address is expressed according to the standards of IPv4 or IPv6. The address may denote a single, distinct
+   interface address or the beginning address of an entire network. The aggregation of these bits is often called the
+   host identifier.
+
+   1. 192.168.100.14/24 represents the IPv4 address 192.168.100.14. Its subnet mask is 255.255.255.0, which has 24 lead-ing 1-bits, and its associated routing prefix, 192.168.100.0 derived by applying the mask to the address.
+   2. the IPv4 block 192.168.100.0/22 represents the 1024 IPv4 addresses from 192.168.100.0 to 192.168.103.255.
+
+_routing prefix_ or _network number_::
+[quote, wikipedia, https://en.wikipedia.org/wiki/Subnetwork]
+The routing prefix may be expressed in Classless Inter-Domain Routing (CIDR) notation written as the **first address** of a network, followed by a slash character (/), and ending with the bit-length of the prefix. For example, 198.51.100.*0*/24 is the prefix of the Internet Protocol version 4 network starting at the given address, having 24 bits allocated for the *network prefix*, and the remaining 8 bits reserved for host addressing.
+
+_rest field_ or _host identifier_::
+
+
+
+subnetting::
+[quote, wikipedia, https://en.wikipedia.org/wiki/Subnetwork]
+The practice of dividing a network into two or more networks is called subnetting.
+如何划分子网及确定子网掩码 https://blog.csdn.net/jason314/article/details/5447743
+
+https://www.pluralsight.com/blog/it-ops/simplify-routing-how-to-organize-your-network-into-smaller-subnets
+https://www.pluralsight.com/blog/it-ops/ip-addressing-routing-ip-address-architecture
+
+
+== ip address class
+Class A 0       00000000-01111111(  0-127)
+Class B 10      10000000-10111111(128-191)
+Class C 110     11000000-11011111(192-223)
+Class D 1110    11100000-11101111(224-239)
+Class E 1111    11110000-11111111(240-255)
+
+special use:https://tools.ietf.org/html/rfc3330
+
+
+== subnetwork mask computation
+172.16.0.0 - 172.31.255.255 (172.16/12 prefix)
+12=8+4
+11111111 11110000 00000000 00000000
+255.255-15.0.0
+255.240.0.0
+172.32.0.0 - 172.47.255.255 (172.32/12 prefix)
+...
+
+172.16.0.0 - 172.16.3.255 (172.16.0/22 prefix)
+22=8+8+6
+11111111 11111111 11111100 00000000
+255.255.255-3.0
+255.255.252.0
+00
+01
+10
+11
+
+
+
+255.255.254.0
+11111111 11111111 11111110 00000000
+
+
+
+inet addr:172.18.7.158  Bcast:172.18.7.255  Mask:255.255.248.0
+11111111 11111111 11111000 00000000
+172.18.           00000111     .158
+172.18.0.0/21
+== reference
+2. https://en.wikipedia.org/wiki/Multicast_address[Subnetwork]
+3. https://en.wikipedia.org/wiki/Subnetwork[Subnetwork]
+4. http://www.vlsm-calc.net/ipclasses.php[ip address classes]
+5. https://testerhome.com/topics/8859[telnet tcpdump]
+
+
+
+
+
+
