@@ -28,7 +28,7 @@ systemctl edit mysql.service
 /usr/lib/systemd/system/mysql.service
 
 直接使用mysqld启动，不用service，发现正常。最终在参照不使用service启动的mysql pid limits更改mysql.service所有ulimit到最大值也没用。
-systemctl status mysql.service
+systemctl show mysql.service
 发现TasksMax字段值为512，与480比较相近。
 
 文档：
