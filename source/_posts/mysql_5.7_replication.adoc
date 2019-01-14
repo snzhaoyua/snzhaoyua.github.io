@@ -1,0 +1,125 @@
+----
+title: mysql 5.7 breplication
+categories:
+- 备忘
+- 技术
+tags:
+- Java
+- ZooKeeper
+----
+
+= mysql 5.7 replication
+:icons: font
+
+== 大纲
+本文参考或翻译自：
+https://dev.mysql.com/doc/refman/5.7/en/replication.html
+
+mysql 5.7 支持多种主从复制的方法::
+1. 传统方法：依赖binlog文件和文件的position保持同步
+（https://dev.mysql.com/doc/refman/5.7/en/replication-configuration.html）
+2. 新方法： 依赖全局事务id即global transaction identifer（GTIDs）
+	（https://dev.mysql.com/doc/refman/5.7/en/replication-gtids.html）
+
+replication 支持不同类型的同步::
+1. 异步复制（asynchronous，默认）
+2. 同步复制（只有 NDB 集群才有的一种特性）
+3. 半同步复制（semisynchronous，是对异步复制的一种补充）
+
+With semisynchronous replication, a commit performed on the master blocks before returning to the session that performed the transaction until at least one slave acknowledges that it has received and logged the events for the transaction; see Semisynchronous Replication(https://dev.mysql.com/doc/refman/5.7/en/replication-semisync.html).
+	MySQL 5.7 also supports delayed replication such that a slave server deliberately lags behind the master by at least a specified amount of time; see Section 16.3.10, Delayed Replication(https://dev.mysql.com/doc/refman/5.7/en/replication-delayed.html).
+
+HOW-TO::
+There are a number of solutions available for setting up replication between servers, and the best method to use depends on the presence of data and the engine types you are using. For more information on the available options, see Section 16.1.2, “Setting Up Binary Log File Position Based Replication”(https://dev.mysql.com/doc/refman/5.7/en/replication-howto.html).
+
+复制格式::
+1. 基于语句的(Statement Based Replication (SBR))
+2. 基于行的(Row Based Replication (RBR))
+3. 混合的，也就是结合以上两种(Mixed Based Replication (MBR))
+https://dev.mysql.com/doc/refman/5.7/en/replication-formats.html.
+
+选项与变量::
+Replication is controlled through a number of different options and variables. For more information, see Section 16.1.6, “Replication and Binary Logging Options and Variables”(https://dev.mysql.com/doc/refman/5.7/en/replication-options.html).
+
+
+replication 的其它用途::
+https://dev.mysql.com/doc/refman/5.7/en/replication-solutions.html
+
+
+原理::
+https://dev.mysql.com/doc/refman/5.7/en/replication-implementation.html
+
+研究路线::
+. 配置 replication
+  .. 基于日志位置的复制配置
+  .. 基于GTIDs的复制
+  .. MySQL multi-Source replication
+  .. 在上线机器上更改复制模式
+  .. 复制与日志记录选项和变量
+  .. 常用复制管理任务
+. replication 实现
+. replication 用途
+. replication notes and tips
+
+
+== 配置 replication
+
+=== 基于 BinLog 日志文件位置 的复制
+master 作为数据库改变的源头，将事件（变化、更新等操作）写入到二进制日志，事件信息存储的格式根据变化的不同而不同；slave 从主机读取并执行日志。
+每台 slave 都会获取到一份二进制日志（以下简称 binlog）的完整内容的副本。slave 会决定执行这个 binlog 的哪一部分。除非特别指定，否则全部执行。如果需要，你也可以配置只执行特定 database 或者 table 的相关语句。
+
+[Important]
+====
+不能配置只执行某一次特定的事件。
+====
+
+每台 slave 都会记录一个 binlog 的坐标：文件名称和这个文件中已经处理到什么位置。这就意味着多个 slave 可以正在执行同一个 binlog 的不同部分。因为是 slave 在控制这个过程， slave 可以随意连接、断开 master 而不影响 master 操作。而且这意味着 slave 可以断开、重连、恢复处理。
+
+master 和每一个 slave 都必须有一个唯一的 server-id(https://dev.mysql.com/doc/refman/5.7/en/replication-options.html#option_mysqld_server-id)，并且需要通过 CHANGE MASTER TO 语句提供 master 主机地址、日志文件名称、日志文件位置等信息(https://dev.mysql.com/doc/refman/5.7/en/change-master-to.html)。这部分细节存储在 slave 的 master info repository， 可以是一个文件，也可能存储在一个表中(https://dev.mysql.com/doc/refman/5.7/en/slave-logs.html)。
+
+首先，掌握一些基础命令，有助于后面的配置::
+
+====
+*控制 master 的语句* (SQL Statements for Controlling Master Servers)
+（https://dev.mysql.com/doc/refman/5.7/en/replication-master-sql.html）
+
+----
+SHOW BINARY LOGS<1>
+SHOW BINLOG EVENTS<2>
+SHOW MASTER STATUS
+SHOW SLAVE HOSTS
+----
+<1> SHOW BINARY LOGS 等同于 SHOW MASTER LOGS. 需要权限.
+<2> 支持指定文件名、位置等，见 https://dev.mysql.com/doc/refman/5.7/en/show-binlog-events.html； 大数据量耗费较多时间，可用 mysqlbinlog 工具代替，见 https://dev.mysql.com/doc/refman/5.7/en/mysqlbinlog.html.
+
+
+*控制 slave 的语句* (SQL Statements for Controlling Slave Servers)
+（https://dev.mysql.com/doc/refman/5.7/en/replication-slave-sql.html）
+
+----
+CHANGE MASTER TO
+CHANGE REPLICATION FILTER
+MASTER_POS_WAIT()
+RESET SLAVE
+SET GLOBAL sql_slave_skip_counter
+START SLAVE
+STOP SLAVE
+SHOW SLAVE STATUS and SHOW RELAYLOG EVENTS
+----
+
+
+
+
+*Replication 与 binlog 的选项、变量*(Replication and Binary Logging Options and Variables)
+（https://dev.mysql.com/doc/refman/5.7/en/replication-options.html）
+====
+
+=== 基于GTIDs的复制
+
+=== MySQL multi-Source replication
+
+=== 在上线机器上更改复制模式
+
+=== 复制与日志记录选项和变量
+
+=== 常用复制管理任务
