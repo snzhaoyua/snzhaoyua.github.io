@@ -59,6 +59,9 @@ https://dev.mysql.com/doc/refman/5.7/en/replication-implementation.html
   .. 常用复制管理任务
 . replication 实现
 . replication 用途
+  ..
+  .. 半同步
+
 . replication notes and tips
 
 
@@ -123,3 +126,25 @@ SHOW SLAVE STATUS and SHOW RELAYLOG EVENTS
 === 复制与日志记录选项和变量
 
 === 常用复制管理任务
+
+== replication 实现
+
+== replication 用途
+
+=== 半同步复制
+https://dev.mysql.com/doc/refman/5.7/en/replication-semisync.html
+
+
+mysql 默认是异步同步，master 把操作写到 binlog 里，但是不关心 slave 是否（或者何时）收到（或者处理）这些事件。这种方式下，master 如果崩溃，可能来不及把其已经提交的事务传输给任何一个 slave。 Consequently, failover from master to slave in this case may result in failover to a server that is missing transactions relative to the master.
+
+半同步可以作为异步的一种替代：
+1. 当 slave 连接到主机的时候，它会提示 master，自己是否支持半同步
+2. 当 master 开启了半同步，并且有至少一台开启了半同步的 slave 连接到了 master，那么任何一个执行事务的线程，就会一直等待，至少一个开启了半同步的 slave 反馈其收到了这个事务相关的全部日志（或者达到一个超时时间），然后才会 commit；
+3. slave 只有在收到事件、把事件写入到 relaylog 并刷到磁盘后，才会向 master 发出这个反馈；
+4. 当超时时间已经达到，master 还没有收到任何反馈，其会转成异步模式；一旦任何一个 slave 赶上（步骤3完成？），master 还会继续转回半同步模式。
+5. 半同步必须在 master 和 slave 同时开启，任何一方没有开启，都是异步的模式。
+
+
+==== 管理界面
+==== 安装配置
+==== 监控
