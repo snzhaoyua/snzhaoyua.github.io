@@ -1,3 +1,12 @@
+---
+title: primtive number
+categories:  
+- 备忘
+- 技术
+tags: 
+- java
+---
+
 ```
 package test;
 

@@ -1,3 +1,13 @@
+---
+title: mysql knowledge
+categories:  
+- 备忘
+- 技术
+tags: 
+- mysql
+---
+
+
 第一部分 MySQL篇	
 
 
