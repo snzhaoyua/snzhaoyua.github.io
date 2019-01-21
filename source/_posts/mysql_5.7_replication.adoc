@@ -100,7 +100,7 @@ SHOW SLAVE HOSTS
 （https://dev.mysql.com/doc/refman/5.7/en/replication-slave-sql.html）
 
 ----
-CHANGE MASTER TO
+CHANGE MASTER TO<1>
 CHANGE REPLICATION FILTER
 MASTER_POS_WAIT()
 RESET SLAVE
@@ -109,9 +109,61 @@ START SLAVE
 STOP SLAVE
 SHOW SLAVE STATUS and SHOW RELAYLOG EVENTS
 ----
+<1> 内容参考 https://dev.mysql.com/doc/refman/5.7/en/change-master-to.html，关注点：
+1. 是否需要先 stop slave
+2. 多线程的 slave 下可能出现的间隙问题（gaps）以及 `START SLAVE UNTIL SQL_AFTER_MTS_GAPS`
+3. CHANGE MASTER TO .. FOR CHANNEL _channel_ 的用法, 更多 Replication Channel 参考 https://dev.mysql.com/doc/refman/5.7/en/replication-channels.html
+4. 未指定的选项保留旧的值。
+5. 【重要】如果指定了 `MASTER_HOST` 或者 `MASTER_PORT`，即使值没有变化，mysql 也认为 master 主机也跟以前不一样了。这种情况下，binlog的文件名和位置就失效了，所以如果不指定 MASTER_LOG_FILE 和 MASTER_LOG_POS，mysql默认添加上 MASTER_LOG_FILE='' 且 MASTER_LOG_POS = 4。
+6. ssl 相关的配置，MASTER_SSL_XXX 和 --ssl-XXX (https://dev.mysql.com/doc/refman/5.7/en/encrypted-connection-options.html) 功能一样。
+7. 心跳检测相关的选项（比如 MASTER_HEARTBEAT_PERIOD 不指定，默认是系统变量 slave_net_timeout 的一半；更改 slave_net_timeout 也要适当更改其它关联选项否则不起作用等）
++
+更改默认值并检查当前连接心跳次数：
++
+[sql]
+----
+STOP SLAVE;
+CHANGE MASTER TO MASTER_HOST='X.X.X.X', MASTER_LOG_POS=XX, MASTER_HEARTBEAT_PERIOD=10;
+START SLAVE;
+
+-- 一些常用的健康表
+mysql> USE performance_schema;
+mysql> SHOW TABLES LIKE "replication%";
++---------------------------------------------+
+| Tables_in_performance_schema (replication%) |
++---------------------------------------------+
+| replication_applier_configuration           |
+| replication_applier_status                  |
+| replication_applier_status_by_coordinator   |
+| replication_applier_status_by_worker        |
+| replication_connection_configuration        |
+| replication_connection_status               |
+| replication_group_member_stats              |
+| replication_group_members                   |
++---------------------------------------------+
+8 rows in set (0.00 sec)
 
 
-
+-- 检查当前配置
+SELECT * FROM performance_schema.replication_connection_configuration\G
+-- 检查当前连接心跳次数、连接状态
+SELECT * FROM performance_schema.replication_connection_status\G
+----
+8. MASTER_DELAY 与 延迟复制 https://dev.mysql.com/doc/refman/5.7/en/replication-delayed.html
+9. MASTER_BIND 与多网卡平面有关（可用 SHOW SLAVE STATUS 查看）
+10. 一些不可同时指定的值：
++
+----
+MASTER_LOG_FILE or MASTER_LOG_POS 与 RELAY_LOG_FILE or RELAY_LOG_POS 不可同时指定。
+MASTER_LOG_FILE or MASTER_LOG_POS 与  MASTER_AUTO_POSITION = 1 不可同时指定。
+MASTER_LOG_FILE or MASTER_LOG_POS 如果不指定，使用之前的旧值。
+----
+11. 【重要】relaylog 的删除
++
+In MySQL 5.7.4 and later, relay logs are preserved if at least one of the slave SQL thread and the slave I/O thread is running; if both threads are stopped, all relay log files are deleted unless at least one of RELAY_LOG_FILE or RELAY_LOG_POS is specified.
+12. MASTER_AUTO_POSITION = 1
++
+When MASTER_AUTO_POSITION = 1 is used with CHANGE MASTER TO, the slave attempts to connect to the master using the GTID-based replication protocol. From MySQL 5.7, this option can be employed by CHANGE MASTER TO only if both the slave SQL and slave I/O threads are stopped. Both the slave and the master must have GTIDs enabled (GTID_MODE=ON, ON_PERMISSIVE, or OFF_PERMISSIVE on the slave, and GTID_MODE=ON on the master). Auto-positioning is used for the connection, so the coordinates represented by MASTER_LOG_FILE and MASTER_LOG_POS are not used, and the use of either or both of these options together with MASTER_AUTO_POSITION = 1 causes an error. If multi-source replication is enabled on the slave, you need to set the MASTER_AUTO_POSITION = 1 option for each applicable replication channel.（https://dev.mysql.com/doc/refman/5.7/en/replication-gtids-auto-positioning.html）
 
 *Replication 与 binlog 的选项、变量*(Replication and Binary Logging Options and Variables)
 （https://dev.mysql.com/doc/refman/5.7/en/replication-options.html）
@@ -148,3 +200,30 @@ mysql 默认是异步同步，master 把操作写到 binlog 里，但是不关�
 ==== 管理界面
 ==== 安装配置
 ==== 监控
+
+== 实战
+
+=== 如何在主从不同步的情况下，重新同步主从?
+在我的测试机器上面，我在多次运行测试语句后，发现主机上有从机不存在的表。现在我想重新让两者同步，怎么办？
+[sql]
+----
+-- master
+RESET MASTER;
+FLUSH TABLES WITH READ LOCK;
+SHOW MASTER STATUS;
+
+mysqldump -u root -p --all-databases > /a/path/mysqldump.sql
+scp /a/path/mysqldump.sql TO SLAVE /b/path/mysqldump.sql
+UNLOCK TABLES;
+
+-- slave
+mysql -uroot -p < mysqldump.sql
+
+RESET SLAVE;
+CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=154;
+START SLAVE;
+SHOW SLAVE STATUS;
+----
+
+https://stackoverflow.com/questions/2366018/how-to-re-sync-the-mysql-db-if-master-and-slave-have-different-database-incase-o
+https://dev.mysql.com/doc/refman/5.7/en/reset-master.html
