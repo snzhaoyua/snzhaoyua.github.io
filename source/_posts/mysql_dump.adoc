@@ -1,0 +1,147 @@
+----
+title: mysqldump_迁移数据
+categories:
+- 备忘
+- 技术
+tags:
+- mysql
+- mysqldump
+----
+
+++++
+<style type="text/css">
+.strike{
+    text-decoration:line-through
+}
+</style>
+++++
+
+
+
+= mysql 备份
+:linkcss:
+
+
+== 背景
+[big]##客##户N在使用H部门提供的mysql遇到部分性能问题后，未得到H部门的及时支撑。机缘巧合，我们的服务化mysql刚刚发布第一版，客户N有意切换我们的mysql。由于部门策略调整，我们准备由原来的社区mysql切换为部门R的商业版mysql，其间对接问题不提，客户提出的首要问题是前期尝试通过mysqldump备份数据，发现有报错并且很慢，我们的策略是 [.strike]#为拓展业务先把锅接下来吧# 答应先提供数据迁移方案供客户评估。
+
+== 机器、数据、应用情况
+. 源机器cpu核心数16，内存32G；
+. 两台机器，一个是master，一个是slave；未配置互为主备；
+. 开启了基于GTID的主从复制；
+. 从镜像库来看，数据量3800W左右，实际生产环境每天还会增加约不到100w；
++
+|===
+||0-1w|1w-10w|10w-50w|50w-100w|100w-1000w|>1000w
+|表数量约|	2105|	83|	28|	5|	6|	1
+|===
+. mysql为社区版5.7.23，所有表均为INNODB引擎；
+. 据客户N的业务人员反馈，他们尝试使用mysqldump可能会报错。
+
+
+== 一些准备工作
+为了能够顺滑的开展后期工作，我习惯先整理一些常用的命令，以备随时复制粘贴...
+
+----
+-- 查询所有业务数据库的表名，数据库，存储引擎信息
+select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');?
+
+-- 查询所有业务数据库的表的数量
+select count(*) from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');?
+
+-- 查询所有业务数据库的视图数量
+select table_name,table_schema from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');
+select count(*) from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');
+
+-- 查询所有routines(存储过程和函数)的数量
+select * from mysql.proc where db not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有触发器的数量
+SELECT * FROM information_schema.triggers where TRIGGER_SCHEMA not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有事件的数量
+SELECT * FROM information_schema.EVENTS where EVENT_SCHEMA not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有用户数量
+select user,host from mysql.user;
+
+-- 查看磁盘IO信息
+iostat -x -p /dev/mapper/vg02-lv02 1 10 -m
+iostat -x -p 1 10 -m
+----
+
+== 首先尝试使用原生mysqldump
+业务诚不欺我，果然有坑，报错如下(安全需要，隐藏关键信息)。
+
+[WARNING]
+====
+mysqldump: Couldn't execute 'SHOW FIELDS FROM `XX`': View 'XX.XX' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them (1356)
+====
+
+报错信息很明显了，本次实践中，主要是视图引用创建语句中子查询的列不存在了，select 都会报错，这个我们只能让业务自己去审视，决策是否删除或者修复。
+
+由于通过mysqldump来发现那些视图有问题非常不效率，所有写了一个简单的脚本：
+
+.搜集所有有问题的视图
+[source,bash]
+----
+include::netcare/checkView.sh[]
+----
+
+
+== 命令优化
+
+--hex-blob --single-transaction --quick --routines --triggers
+
+=== 方案一 160分钟
+单线程直接执行mysqldump，大概160分钟
+
+----
+> /data01/chroot/usr/local/mysql5.7.23/bin/mysqldump -udbAdmin -pabcd1234 --all-databases --hex-blob --ignore-table=netcare.risk_getlist_for_iwar_v --ignore-table=netcare.risk_grid_by_something_condition_v --ignore-table=netcare.risk_proj_reg_rel_v --ignore-table=netcare.risk_project_region_approver_v --ignore-table=netcare.risk_task_extended_view --ignore-table=netcare.risk_task_extended_view_for_map --ignore-table=netcare.risk_ticket_log_new_v_test --ignore-table=netcare.risk_user_task_new_v --ignore-table=netcare.rpt_task_new_v --ignore-table=netcare.task_new_r | gzip > /data03/backup/back0129.sql.gz
+----
+
+=== 方案二 90分钟
+考虑一个表一个文件，10个线程，大概90分钟；TODO 测试增加线程
+
+.multidump.sh
+[source,bash]
+----
+include::netcare/multidump.sh[]
+----
+
+=== 方案三 22分钟
+
+.zlib 100个线程的mysqlpump，时间大概22分钟，可以很直观的看到执行到哪个表，剩余多少行
+----
+/data01/chroot/usr/local/mysql5.7.23/bin/mysqlpump -udbAdmin -pabcd1234 --compress-output=ZLIB --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users |gzip > /data03/backup/0129/test.sql.gz
+----
+
+.lz4 7.3G 15分钟
+----
+/data01/chroot/usr/local/mysql5.7.23/bin/mysqlpump -udbAdmin -pabcd1234 --compress-output=LZ4 --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users > /data03/backup/testlz4.lz4
+----
+
+=== 方案四
+
+==== 统计
+
+----
+SELECT SUM(TABLE_ROWS) FROM `information_schema`.`tables` WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys');
+
+SELECT TABLE_NAME, TABLE_ROWS FROM `information_schema`.`tables` WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys');
+[source,bash]
+----
+
+.stat.sh
+----
+include::netcare/stat.sh[]
+----
+
+
+
+
+
+. 只导出netcare，17分钟-20分钟左右
+----
+mydumper -u dbAdmin -p abcd1234 -v 3 -B netcare --triggers --events --routines --rows=500000 --compress-protocol -c -t 100 --trx-consistency-only --outputdir /data03/backup/mydumper
+----
