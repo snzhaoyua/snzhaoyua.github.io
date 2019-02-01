@@ -78,70 +78,70 @@ iostat -x -p 1 10 -m
 mysqldump: Couldn't execute 'SHOW FIELDS FROM `XX`': View 'XX.XX' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them (1356)
 ====
 
-报错信息很明显了，本次实践中，主要是视图引用创建语句中子查询的列不存在了，select 都会报错，这个我们只能让业务自己去审视，决策是否删除或者修复。
+报错信息很明显了，本次实践中，主要是视图引用创建语句中子查询的列不存在，select 都会报错，这个我们只能让业务自己去审视，决策是否删除或者修复。
 
 由于通过mysqldump来发现那些视图有问题非常不效率，所有写了一个简单的脚本：
 
 .搜集所有有问题的视图
 [source,bash]
 ----
-include::netcare/checkView.sh[]
+include::resources/netcare/checkView.sh[]
 ----
-
 
 == 命令优化
 
+具体方案之前，先加上一些基本的备份对象
+----
 --hex-blob --single-transaction --quick --routines --triggers
+----
 
 === 方案一 160分钟
 单线程直接执行mysqldump，大概160分钟
 
 ----
-> /data01/chroot/usr/local/mysql5.7.23/bin/mysqldump -udbAdmin -pabcd1234 --all-databases --hex-blob --ignore-table=netcare.risk_getlist_for_iwar_v --ignore-table=netcare.risk_grid_by_something_condition_v --ignore-table=netcare.risk_proj_reg_rel_v --ignore-table=netcare.risk_project_region_approver_v --ignore-table=netcare.risk_task_extended_view --ignore-table=netcare.risk_task_extended_view_for_map --ignore-table=netcare.risk_ticket_log_new_v_test --ignore-table=netcare.risk_user_task_new_v --ignore-table=netcare.rpt_task_new_v --ignore-table=netcare.task_new_r | gzip > /data03/backup/back0129.sql.gz
+> /data01/chroot/usr/local/mysql5.7.23/bin/mysqldump -udbXXXX -pXXXX --all-databases --hex-blob --ignore-table=netcxx.xxxxx --ignore-table=netxxx.rxxx(此处很多忽略的视图) | gzip > /temp/back0129.sql.gz
 ----
 
 === 方案二 90分钟
 考虑一个表一个文件，10个线程，大概90分钟；TODO 测试增加线程
 
-.multidump.sh
+.multidump.sh[lines=25..55]
 [source,bash]
 ----
-include::netcare/multidump.sh[]
+include::resources/netcare/multidump.sh[lines=25..55]
 ----
 
-=== 方案三 22分钟
+=== 方案三 15-22分钟
+mysqlpump 是 mysql 提供的工具，文档和网上教程一大堆，这里只谈使用。
+可以很直观的看到执行到哪个表，剩余多少行；注意：mysqlpump遇到错误会停止继续，比如命令不正确、数据结构有问题。而且这个数据库开启GTID，所以如果你的数据库没有此选项，要把命令中的--set-gtid-purged=ON去掉。
 
-.zlib 100个线程的mysqlpump，时间大概22分钟，可以很直观的看到执行到哪个表，剩余多少行
-----
-/data01/chroot/usr/local/mysql5.7.23/bin/mysqlpump -udbAdmin -pabcd1234 --compress-output=ZLIB --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users |gzip > /data03/backup/0129/test.sql.gz
-----
+两种压缩格式的时间差距还是很明显：
 
-.lz4 7.3G 15分钟
-----
-/data01/chroot/usr/local/mysql5.7.23/bin/mysqlpump -udbAdmin -pabcd1234 --compress-output=LZ4 --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users > /data03/backup/testlz4.lz4
-----
+.zlib格式 可用 lz4_decompress 解压；100个线程的mysqlpump，时间大概22分钟
+====
+mysqlpump -u__username__ -p__password__ --compress-output=ZLIB --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users |gzip > /temp/test.sql.gz
+
+Dump progress: 0/xx tables, xx/xxxxxxxxx rows
+Dump completed in xxxxxx milliseconds
+====
+
+.lz4 15分钟 可用 lz4_decompress 解压
+====
+mysqlpump -u__username__ -p__password__ --compress-output=LZ4 --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users > /temp/testlz4.lz4
+====
 
 === 方案四
 
 ==== 统计
-
-----
-SELECT SUM(TABLE_ROWS) FROM `information_schema`.`tables` WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys');
-
-SELECT TABLE_NAME, TABLE_ROWS FROM `information_schema`.`tables` WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys');
 [source,bash]
 ----
-
-.stat.sh
+include::resources/netcare/stat.sh[lines=4..6]
 ----
-include::netcare/stat.sh[]
-----
-
-
-
 
 
 . 只导出netcare，17分钟-20分钟左右
 ----
-mydumper -u dbAdmin -p abcd1234 -v 3 -B netcare --triggers --events --routines --rows=500000 --compress-protocol -c -t 100 --trx-consistency-only --outputdir /data03/backup/mydumper
+mydumper -u dbAdmin -p abcd1234 -v 3 -B netcare --triggers --events --routines --rows=500000 --compress-protocol -c -t 100 --trx-consistency-only --outputdir /temp/mydumper
 ----
+
+待续
