@@ -1,0 +1,16 @@
+----
+title: basic_title
+categories:
+- 备忘
+- 技术
+tags:
+- basic_tags_1
+- basic_tags_2
+----
+
+= basic_title
+
+
+
+
+
