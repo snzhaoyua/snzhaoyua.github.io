@@ -117,7 +117,7 @@ mysqlpump 是 mysql 提供的工具，文档和网上教程一大堆，这里只
 
 两种压缩格式的时间差距还是很明显：
 
-.zlib格式 可用 lz4_decompress 解压；100个线程的mysqlpump，时间大概22分钟
+.zlib格式 可用 zlib_decompress 解压；100个线程的mysqlpump，时间大概22分钟
 ====
 mysqlpump -u__username__ -p__password__ --compress-output=ZLIB --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users |gzip > /temp/test.sql.gz
 
@@ -131,17 +131,20 @@ mysqlpump -u__username__ -p__password__ --compress-output=LZ4 --default-parallel
 ====
 
 === 方案四
+mysqlpump 可以针对database进行多线程导出，但是有时候数据分布不均匀，90%的数据可能都在一个表内，这种情况下mysqlpump显得无能为力。有没有可以对单个大表继续进行分拆的工具呢？ https://github.com/maxbube/mydumper/releases[mydumper] 可以做这件事。
 
-==== 统计
+==== 首先统计表的分布
 [source,bash]
 ----
 include::resources/netcare/stat.sh[lines=4..6]
 ----
 
-
+==== 验证mydumper导出database的效率
 . 只导出netcare，17分钟-20分钟左右
-----
-mydumper -u dbAdmin -p abcd1234 -v 3 -B netcare --triggers --events --routines --rows=500000 --compress-protocol -c -t 100 --trx-consistency-only --outputdir /temp/mydumper
-----
+====
+mydumper -u __username__ -p __password__  -v 3 -B __databaseName__ --triggers --events --routines --rows=500000 --compress-protocol -c -t __threadNum.ie.100__ --trx-consistency-only --outputdir /temp/mydumper
+====
 
-待续
+==== 验证mydumper导出某一个大表的效率
+[tbd]
+
