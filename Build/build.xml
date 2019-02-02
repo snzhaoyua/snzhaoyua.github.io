@@ -1,6 +1,7 @@
-<project name= "myproject" basedir= "../" default="Clean_G_S_Open">
+<project name= "myproject" basedir= "../" default="new">
 
-    <property name="serverUrl" value="http://localhost:4000/"/>
+
+   <!-- <property name="serverUrl" value="http://localhost:4000/"/>
 
     <target name="hexo_clean">
         <echo message="Hexo Cleaning"/>
@@ -67,7 +68,7 @@
             <sequential>
                 <echo message="Waiting ${serverUrl} startup.."/>
                 <waitfor maxwait="10" maxwaitunit="second" checkevery="500">
-                    <http url="${serverUrl}"/> <!--其实不生效，就是等10s-->
+                    <http url="${serverUrl}"/> &lt;!&ndash;其实不生效，就是等10s&ndash;&gt;
                 </waitfor>
                 <echo message="${serverUrl} started."/>
                 <antcall target="openInBrowser"/>
@@ -84,4 +85,19 @@
         <antcall target="hexo_s_Open"/>
         <echo message=""/>
     </target>
+-->
+
+
+    <target name="new">
+        <echo message="blog title:" ></echo>
+        <input addproperty="title" ></input>
+
+        <echo message="title is ${title}" ></echo>
+        <copy file="${basedir}/Build/basic.adoc" tofile="${basedir}/blog/${title}.adoc"/>
+        <replace file="${basedir}/blog/${title}.adoc"
+                 token="basic_title"
+                 value="${title}" />
+    </target>
+
+
 </project>
