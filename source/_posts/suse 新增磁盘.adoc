@@ -1,0 +1,35 @@
+
+----
+DISK=vdb
+disk_list=(`cat /proc/partitions | sort | grep -v "name" |grep -v "loop" |awk '{print $4}'| sed /^[[:space:]]*$/d | grep -v "[[:digit:]]" | uniq`)
+parted -s /dev/${DISK} mklabel gpt
+parted -s /dev/${DISK} print |grep softhome |wc -l
+DISKSIZE=`parted -s /dev/${DISK} unit GB print | grep '^Disk' |grep GB | awk '{print $3}'`
+DISK1=`echo ${DISK}1` #
+parted -s /dev/${DISK} mkpart softhome 0G $DISKSIZE
+parted -s /dev/${DISK} set 1 lvm
+
+vgname=`echo "/opt" | awk -F'/' '{print $NF}'`
+vgname="${vgname}vg" # optvg
+lvname=`echo "/opt" | awk -F'/' '{print $NF}'`
+lvname="${lvname}lv" # optlv
+
+echo y | pvcreate /dev/${DISK1}
+
+vgcreate "$vgname" /dev/${DISK1}
+free=`vgdisplay "$vgname" |grep "Total PE" |awk '{print $3}'`
+echo y | lvcreate -l "$free" -n "$lvname" "$vgname"
+
+lvPath=`lvdisplay "$vgname" | grep "LV Path" | awk '{print $3}'`
+
+#格式化
+mkfs.ext4 "${lvPath}"
+
+#挂载
+mount -t ext4 ${lvPath} /opt
+
+cat /etc/fstab | grep -w $lvPath
+
+#永久
+echo "$lvPath            ${PATHS}                    ext4       defaults        1 0" >> /etc/fstab
+----
