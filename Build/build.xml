@@ -92,10 +92,17 @@
         <echo message="blog title:" ></echo>
         <input addproperty="title" ></input>
 
-        <echo message="title is ${title}" ></echo>
-        <copy file="${basedir}/Build/basic.adoc" tofile="${basedir}/blog/${title}.adoc"/>
-        <replace file="${basedir}/blog/${title}.adoc"
-                 token="basic_title"
+        <tstamp>
+            <format property="YEAR" pattern="yyyy"></format>
+        </tstamp>
+
+        <echo message="title is ${DSTAMP} ${title}" ></echo>
+        <property name="targetFilePath" value="${basedir}/source/_posts/${YEAR}/${DSTAMP} ${title}.adoc"/>
+
+
+        <copy file="${basedir}/Build/basic.adoc" tofile="${targetFilePath}"/>
+        <replace file="${targetFilePath}"
+                 token="{{basic_title}}"
                  value="${title}" />
     </target>
 
