@@ -16,10 +16,9 @@ tags:
 </style>
 ++++
 
-
-
-= mysql 备份
+= mysqldump 迁移数据
 :linkcss:
+:sourcedir: ../resources
 
 
 == 背景
@@ -85,10 +84,10 @@ mysqldump: Couldn't execute 'SHOW FIELDS FROM `XX`': View 'XX.XX' references inv
 .搜集所有有问题的视图
 [source,bash]
 ----
-include::resources/netcare/checkView.sh[]
+include::{sourcedir}/checkView.sh[]
 ----
 
-== 命令优化
+== 命令优化x
 
 具体方案之前，先加上一些基本的备份对象
 ----
@@ -108,7 +107,7 @@ include::resources/netcare/checkView.sh[]
 .multidump.sh[lines=25..55]
 [source,bash]
 ----
-include::resources/netcare/multidump.sh[lines=25..55]
+include::{sourcedir}/mysqldump.sh[lines=25..55]
 ----
 
 === 方案三 15-22分钟
@@ -136,7 +135,7 @@ mysqlpump 可以针对database进行多线程导出，但是有时候数据分�
 ==== 首先统计表的分布
 [source,bash]
 ----
-include::resources/netcare/stat.sh[lines=4..6]
+include::{sourcedir}/stat.sh[lines=4..6]
 ----
 
 ==== 验证mydumper导出database的效率
