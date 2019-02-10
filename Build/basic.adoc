@@ -9,6 +9,8 @@ tags:
 ----
 
 = {{basic_title}}
+:stem: latexmath
+:icons: font
 
 
 
