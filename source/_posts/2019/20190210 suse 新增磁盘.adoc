@@ -1,5 +1,14 @@
+---
+title: suse 新增磁盘
+categories:
+- 备忘
+- 技术
+tags:
+- Linux
+---
 
 ----
+fdisk -l
 DISK=vdb
 disk_list=(`cat /proc/partitions | sort | grep -v "name" |grep -v "loop" |awk '{print $4}'| sed /^[[:space:]]*$/d | grep -v "[[:digit:]]" | uniq`)
 parted -s /dev/${DISK} mklabel gpt

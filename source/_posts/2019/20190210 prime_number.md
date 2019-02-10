@@ -1,5 +1,5 @@
 ---
-title: primtive number
+title: 测试驱动开发的一个示例代码——求质因数
 categories:  
 - 备忘
 - 技术
@@ -20,7 +20,6 @@ public class TestMain {
     public static int[] getPrimeFactor(int input) {
         List<Integer> result = new ArrayList<>();
 
-
         switch (input) {
             case 0 | 1:
                 result.add(input);
@@ -29,32 +28,25 @@ public class TestMain {
                 result = doSth(input);
         }
 
-
         return Arrays.stream(result.toArray(new Integer[result.size()]))
                 .mapToInt(Integer::intValue)
                 .toArray();
     }
 
     private static List<Integer> doSth(int input) {
-//        int complexity = 0;
         List<Integer> result = new ArrayList<>();
 
         for (int i = 2; i <= input; i++) {
-//            complexity++;
             while (input % i == 0) {
-//                complexity++;
                 result.add(i);
                 input /= i;
             }
         }
-//        System.out.println("Complexity is " + complexity);
         return result;
     }
 }
 
 ```
-
-
 
 
 ```
