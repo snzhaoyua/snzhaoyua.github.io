@@ -1,5 +1,5 @@
 ----
-title: mysql 5.7 breplication
+title: mysql 5.7 replication
 categories:
 - 备忘
 - 技术

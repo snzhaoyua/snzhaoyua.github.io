@@ -1,7 +1,7 @@
 <project name= "myproject" basedir= "../" default="new">
 
 
-   <!-- <property name="serverUrl" value="http://localhost:4000/"/>
+   <property name="serverUrl" value="http://localhost:4000/"/>
 
     <target name="hexo_clean">
         <echo message="Hexo Cleaning"/>
@@ -68,7 +68,7 @@
             <sequential>
                 <echo message="Waiting ${serverUrl} startup.."/>
                 <waitfor maxwait="10" maxwaitunit="second" checkevery="500">
-                    <http url="${serverUrl}"/> &lt;!&ndash;其实不生效，就是等10s&ndash;&gt;
+                    <http url="${serverUrl}"/> <!--其实不生效，就是等10s-->
                 </waitfor>
                 <echo message="${serverUrl} started."/>
                 <antcall target="openInBrowser"/>
@@ -85,10 +85,10 @@
         <antcall target="hexo_s_Open"/>
         <echo message=""/>
     </target>
--->
 
 
-    <target name="new">
+
+    <target name="new_adoc">
         <echo message="blog title:" ></echo>
         <input addproperty="title" ></input>
 
@@ -104,6 +104,39 @@
         <replace file="${targetFilePath}"
                  token="{{basic_title}}"
                  value="${title}" />
+    </target>
+
+
+    <target name="new_md_with_resources">
+        <echo message="blog title:" ></echo>
+        <input addproperty="title" ></input>
+
+        <tstamp>
+            <format property="YEAR" pattern="yyyy"></format>
+        </tstamp>
+
+        <echo message="title is ${DSTAMP} ${title}" ></echo>
+        <property name="targetFilePath" value="${basedir}/source/_posts/${YEAR}/${DSTAMP} ${title}.md"/>
+
+        <copy file="${basedir}/Build/basic.adoc" tofile="${targetFilePath}"/>
+        <mkdir dir="${basedir}/source/_posts/${YEAR}/${DSTAMP} ${title}"/>
+        <replace file="${targetFilePath}"
+                 token="{{basic_title}}"
+                 value="${title}" />
+    </target>
+
+    <target name="new_createResourcesDir">
+        <input addproperty="fileName" ></input>
+        <tstamp>
+            <format property="YEAR" pattern="yyyy"></format>
+        </tstamp>
+
+        <script language="javascript">
+            fileName=project.getProperty('fileName');
+            project.setProperty('dirName', fileName.split('.').slice(0,-1).join('.') || fileName + "");
+        </script>
+
+        <mkdir dir="${basedir}/source/_posts/${YEAR}/${dirName}"/>
     </target>
 
 
