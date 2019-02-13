@@ -1,0 +1,352 @@
+----
+title: mysql gtid 主从复制数据迁移(物理备份)
+categories:
+- 备忘
+- 技术
+tags:
+- mysql
+- mysqlbackup
+----
+
+= mysql gtid 主从复制数据迁移(物理备份)
+:stem: latexmath
+:icons: font
+
+=== 前提
+安装好软件平台 mysql。
+
+=== 步骤 0 检查环境
+. 版本
++
+旧库5.7.23 community， 新库5.7.24 commercial
+. (netcare specified) 表和视图等，自检
++
+业务自行检查库是否正常，可以使用我们开发的小工具checkViews.sh（请索要）检查部分视图（此工具只检查视图，不排除还有其它非视图问题引起的问题）。
++
+本例中netcare视图有问题，已做删除处理。
+. 旧库复制状态
++
+比如组网，和当前状态。
++
+netcare为单向主备。在备机SHOW SLAVE STATUS\G查看复制状态正常。
+. 表的存储引擎
++
+====
+select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');
+====
++
+本例业务表全是innodb，不需要考虑锁表问题，也好选择备份工具，方便很多。
+. 是否开启GTID的主从复制
++
+查看/opt/mysql/.my.cnf里gtid_mode=ON还是OFF。未开GTID模式的库不适用此文。
+. 当前机器有mysqlbackup工具吗
+. 检查磁盘和数据的大小
+. 检查当前mysql的状态
+. 检查端口
++
+检查mysql的端口，本例是3306，是否开启了防火墙策略，如果没有开启（在新机器上telnet ip 3306看一下），需要走电子流。
++
+检查22端口（高危，不好开）是否互通，如果不互通，需要花费时间下载文件到中转机，再上传到新库；如果互通，可以使用mysqlbackup直接备份到远端，可以节省大量时间（本例3个小时）。
+
+
+=== 步骤 1 导出备份数据
+. 准备
+.. 安装 mysqlbackup 工具
++
+如果旧库没有mysqlbackup，需要从新库中拷贝一个mysqlbackup到旧库任意位置，比如/root；然后赋予其可执行权限。
+.. 准备好各种用户名和密码
+
+. 备份 此过程花费约20分钟
++
+.登录旧库主机，例如 10.1.9.195，拷贝以下命令执行
+----
+unset tempdir
+tempdir=/data03/backup_`date '+%y%m%d%H%M%S'`
+mkdir ${tempdir}
+----
++
+====
+~/mysqlbackup -u__username__ -p__xxxxxx__ --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=${tempdir} --backup-image=/data03/+`basename ${tempdir}`+.bin backup-to-image
+====
++
+====
+[.line-through]## ~/mysqlbackup -uusername -pxxxxxx --backup-dir=${tempdir} --compress backup
+老机器22端口被限制，通过跳板机下载上传一把就要5个小时。如果可以打开的话，可以通过类似下面这种命令直接备份到新机器，可以节省大量时间
+~/mysqlbackup -uusername -pxxxxxx --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=${tempdir} --backup-image=- backup-to-image | ssh root@10.15.32.73 'cat > /opt/temp_for_restore/my_backup.bin'##
+====
+
+=== 步骤 2 验证备份数据
+
+. 拷贝
++
+如果22端口不开，出于上面已经描述过的原因，建议先将备份文件拷贝到新库主机，再从主机scp到备机。
+. 验证
++
+出于性能考虑，建议在新库验证。本例中，先将备份的文件 my_backup.bin 上传到了新机器的备机 /opt/temp_for_restore/ 验证。此过程花费数分钟。
++
+----
+mysqlbackup --backup-image=/opt/temp_for_restore/my_backup.bin validate
+----
+
+=== 步骤 3 准备数据到可恢复的状态（可省略）
+受制于物理备份的限制，备份过程中，正在备份的数据可能有修改，因此正常流程需要执行以下两个命令，先进行apply-log（把日志变化应用到数据中，使数据达到一致状态），再进行copy-back（恢复数据文件）。
+
+如下：
+
+----
+mysqlbackup .... apply-log
+mysqlbackup .... copy-back
+----
+
+但是本例在步骤5用一句命令代替，所以此步可省略。
+----
+mysqlbackup .... copy-back-and-apply-log
+----
+
+=== 步骤 4 新库准备
+. 备份配置文件
++
+.在新主和新从都要执行
+----
+mkdir /opt/backup
+cp /opt/mysql/.my.cnf /opt/backup/my.cnf.bak
+----
+
+. 冻结hacs集群管理
++
+后续步骤会将mysql停止，为了防止hacs切换、拉起mysql造成干扰，需要先停止hacs集群管理功能。
++
+.在新主上执行
+----
+# 冻结和解冻集群
+crm configure property maintenance-mode=true   # 冻结，不会发生切换
+crm configure property maintenance-mode=false  # 解冻
+----
+
+. 停止mysql
++
+.在新主和新从都要执行
+----
+su - mysql
+mysql.server stop
+----
+
+. 清理文件
++
+按照规范，两台机器 /opt/mysql/app/mysql-files/my.cnf 中的datadir、innodb_undo_directory、innodb_log_group_home_dir、log-bin、relay-log 的参数配置的路径下要为空。
++
+----
+## 本例中，所有文件都在data下面，所以直接
+mv /opt/mysql/data /opt/backup/data.bak
+----
+
+=== 步骤 5 恢复数据
+
+. 准备一些配置
++
+由于新旧库几个关键配置不同，所以直接执行下面的语句会失败。
++
+====
+[.line-through]## ~/mysqlbackup --defaults-file=/opt/mysql/.my.cnf --backup-dir=/opt/temp_for_restore/ –datadir=/opt/mysql/data --uncompress copy-back-and-apply-log#
+====
++
+在旧库主机上，找到你指定的backup-dir路径，比如/data03/backupxxxxx，找到backup-my.cnf，执行以下命令：
++
+====
+cat /data03/<backup-dir>/backup-my.cnf|grep innodb
+====
++
+手动整理输出的结果，填入命令，最终使命令如下所示：
++
+====
+/opt/mysql/app/product/bin/mysqlbackup --defaults-file=/opt/mysql/.my.cnf  -u__new_name__ -p__new_password__ --backup-image=/opt/temp_for_restore/backup_190212153601.bin --backup-dir=/opt/temp_for_restore/ --datadir=/opt/mysql/data/workdbs `--innodb_data_file_path=ibdata1:12M:autoextend --innodb_log_file_size=1073741824 --innodb_log_files_in_group=4 --innodb_page_size=16384 --innodb_checksum_algorithm=crc32 --innodb_buffer_pool_filename=ib_buffer_pool --innodb_undo_tablespaces=4 --innodb_undo_logs=128 --innodb_buffer_pool_filename=ib_buffer_pool` --uncompress copy-back-and-apply-log
+====
+. 开始恢复数据
++
+.在新主新备两台机器上，拷贝以下命令执行
+----
+# 创建data文件夹
+mkdir /opt/mysql/data/workdbs
+
+# 执行数据准备和恢复
+/opt/mysql/app/product/bin/mysqlbackup --defaults-file=/opt/mysql/.my.cnf  -u__new_name__ -p__new_password__ --backup-image=/opt/temp_for_restore/backup_190212153601.bin --backup-dir=/opt/temp_for_restore/ --datadir=/opt/mysql/data/workdbs `--innodb_data_file_path=ibdata1:12M:autoextend --innodb_log_file_size=1073741824 --innodb_log_files_in_group=4 --innodb_page_size=16384 --innodb_checksum_algorithm=crc32 --innodb_buffer_pool_filename=ib_buffer_pool --innodb_undo_tablespaces=4 --innodb_undo_logs=128 --innodb_buffer_pool_filename=ib_buffer_pool` --uncompress copy-back-and-apply-log
+
+## 恢复一些目录，防止启动失败
+cp -r /opt/backup/data.bak/log /opt/mysql/data/
+cp -r /opt/backup/data.bak/backup /opt/mysql/data/
+mkdir -p /opt/mysql/data/binlog/binlog
+mkdir -p /opt/mysql/data/binlog/relay
+mkdir -p /opt/mysql/data/tmp
+
+## 修改 /opt/mysql/.my.cnf 的配置，将此处配置修改为与旧主一样，防止启动失败
+vi /opt/mysql/.my.cnf
+innodb_data_file_path=ibdata1:12M:autoextend
+
+## 最后更改权限
+chown -R mysql: /opt/mysql/data/
+----
+
+参考 https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/restore.compressed-backup.html
+
+=== 步骤 6 启动后清理
+. 启动
++
+----
+su - mysql
+mysql.server start
+----
+
+. 清理
++
+暂未发现要清理项。
+
+=== 步骤 7 重新配置主从复制
+
+[TBD] 拓扑图
+
+. 配置新主到旧主的复制 注意以下填写的 ip，基本都是对方的 ip，如果不清楚可以先查询官方文档。
++
+.在旧主执行
+----
+SET sql_log_bin=0;
+create user 'rpl_user'@'10.15.32.73' identified by 'rplMql_179itiADb';
+grant replication slave on *.* to 'rpl_user'@'10.15.32.73';
+flush privileges;
+SET sql_log_bin=1;
+----
++
+====
+在新主执行
+[.line-through]#vi /path-to-backup_gtid_executed.sql/backup_gtid_executed.sql
+source /path-to-backup_gtid_executed.sql/backup_gtid_executed.sql
+-- 如果这里报错，show globale variables like "GTID_EXECUTED"; 与文件中是否一致，如果一致，直接执行下一步即可。#
+====
++
+.在新主执行
+----
+change master to master_host='10.1.9.195',master_port=3306, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl_temp';
+UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';
+----
+
+. 恢复新主和新从之间的主从复制
++
+.在新主执行
+----
+SET sql_log_bin=0;
+create user 'rpl_user'@'10.15.36.5' identified by 'rplMql_179itiADb';
+grant replication slave on *.* to 'rpl_user'@'10.15.36.5';
+flush privileges;
+SET sql_log_bin=1;
+----
++
+.在新从执行
+----
+change master to master_host='10.15.32.73',master_port=3310, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl1';
+UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';
+start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl1';
+----
++
+.在新从执行
+----
+SET sql_log_bin=0;
+create user 'rpl_user'@'10.15.32.73' identified by 'rplMql_179itiADb';
+grant replication slave on *.* to 'rpl_user'@'10.15.32.73';
+flush privileges;
+SET sql_log_bin=1;
+----
++
+.在新主执行
+----
+change master to master_host='10.15.36.5',master_port=3310, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl1';
+UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';
+
+// 此处不要执行，留给hacs 管理 start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl1';
+----
+
+. 开启新主对旧主的复制
++
+.在新主执行
+----
+# 开启级联复制，旧主->新主->新从
+vi /opt/mysql/.my.cnf
+log-slave-updates=1
+mysql.server restart
+start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl_temp';
+----
+
+参考 https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/advanced.slave.html
+
+=== 步骤 8 观察同步状态
+
+. 状态查看
++
+.在新主和新从执行
+----
+show slave status\G
+----
+状态应如下图所示[TBD]
+
+. 测试
++
+.在旧主执行
+----
+create database test;
+----
++
+.在新主和新从执行
+----
+show database;
+----
+
+. 更多测试请自行测试
+
+=== 步骤 9 恢复hacs状态
+
+hacs 有对mysql的很多操作，肯定用到了mysql的原来的密码。因本次只为测试用途，所以未更改此处。后续需要软件人员支撑如何修改。
+
+=== 步骤 10 切断与切换数据库
+. 停止新主和旧主之间的复制
++
+.在新主执行
+----
+STOP SLAVE FOR CHANNEL "rpl_temp";
+# 要不要还reset，有必要清除信息吗？可以暂时保留，只停线程就行
+# 但是这样hacs会不会又拉起？软件的hacs检查脚本会检查这个slave的状态吗？
+----
+
+. 浮动 ip 绑定
++
+这里需要业务管理员在hic上自行操作。
+
+. 改回级联复制
++
+.在新主执行
+----
+vi /opt/mysql/.my.cnf
+log-slave-updates=0
+----
+
+== 错误 FAQ
+待上图
+[TBD]
+
+== 其它重要事项备注
+
+部分数据表设计不合理::
+物理备份时发现只有6万多数据的表，表文件有9.4个G大。还有其他数据量也不大的表，物理文件要比最大数据量的表还要大。
+describe 看表发现有大量varchar(4000) varchar(256) longtext 等类型的字段，导致索引文件巨大。
+会导致物理备份：
+. 耗时长
+. 占用空间大
+. 旧库性能差，目前尚未定位原因，是否会将引起性能差的因素原样拷贝过来?
+但是如果采用逻辑备份，新库是否需要重建索引的时间？
+
+软件的方案优化::
+软件平台目前采用mysqlbackup到文件夹，然后tar压缩的方式，实测tar极慢（由于上面大文件的原因）。所以本案例采用直接压缩成一个镜像的方式（压缩默认是lz4算法，极快），时间与只备份不压缩差不了多少。
+
+修改了软件的配置::
+innodb_data_file_path 软件是1024M，老库是12M。不改成12无法启动。是否有其它影响？需要维护人员关注。
+
+镜像库::
+本例使用镜像库测试，不知道在备份过程中数据有无刷新，此项需要业务关注测试。
+
