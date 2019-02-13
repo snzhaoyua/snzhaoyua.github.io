@@ -41,10 +41,14 @@ tags:
 
 ----
 -- 查询所有业务数据库的表名，数据库，存储引擎信息
-select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');?
+select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');
 
 -- 查询所有业务数据库的表的数量
-select count(*) from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');?
+select count(*) from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');
+
+-- 查询所有表的数据量
+SELECT CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) AS table_name, IFNULL(TABLE_ROWS,0) as table_rows FROM information_schema.tables WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ORDER BY 2;
+
 
 -- 查询所有业务数据库的视图数量
 select table_name,table_schema from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');
@@ -290,3 +294,30 @@ mydumper -u __username__ -p __password__  -v 3 -B __databaseName__ --triggers --
 ==== 验证mydumper导出某一个大表的效率
 [tbd]
 
+=== 方案五(最终方案)
+
+https://dev.mysql.com/doc/mysql-enterprise-backup/8.0/en/
+----
+方案五 优化前：21分钟
+unset tempdir
+tempdir=/data03/backup_`date '+%y%m%d%H%M%S'`
+mkdir ${tempdir}
+~/mysqlbackup -udbAdmin -pabcd1234 --backup-dir=${tempdir} --compress backup
+echo "Successfully backing up data to ${tempdir}"
+
+# 有待优化 https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/backup-capacity-options.html
+--limit-memory=MB （default 100）
+--read-threads=num_threads （default 1）
+--process-threads=num_threads （default 6）
+--write-threads=num_threads （default 1）
+~/mysqlbackup -udbAdmin -pabcd1234 --backup-dir=${tempdir} --compress backup
+
+#优化后： 15分钟
+# 整库备份到单个文件
+~/mysqlbackup -udbAdmin -pabcd1234 --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=${tempdir} --backup-image=/data03/`basename ${tempdir}`.bin backup-to-image
+
+#直接备份到目标机器：
+~/mysqlbackup -udbAdmin -pabcd1234 --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=${tempdir} --backup-image=- backup-to-image | ssh root@10.15.32.73 'cat > /opt/temp_for_restore/my_backup.bin'
+----
+
+具体备份恢复使用见另一篇文章 mysql gtid 主从复制数据迁移(物理备份)
