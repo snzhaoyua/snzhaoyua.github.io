@@ -11,10 +11,38 @@
 
     <properties>
         <asciidoctorj.pdf.version>1.5.0-alpha.16</asciidoctorj.pdf.version>
+        <asciidoctorj.version>1.6.1</asciidoctorj.version>
+        <jruby.version>9.1.17.0</jruby.version>
     </properties>
 
-    <build>
+    <dependencies>
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj</artifactId>
+            <version>${asciidoctorj.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/asciidoctorj-1.6.1.jar</systemPath>
+        </dependency>
 
+        <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-complete</artifactId>
+            <version>${jruby.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj-api</artifactId>
+            <version>${asciidoctorj.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/asciidoctorj-api-1.6.1.jar</systemPath>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src</sourceDirectory>
+        <outputDirectory>${project.basedir}/target</outputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.asciidoctor</groupId>
