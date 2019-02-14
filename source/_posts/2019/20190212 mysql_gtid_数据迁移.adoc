@@ -12,7 +12,17 @@ tags:
 :stem: latexmath
 :icons: font
 
-解决问题记录：
+=== 方案整体概览
+
+1. 安装好商业版本的mysql
+2. 使用mysqlbackup备份旧库主机的数据
+3. 停掉新库两台mysql，清空后台文件，恢复数据
+4. 新库相互配置主从复制
+5. 新库主机作为从机对接到旧库主机，同步数据
+6. 切断新库主机和旧库主机的主从复制
+7. 除第6步外，全innodb的库（netcare满足）不需要锁表
+
+=== 解决问题记录：
 
 . mysqldump报错
 . mysqldump过慢，修复报错后备份也需要2个半小时
@@ -219,7 +229,7 @@ mysql.server start
 
 === 步骤 7 重新配置主从复制
 
-[TBD] 拓扑图
+image::topo.png[]
 
 . 配置新主到旧主的复制 注意以下填写的 ip，基本都是对方的 ip，如果不清楚可以先查询官方文档。
 +
@@ -301,7 +311,6 @@ start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl_temp';
 ----
 show slave status\G
 ----
-状态应如下图所示[TBD]
 
 . 测试
 +
@@ -314,6 +323,10 @@ create database test;
 ----
 show database;
 ----
+
+状态应如下图所示
+
+image::status.png[]
 
 . 更多测试请自行测试
 
@@ -344,10 +357,38 @@ log-slave-updates=0
 ----
 
 == 错误 FAQ
-待上图
-[TBD]
+. 恢复时，新库旧库关键参数配置不同，导致mysqlbackup执行失败
++
+image::error1.png[]
++
+【解决办法】
++
+参照步骤5 +准备一些配置+ 一节。
 
-== 其它重要事项备注
+. 恢复后，启动失败1
++
+image::error4.png[]
+image::error5.png[]
+image::error6.png[]
++
+【解决办法】
++
+所有启动失败的问题，思路都是看当前启动命令执行后的控制台信息，或者/opt/mysql/data/log/.../mysqld.log。
+此例解决方法为：参考步骤5 +开始恢复数据+ 一节中的创建文件夹步骤。
+
+. 恢复后，启动失败2
++
+image::error7.png[]
++
+【解决办法】
++
+参照步骤5 +开始恢复数据+ 中修改my.cnf的配置项
++
+----
+innodb_data_file_path=ibdata1:12M:autoextend
+----
+
+== 其它重要事项记录
 
 部分数据表设计不合理::
 物理备份时发现只有6万多数据的表，表文件有9.4个G大。还有其他数据量也不大的表，物理文件要比最大数据量的表还要大。
