@@ -1,0 +1,30 @@
+----
+title: docker 应用案例-开发环境搭建
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+= docker 应用案例-开发环境搭建
+:stem: latexmath
+:icons: font
+
+
+
+.proxy
+----
+export http_proxy=http://192.168.31.159:2080
+export https_proxy=https://192.168.31.159:2080
+----
+
+.git
+
+.java
+
+.maven
+
+.ant
+
