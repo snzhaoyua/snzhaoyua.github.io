@@ -12,12 +12,14 @@ tags:
 :stem: latexmath
 :icons: font
 
+== 快速上手
+
 .install(offline)
 ----
 # 在有网络的机器上，执行以下命令，获取安装所需的包
-yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-persistent-data lvm2
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum install --downloadonly --downloaddir=/opt/all_packages docker-ce docker-ce-cli containerd.io
+$ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-persistent-data lvm2
+$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+$ yum install --downloadonly --downloaddir=/opt/all_packages docker-ce docker-ce-cli containerd.io
 root@192.168.31.201:/opt/all_packages #0$ l
 audit-libs-python-2.8.4-4.el7.x86_64.rpm  libcgroup-0.41-20.el7.x86_64.rpm
 checkpolicy-2.5-8.el7.x86_64.rpm          libsemanage-python-2.5-14.el7.x86_64.rpm
@@ -33,9 +35,26 @@ device-mapper-libs-1.02.149-10.el7_6.3.x86_64.rpm        python-kitchen-1.1.1-5.
 libxml2-python-2.9.1-6.el7_2.3.x86_64.rpm                yum-utils-1.1.31-50.el7.noarch.rpm
 
 # 在离线机器上， 执行以下命令以安装
-yum localinstall /opt/utils/*.rpm
-yum localinstall /opt/all_packages/*.rpm
+$ yum localinstall /opt/utils/*.rpm
+$ yum localinstall /opt/all_packages/*.rpm
 ----
+
+
+.install docker-compose
+----
+$ curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" \
+-o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+$ docker-compose --version
+----
+
+.install docker-machine
+----
+$ base=https://github.com/docker/machine/releases/download/v0.16.1 &&
+  curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
+  install /tmp/docker-machine /usr/local/bin/docker-machine
+----
+
 
 .基本命令
 ----
@@ -62,13 +81,58 @@ zhaoyu/helloworld   0.0.2               8a2ec1b2d523        14 hours ago        
 python              2.7-slim            99079b24ed51        4 days ago          120MB
 ----
 
-.运行，停止，删除
+.运行，查看，停止，删除
 ----
 $ docker run -p 4000:80 zhaoyu/helloworld
 $ docker run -p -d 4000:80 zhaoyu/helloworld
-$ docker container stop <id>
+$ docker run -it --name=zhaoyu zhaoyu/helloworld:0.0.1 /bin/bash
+$ docker attach zhaoyu
+$ docker container ls
+$ docker container top <container_id>
+$ docker container stop <container_id>
 $ docker rm <container_id>
 $ docker rmi <image_id>
+$ docker container stop $(docker ps -a -q)
+$ docker rm $(docker ps -a -q)
 ----
+
+.swarm/stack
+----
+$ docker swarm init
+$ docker node ls
+$ docker stack deploy -c docker-compose.yml helloworld_swarm
+$ docker stack ls
+$ docker stack ps helloworld_swarm
+ID                  NAME                     IMAGE                     NODE                DESIRED STATE       CURRENT STATE              ERROR               PORTS
+l8c3a4haeccd        helloworld_swarm_web.1   zhaoyu/helloworld:0.0.1   host1               Running             Running 8 seconds ago
+z8pz8s0zh6b1        helloworld_swarm_web.2   zhaoyu/helloworld:0.0.1   host1               Running             Preparing 17 seconds ago
+yd5qyb7q146x        helloworld_swarm_web.3   zhaoyu/helloworld:0.0.1   host1               Running             Running 1 second ago
+82o2in6wudci        helloworld_swarm_web.4   zhaoyu/helloworld:0.0.1   host1               Running             Preparing 17 seconds ago
+lidmd9n70wnz        helloworld_swarm_web.5   zhaoyu/helloworld:0.0.1   host1               Running             Running 2 seconds ago
+
+$ docker service ps helloworld_swarm
+$ docker stack rm helloworld_swarm
+
+$ docker swarm leave --force
+----
+
+
+== 概览
+
+. docker daemon
+. docker client
+. docker registries
+. docker objects
+  * images
+  * containers
+  * services
+. underlying technology
+  * namespaces
+  * control group
+  * union file systems
+  * container format
+
+== 开始入门
+
 
 
