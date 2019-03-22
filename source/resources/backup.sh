@@ -50,14 +50,23 @@ EOF
 
 	#backup mysql，gzip
 	backupDir=/opt/backup/mysql/backup_data/${backupDir}
-
+    echo "start to backup mysql to ${backupDir}"
+    backupFile=""
 	if [[ "X${backupTool}" == "Xmysqlbackup" ]];then
 	    tempdir=${backupDir}/temp
 	    mkdir ${backupDir}/temp
+	    backupFile="${backupDir}/mysqlbackup_data_`date '+%Y-%m-%d'`.sql.bin"
 	    mysqlbackup --login-path=local --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 \
-	    --write-threads=10 --backup-dir=${tempdir} --backup-image=${backupDir}/mysqlbackup_data_`date '+%Y-%m-%d'`.sql.bin backup-to-image >> ${backupDir}/mysqlbackup.log 2>&1 &
+	    --write-threads=10 --backup-dir=${tempdir} --backup-image="${backupFile}" backup-to-image >> ${backupDir}/mysqlbackup.log 2>&1 &
+
+	    while ! grep "^mysqlbackup completed OK!" "${backupDir}/mysqlbackup.log";do
+            echo -e ".\c"
+            sleep 1
+        done
+
 	else
-	    mysqldump --login-path=local --all-databases | gzip > ${backupDir}/mysqldump_data_`date '+%Y-%m-%d'`.sql.gz
+	    backupFile="${backupDir}/mysqldump_data_`date '+%Y-%m-%d'`.sql.gz"
+	    mysqldump --login-path=local --all-databases 2>${backupDir}/mysqldump.log | gzip > "${backupFile}"
 	fi
 
 	if [ $? -ne 0 ];then
@@ -66,6 +75,7 @@ EOF
 	fi
 
 	echo "`date '+%Y-%m-%d %H %M %S'`:end execute backup_data" >> /opt/backup/mysql/backup_data/backupanddelete.log
+	echo "done. backup file generated at ${backupFile}"
 	chown mysql:oinstall /opt/backup/mysql/backup_data/ -R
 	return 0
 }
