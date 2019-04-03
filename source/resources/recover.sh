@@ -3,12 +3,6 @@
 
 ## TODO 后期OC场景注意检查jar包调用此处的时候会不会有影响
 
-user="`whoami`"
-if [[ "Xmysql" != "X${user}" ]];then
-    # tee not exist
-    log_error_red "Please execute this script using mysql user."
-    exit 1
-fi
 
 # 此脚本需要轻量，因此日志等框架不太适合引入
 
@@ -26,6 +20,13 @@ function log_error_red()
 {
     echo  -e `date '+%y-%m-%d %H:%M:%S'`" " "\e[31m$@\e[0m" >&2
 }
+
+user="`whoami`"
+if [[ "Xmysql" != "X${user}" ]];then
+    # tee not exist
+    log_error_red "Please execute this script using mysql user."
+    exit 1
+fi
 
 function mysql_command()
 {
@@ -81,9 +82,6 @@ if [[ ! -f "${backup_file_path}" ]];then
 fi
 
 # TODO 备份恢复jar使用到了这里，但是没有实际用处，后面OC版本再整改
-# user=$2
-# password=$3
-# port=$4
 ## 为了防止有些用户磁盘不够仍然强行备份，此处可以控制恢复过程中是否还备份旧的 /opt/mysql/data
 backup_old_data="$2"
 
@@ -126,8 +124,8 @@ function mysqlbackup_restore()
     log_info_green "[6/8]clear binlog and relay log."
     mysql_command "stop slave; reset slave; reset master;" || log_error_red "reset slave failed."
 
-    log_info_green "[7/8]do something good..."
-    #replication TODO 资料手动配置
+    log_info_green "[7/8]trying to restore replication..."
+    replication
 
     log_info_green "[8/8]stop freezing mysql.(deleting /opt/mysql/backup_flag)"
     releaseMysqlAutoStart
@@ -138,24 +136,50 @@ function mysqlbackup_restore()
 
 function replication()
 {
-    replicator_ip=`mysql_command "select host from mysql.user where user='replicator';"`#172.31.129.214
+
+    source /opt/mysql/.bashrc
+    if [[ -z "${ip_cluster_a}" ||  -z "${ip_cluster_b}" ]];then
+        log_error_red "cannot get master or slave ip, you have to restore replication manually."
+        return
+    fi
+    log_info "got two ip: [${ip_cluster_a},${ip_cluster_b}], testing..."
+    ips=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
+    # 测试两个ip是不是都不是本机的ip
+    if ! echo "${ips}"|grep -w "${ip_cluster_a}" && ! echo "${ips}"|grep -w "${ip_cluster_b}";then
+        log_error_red "/opt/mysql/.bashrc ips invalid."
+        return
+    fi
+
+    # 获取另一台机器的ip
+    another_ip=""
+    if echo "${ips}"|grep -w "${ip_cluster_a}";then
+        another_ip=${ip_cluster_b}
+    fi
+    if echo "${ips}"|grep -w "${ip_cluster_b}";then
+        another_ip=${ip_cluster_a}
+    fi
+    log_info "another_ip is ${another_ip}"
+    # 从恢复完成的数据库查询出的replicator ip（理应是非本机ip）
+    replicator_ip=`mysql_command "select host from mysql.user where user='replicator';"`
     [[ -z "${replicator_ip}" ]] && { log_error_red "can not find replicator ip, did you drop replicator user? \
     can't set up replication, you have to do it manually.";return 1; }
-    ips=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
+
     if echo "${ips}"|grep -w "${replicator_ip}";then
         ##
         master_ip="";
         log_info_green "restore using file backed up from the other node. "
         log_info_green "fixing up replication. "
         command="SET sql_log_bin=0;
-        update mysql.user set host='${master_ip}' where user='replicator';
+        update mysql.user set host='${another_ip}' where user='replicator';
         flush privileges;
         SET sql_log_bin=1;"
         mysql_command "${command}"
-        mysql_command "CHANGE MASTER TO MASTER_HOST='${master_ip},  MASTER_AUTO_POSITION=1 FOR CHANNEL'rpl1';'"
+        mysql_command "STOP SLAVE;CHANGE MASTER TO MASTER_HOST='${another_ip}', MASTER_AUTO_POSITION=1 FOR CHANNEL 'rpl1';START SLAVE;"
+        [[ $? -eq 0 ]] && { log_error_red "success. you may need to execute [STOP SLAVE;START SLAVE;] on another node."; }
     else
         log_info_green "restore using file backed up from this very node."
         log_info_green "please restore this file on another node also."
+        log_error_red "after that, you may need to execute [STOP SLAVE;START SLAVE;] on this node."
     fi
 
 }
@@ -177,14 +201,15 @@ function _restore()
     if [[ "X${backup_old_data}" == "Xtrue" ]];then
         ## move dataDir to anywhere else
         log_info_green "[4.1/8]backing up mysql data dir."
-        mkdir /opt/mysql/data_backup/ 2>/dev/null
-        backedup_data=/opt/mysql/data_backup/data_`date '+%Y-%m-%d-%H-%M-%S'`
-        log_info "moving ${RESTORE_DESTINATION} to ${backedup_data}."
-        mv "${RESTORE_DESTINATION}" "${backedup_data}"
-        log_info "moved ${RESTORE_DESTINATION} to ${backedup_data}."
+        backedup_data=/opt/backup/mysql/data_dirs/data_`date '+%Y-%m-%d-%H-%M-%S'`
+        mkdir -p "${backedup_data}" 2>/dev/null
+        log_info "moving files under ${RESTORE_DESTINATION} to ${backedup_data}. It might cost plenty of time according to data and disk."
+        mv "${RESTORE_DESTINATION}"/* "${backedup_data}"
+        [[ $? -ne 0 ]] && { log_error_red "failed to backup data dir."; exit 1; }
+        log_info "moved ${RESTORE_DESTINATION}/* to ${backedup_data}."
     else
         log_info_green "[4.1/8]backup_old_data is ${backup_old_data}, deleting ${RESTORE_DESTINATION}."
-        rm "${RESTORE_DESTINATION}" -rf
+        rm "${RESTORE_DESTINATION}"/* -rf
     fi
 
     ## 2 executing mysqlbackup
@@ -204,10 +229,10 @@ function _restore()
 
     ## 3 mkdir
     log_info_green "[4.3/8]making necessary directories."
-    mkdir -p /opt/mysql/data/log/error
-    mkdir -p /opt/mysql/data/log/audit
-    touch /opt/mysql/data/log/audit/audit.log
-    touch /opt/mysql/data/log/error/mysqld.log
+    mkdir -p /opt/mysql/log/error
+    mkdir -p /opt/mysql/log/audit
+    touch /opt/mysql/log/audit/audit.log
+    touch /opt/mysql/log/error/mysqld.log
     mkdir -p /opt/mysql/data/binlog/binlog
     mkdir -p /opt/mysql/data/binlog/relay
     mkdir -p /opt/mysql/data/tmp
@@ -232,7 +257,7 @@ function startMysql()
 
     mysql.server status|grep "running"|grep "done"
 
-    [[ $? -ne 0 ]] && { log_error_red "failed to start mysql, please check /opt/mysql/data/log/error/mysqld.log, exit."; exit 1; }
+    [[ $? -ne 0 ]] && { log_error_red "failed to start mysql, please check /opt/mysql/log/error/mysqld.log, exit."; exit 1; }
 
     log_info "done starting mysql."
 }
@@ -246,6 +271,8 @@ function stopMysql()
 
     mysql.server status|grep "not running"|grep "failed"
 
+    sleep 2
+
     [[ $? -ne 0 ]] && { log_error_red "failed to stop mysql, won't restore mysql, exit."; exit 1; }
 
 }
@@ -255,11 +282,15 @@ function checkBeforeRestore()
 
     ## 此值未放开配置，所以暂时写死 20190321
     
-    [[ ! -d "${RESTORE_DESTINATION}" ]] && { log_error_red "can't find /opt/mysql/data, is it a broken mysql? we'll try to restore but making no assurance."; sleep 3; }
+    [[ ! -d "${RESTORE_DESTINATION}/workdbs" ]] && { log_error_red "can't find /opt/mysql/data/workdbs, is it a broken mysql? we'll try to restore but making no assurance."; sleep 3; }
+
+    ## lsof -L /opt/mysql/data
+    ## 为了防止僵尸线程占用磁盘资源
+     killall mysqld 2>/dev/null
 
     datadir_size=`du "${RESTORE_DESTINATION}" --max-depth=0|awk '{print $1}'`
     datadir_size_human=`du -h "${RESTORE_DESTINATION}" --max-depth=0|awk '{print $1}'`
-    disk_free_size=`df /opt/mysql|awk '{print $4}'`
+    disk_free_size=`df /opt/mysql|awk 'NR>1{print $4}'`
     if [[ "X${backup_old_data}" == "Xtrue" && "${disk_free_size}" -lt "${datadir_size}" ]];then
         log_info "checking disk space..."
         log_error_red "old data_dir has a size of ${disk_free_size}K, larger than free disk space which is ${disk_free_size}."
