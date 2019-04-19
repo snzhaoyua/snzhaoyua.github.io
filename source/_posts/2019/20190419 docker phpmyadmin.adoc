@@ -1,0 +1,97 @@
+----
+title: docker phpmyadmin
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+= docker phpmyadmin
+:stem: latexmath
+:icons: font
+
+
+
+== 路线1 公司suse12容器导出包作为基础镜像，使用xampp作为服务器
+
+.探索镜像内容
+----
+docker run -v /root/temp:/root/temp -it test/suse12sp2:20190418 bash
+docker run -d -p 4000:80 -v /root/temp:/root/temp test/suse12sp2:20190418 /bin/sh -c "while true; do ping 127.0.0.1; done"
+----
+
+.制作安装xampp的镜像
+----
+FROM test/suse12sp2:20190418
+COPY xampp-linux-x64-7.3.4-0-installer.run configure.sh /tmp/
+RUN chmod +x /tmp/xampp-linux-x64-7.3.4-0-installer.run \
+    && /tmp/xampp-linux-x64-7.3.4-0-installer.run --mode unattended --disable-components xampp_developer_files \
+    && chmod 755 /opt/lampp -R \
+    && mkdir -p /opt/lampp/phpmyadmin/tmp \
+    && chmod 777 /opt/lampp/phpmyadmin/tmp -R \
+    && rm /opt/lampp/mysql -rf \
+    && sed 's/function startMySQL() {/function startMySQL() {\nreturn 0/g' -i /opt/lampp/xampp \
+    && sh /tmp/configure.sh
+----
+
+.运行查看
+----
+docker build -t test/testmysqlconsole:latest .
+Successfully tagged test/testmysqlconsole:latest
+[root@node1 build]# docker run -d -p 4000:80 -v /root/temp:/root/temp test/testmysqlconsole /bin/sh -c "while true; do ping 127.0.0.1; done"
+3a5c223bcad7727ff0bdd72e030f825317959cc82809b612ccb3f0f8cfdbe09e
+[root@node1 build]# docker exec -it 3a5c223bcad7727ff0bdd72e030f825317959cc82809b612ccb3f0f8cfdbe09e /bin/bash
+3a5c223bcad7:/ # ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 04:11 ?        00:00:00 /bin/sh -c while true; do ping 127.0.0.1; done
+root         6     1  0 04:11 ?        00:00:00 ping 127.0.0.1
+root         7     0  3 04:12 pts/0    00:00:00 /bin/bash
+root        25     7  0 04:12 pts/0    00:00:00 ps -ef
+3a5c223bcad7:/ # cd /opt/lampp/
+3a5c223bcad7:/opt/lampp # ./lampp start
+Starting XAMPP for Linux 7.3.4-0...
+XAMPP: Starting Apache...ok.
+XAMPP: Starting ProFTPD...ok.
+----
+
+.访问链接
+====
+http://10.90.182.122:4000/phpmyadmin/
+====
+
+
+== 路线2 官方phpmyadmin/phpmyadmin作为基础镜像
+
+
+----
+FROM phpmyadmin/phpmyadmin:latest
+ENV HTML_DIR /usr/src/phpmyadmin/
+COPY configure.sh /tmp/
+RUN sh /tmp/configure.sh
+----
+
+====
+docker build -t test/phpmyadmin:latest .
+docker run --name zhaoyu -d -p 5001:80 test/phpmyadmin:latest
+====
+
+== 路线3 官方phpmyadmin/phpmyadmin的容器导出作为基础镜像
+
+----
+# docker export ea681f9b151c -o phpmyadmin_export.tar
+# docker import phpmyadmin_export.tar test/phpmyadmin_export:latest
+----
+
+
+----
+FROM test/phpmyadmin_export:latest
+ENV HTML_DIR /var/www/html/
+COPY configure.sh /tmp/
+RUN sh /tmp/configure.sh
+
+ENTRYPOINT ["/run.sh"]
+CMD ["supervisord","-n","-j","/supervisord.pid"]
+----
+
