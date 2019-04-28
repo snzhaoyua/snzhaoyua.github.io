@@ -1,0 +1,72 @@
+----
+title: mysql 主从复制异常恢复
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+= mysql 主从复制异常恢复
+:stem: latexmath
+:icons: font
+
+
+==== 检查版本
+如果版本较老，基于binlog而不是gtid的版本，
+数据量较小，可以参考  基于binlog的老版本。
+
+==== 基于binlog的老版本
+
+----
+1. 登录主机数据库，
+mysql --login-path=local
+执行
+mysql> stop slave;
+mysql> show master status;
+记录以上master status的 log_file 和 log_pos 信息
+mysql> exit;
+
+2. 进入备份脚本目录（根据版本不同，可能在以下位置）
+cd /opt/backup/mysql/backup_script
+或者
+cd /opt/backup/mysql/backup_script
+
+执行
+./backupandDelete.sh
+
+3. 找到最新备份的文件，如
+cd /opt/backup/mysql/backup_data/xxxxx
+或者
+cd /opt/backup/mysql/backup_data/xxxxx
+
+找到备份文件
+xxxxx.sql.gz
+
+将其拷贝到另外一台机器
+scp .. ..
+
+4. 在另外一台机器，解压
+gunzip -d xxxx.sql.gz
+得到如 /root/xxxx.sql 的文件
+
+5. 登录mysql
+mysql --login-path=local
+执行(注意替换路径，和ip，端口，密码等信息)
+mysql> set sql_log_bin=0;
+mysql> source /root/xxxx.sql
+mysql> select user,host from mysql.user;
+mysql> update mysql.user set host="另外一台机器ip" where user="replicator";
+mysql> flush privileges;
+mysql> set sql_log_bin=1;
+mysql> change master to master_host="另外一台机器ip", master_port=13307, master_log_file="上面记录的log_file", master_log_pos='上面记录的log_pos';
+mysql> start slave;
+
+6. 查看主从状态是否正常
+show slave status\G
+
+----
+
+=== 基于gtid的版本
+待续
