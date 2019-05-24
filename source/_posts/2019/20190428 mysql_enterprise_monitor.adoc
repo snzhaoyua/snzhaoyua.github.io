@@ -1,0 +1,50 @@
+----
+title: mysql双主自增主键配置及测试
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+= mysql双主自增主键配置及测试
+:stem: latexmath
+:icons: font
+
+=== 术语
+
+binlog_format=ROW
+sbr
+rbr
+autoinc_lock_mode=2
+Mysql_Server_auto_increment_offset=1
+Mysql_Server_auto_increment_increment=2
+
+
+=== 模型
+[source, sql]
+----
+DROP DATABASE IF EXISTS TEST2;
+CREATE DATABASE TEST2;
+CREATE TABLE TEST2.TEST_INCREMENT(ID INT(10) PRIMARY KEY AUTO_INCREMENT NOT NULL, NAME VARCHAR(10));
+INSERT INTO TEST2.TEST_INCREMENT VALUES (NULL, 'master111'), (NULL,'master222');
+INSERT INTO TEST2.TEST_INCREMENT VALUES (NULL, 'slave111'), (NULL,'slave222');
+INSERT INTO TEST2.TEST_INCREMENT VALUES (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL);
+SELECT * FROM TEST2.TEST_INCREMENT;
+----
+
+
+=== 问题
+
+
+===
+
+----
+SELECT trx.trx_id, trx.trx_started, trx.trx_mysql_thread_id FROM INFORMATION_SCHEMA.INNODB_TRX trx;
+----
+
+
+> https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html
+> https://dev.mysql.com/doc/refman/8.0/en/replication-sbr-rbr.html
+> https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html
