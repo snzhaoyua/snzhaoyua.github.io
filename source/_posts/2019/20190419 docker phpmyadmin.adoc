@@ -8,7 +8,7 @@ tags:
 - {{basic_tags_2}}
 ----
 
-= docker phpmyadmin
+== docker phpmyadmin
 :stem: latexmath
 :icons: font
 

@@ -8,7 +8,7 @@ tags:
 - {{basic_tags_2}}
 ----
 
-= mysql 主从复制异常恢复
+== mysql 主从复制异常恢复
 :stem: latexmath
 :icons: font
 
@@ -69,4 +69,4 @@ show slave status\G
 ----
 
 === 基于gtid的版本
-待续
+TODO

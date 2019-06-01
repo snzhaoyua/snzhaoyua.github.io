@@ -4,22 +4,21 @@ categories:
 - 备忘
 - 技术
 tags:
-- {{basic_tags_1}}
-- {{basic_tags_2}}
+- mysql
 ----
 
-= mysql双主自增主键配置及测试
+== mysql双主自增主键配置及主从复制影响测试
 :stem: latexmath
 :icons: font
 
 === 术语
 
-binlog_format=ROW
-sbr
-rbr
-autoinc_lock_mode=2
-Mysql_Server_auto_increment_offset=1
-Mysql_Server_auto_increment_increment=2
+* binlog_format=ROW
+* sbr
+* rbr
+* autoinc_lock_mode=2
+* Mysql_Server_auto_increment_offset=1
+* Mysql_Server_auto_increment_increment=2
 
 
 === 模型

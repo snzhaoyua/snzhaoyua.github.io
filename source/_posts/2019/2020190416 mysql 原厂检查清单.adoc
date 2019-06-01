@@ -8,14 +8,15 @@ tags:
 - {{basic_tags_2}}
 ----
 
-= oracle检查清单
+== oracle检查清单
+
 :stem: latexmath
 :icons: font
 
 
 
 
-根据咱们电话沟通情况，请收集上传以下数据进行进一步分析：
+根据电话沟通情况，请收集上传以下数据进行进一步分析：
 
 1) MySQL配置文件 （my.cnf 或 my.ini）
 
@@ -25,6 +26,7 @@ tags:
 
 4) 生成下面的mysql_output.txt文本文件（请在查询性能低、响应慢时运行）：
 
+----
 （请使用具有SUPER权限的MySQL用户（如root）登录MySQL命令行客户端并运行）
 
 TEE mysql_output0416.txt;
@@ -112,8 +114,11 @@ AND t.TABLE_TYPE = 'BASE TABLE';
 NOTEE;
 
 （注意：SELECT SLEEP(300)会休眠300秒，请勿中断运行！）
+----
 
 5) 生成下面的query.txt文本文件（请在查询性能低、响应慢时运行）：
+
+----
 TEE query.txt;
 
 EXPLAIN EXTENDED select count(1) from t_intg_dm_0863;
@@ -141,10 +146,11 @@ select count(1) from t_intg_dm_0863;
 SELECT * FROM INFORMATION_SCHEMA.OPTIMIZER_TRACE;
 SET optimizer_trace="enabled=off";
 NOTEE;
+----
 
 6) OS的状态信息，生成文件linuxdiags.txt（使用root用户运行，请在查询性能低、响应慢时运行）：
 (注意：先单独运行 "script"命令，然后再运行其他命令）
-
+----
 script /tmp/linuxdiags.txt
 
 set -x
@@ -178,4 +184,4 @@ dmesg
 egrep -i "err|fault|mysql|oom|kill|warn|fail" /var/log/*
 exit
 
-
+----

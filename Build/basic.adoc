@@ -8,7 +8,7 @@ tags:
 - {{basic_tags_2}}
 ----
 
-= {{basic_title}}
+== {{basic_title}}
 :stem: latexmath
 :icons: font
 
