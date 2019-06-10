@@ -1,0 +1,72 @@
+----
+title: mysql 性能测试报告惨不忍睹的一次原因
+categories:
+- 备忘
+- 技术
+tags:
+- bash
+----
+
+== mysql 性能测试报告惨不忍睹的一次原因
+:stem: latexmath
+:icons: font
+
+== 背景
+我们有很多服务，使用了keepalived作为浮动ip切换的工具。在实际操作中，由于机器网络平面不止一个，因此keepalived的浮动ip，需要
+保持跟业务（比如mysql）的ip在同一个网段。以往，我们是通过用户自己控制，在安装的堆栈参数中，自行确保所填入的业务ip和浮动ip在
+同一个网段，但是这样不太友好。
+于是，可以做点小优化，算出浮动ip所在的网段，并与各个网卡的网段比较，如果相同，则取该网卡作为keepalived.conf中的interface值。
+如果两个网卡都在一个网段，这样keepalived会取第一个匹配到的网卡，也不会有问题。
+
+== 脚本
+在我们的部分机器上（自研操作系统）等，可能没有ipcalc软件可用，且携带而机制软件发布，本身是比较麻烦的一件事情。因此，考虑自行
+实现一个ipcalc.sh。
+
+.自行实现的ipcalc.sh
+[source,bash]
+----
+#!/bin/bash
+net="$1"
+ip=(${net%/*})
+cdr=(${net##*/})
+
+cdr2mask(){
+    #set -- $((5-("$1"/8))) 255 255 255 255 $((2**8-2**(8-"$1"%8))) 0 0 0
+    set -- $(( 5-("$1"/8) )) 255 255 255 255 $(( (255 << (8-("$1"%8))) & 255 )) 0 0 0
+    [[ $1 -gt 1 ]] && shift $1 || shift
+    #echo $#:$@
+    #255 255 255 255 253 0 0 0 shift
+    #^_____________^           255.255.255.255 shift
+    #    ^_____________^       255.255.255.253 shift 2
+    #        ^___________^     255.255.253.0   shift 3
+    #default 0, just in case
+    echo ${1-0}.${2-0}.${3-0}.${4-0}
+}
+
+msk=$(cdr2mask $cdr)
+IFS=. read -r i1 i2 i3 i4 <<< "${ip}"
+IFS=. read -r m1 m2 m3 m4 <<< "${msk}"
+
+printf "%d.%d.%d.%d" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m5))" 
+
+## usage
+# route=$(sh ipcalc.sh 192.168.31.123/24)
+# echo $route
+----
+
+.基于上述脚本实现的小程序(伪代码)
+[source,bash]
+----
+get_matched_interface(){
+    xxxx
+    for eth in eths;do
+        ip=get_ip_eth $eth
+        if ipcalc.sh $ip == ipcalc.sh $float_ip;then
+            return eth.name
+        fi
+    done
+}
+----
+
+== 如何炫酷
+这个小例子的最大意义，在于学习了ipcalc.sh中set的用法，以及令人目眩的shift和位运算。
