@@ -1,5 +1,5 @@
 ----
-title: mysql 性能测试报告惨不忍睹的一次原因
+title: 如何炫酷地计算网段
 categories:
 - 备忘
 - 技术
@@ -7,7 +7,7 @@ tags:
 - bash
 ----
 
-== mysql 性能测试报告惨不忍睹的一次原因
+== 如何炫酷地计算网段
 :stem: latexmath
 :icons: font
 

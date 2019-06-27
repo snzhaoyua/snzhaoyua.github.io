@@ -69,4 +69,62 @@ show slave status\G
 ----
 
 === 基于gtid的版本
-TODO
+
+----
+1. 登录主机数据库，
+mysql --login-path=local
+执行
+mysql> stop slave;
+mysql> exit;
+
+2. 进入备份脚本目录（根据版本不同，可能在以下位置）
+cd /opt/backup/mysql/backup_script
+或者
+cd /opt/backup/mysql/backup_script
+
+执行
+./backupandDelete.sh
+
+3. 找到最新备份的文件，如
+cd /opt/backup/mysql/backup_data/xxxxx
+或者
+cd /opt/backup/mysql/backup_data/xxxxx
+
+找到备份文件
+xxxxx.sql.bin（如果不是bin格式的文件，说明版本不对，此时不是商业版，或者没有做使用mysqlbackup备份恢复的需求，后者直接拷贝最新版backupandDelete.sh使用即可，或者使用binlog的方案）
+将其拷贝到另外一台机器
+scp .. ..
+
+在另一台机器上，将备份文件的权限更改为mysql的属组
+chown mysql: xxxx.sql.bin
+
+4. 在要恢复的机器上，执行以下检查：
+
+4.1 检查是否有mysqlbackup程序
+mysqlbackup --version
+4.2 检查/opt/mysql/.bashrc
+是否有ip_cluster_a的字样，其中ip_cluster_a或者ip_cluster_b中，一个是本机ip，一个是对端ip
+
+如果以上条件满足，进行第5_a步，否则执行5_b步骤。
+
+5_a. 进行恢复
+以下命令中的false或者true代表是否备份机器的/opt/mysql/data/目录，请根据机器磁盘剩余空间选择
+/opt/mysql/dataRecover.sh xxxx.sql.bin false
+或者
+/opt/mysql/dataRecover.sh xxxx.sql.bin
+
+5_b. 如果在第4步检查通过，此步可以跳过。否则，如果bashrc里没有ip_cluster_a或者ip_cluster_b，说明版本较老。
+
+   方法一：可以取该版本对应的资料，按照资料进行操作（四个步骤：
+       1.关闭sql_log_bin，更改mysql.user表的用户ip为对端ip
+       2 清空binlog和relaylog信息
+       stop slave; reset slave; reset master;
+       3. 设置主从
+       STOP SLAVE;CHANGE MASTER TO MASTER_HOST='${another_ip}', MASTER_AUTO_POSITION=1 FOR CHANNEL 'rpl1';START SLAVE
+
+   方法二：也可以将两个ip手动写入该文件，并且拷贝最新版本的dataRecover.sh，然后执行步骤5_a
+       注意替换值为实际ip
+       ip_cluster_a=${master_ip}
+       ip_cluster_b=${slave_ip}
+
+6. 恢复完成后，登录两台机器查看主从复制状态。
