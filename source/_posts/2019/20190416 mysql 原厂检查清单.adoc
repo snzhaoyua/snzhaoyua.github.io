@@ -1,5 +1,5 @@
 ----
-title: oracle检查清单
+title: mysql 检查清单
 categories:
 - 备忘
 - 技术
