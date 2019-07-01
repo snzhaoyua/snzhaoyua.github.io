@@ -1,0 +1,28 @@
+----
+title: postgresql_mysql_oracle
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+== postgresql_mysql_oracle
+:stem: latexmath
+:icons: font
+
+=== sql standard
+
+=== mysql differences from standard sql
+
+=== oracle differences from standard sql
+
+=== postgresql differences from standard sql
+
+== mysql and oracle
+
+== postgresql and the others
+
+
+
