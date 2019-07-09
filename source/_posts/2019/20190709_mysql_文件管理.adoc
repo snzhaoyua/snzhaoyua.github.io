@@ -1,0 +1,20 @@
+----
+title: mysql_文件管理
+categories:
+- 备忘
+- 技术
+tags:
+- {{basic_tags_1}}
+- {{basic_tags_2}}
+----
+
+== mysql_文件管理
+:stem: latexmath
+:icons: font
+
+== reference
+https://dev.mysql.com/doc/refman/5.7/en/innodb-file-space.html
+https://docs.oracle.com/cd/B19306_01/server.102/b14220/physical.htm
+https://oracle-base.com/articles/misc/reclaiming-unused-space
+
+
