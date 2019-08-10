@@ -5,7 +5,7 @@ categories:
 - 技术
 tags:
 - 数据库
-- linux
+- cgroup
 ----
 
 == 20190803_使用cgroup限制自研数据库cpu占比

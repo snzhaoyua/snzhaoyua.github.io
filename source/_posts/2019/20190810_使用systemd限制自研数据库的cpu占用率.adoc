@@ -1,0 +1,51 @@
+----
+title: 20190810_使用systemd限制自研数据库的cpu占用率
+categories:
+- 备忘
+- 技术
+tags:
+- 数据库
+- systemd
+----
+
+== 使用systemd限制自研数据库的cpu占用率
+:stem: latexmath
+:icons: font
+
+接上篇，使用cgroup的方案，参考我博客中的《20190803_使用cgroup限制自研数据库cpu占比》，在实际操作中，由于镜像（其它部门）因社区已经移除cgred，多年无人维护，因此不建议我们使用
+cgred的方案。出于后续开源申请的考虑，我们决定废弃cgrou的方案，改用systemd。
+
+== 如何使用systemd
+我们前期没有一开始使用systemd的方案，一是因为团队中有个se发了一大段研究结果，说systemd不够精确，达不到我们的使用要求，二是我们拿自研的数据库，本身是没有service文件，
+需要自己改造；现在cgroup的方案走不通，只能走这条路，我们就自己研究。
+
+之前有过通过systemd的TasksMax提高mysql的并发连接数案例，参考这个博客中的《使用service启动mysql最大连接数始终在480多左右》，因此改造起来也很顺畅，最终，service文件大致如下：
+
+.出于公司要求，以下文件是伪代码，靠记忆写出来的
+----
+[Unit]
+Description=....
+After=Network-Online.target（名字不一定准确，不要拷贝，请查询，一个服务如果需要在网络就绪后启动的target是什么）
+
+EnvironmentFile=..
+Environment=..
+ExecStart=''
+ExecStop=''
+CPUQuota=280%
+CPUAccounting=true
+TasksMax=...
+
+WantedBy=multiuser.target
+----
+
+其中，CPUQuota和libcgroup中的cpuquota是一个概念，但是这里仅支持百分数。我们是4核cpu，想达到使用cpu使用率的总体70%，因此结果是280%。
+
+
+== 普通用户如何使用sudo免密
+业务场景中，监控软件需要启停数据库，但是监控软件是普通用户运行，因此systemctl是没有权限的。我们采取了以下方案，让普通用户可以sudo直接启停数据库而不需要密码：
+
+./etc/sudoers (依然是伪代码)
+----
+username All(All) NOPASSWD:/usr/bin/systemctl
+----
+
