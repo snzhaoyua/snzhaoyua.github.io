@@ -296,7 +296,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 一次 mysql 死锁问题解决/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 vmware clone 机器地址重复_ubuntu18.04地址配置/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -315,7 +315,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190210 一次 mysql 死锁问题解决/" itemprop="url">一次 mysql 死锁问题解决</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 vmware clone 机器地址重复_ubuntu18.04地址配置/" itemprop="url">vmware clone 机器地址重复_ubuntu18.04地址配置</a></h1>
         
 
         <div class="post-meta">
@@ -327,8 +327,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -401,13 +401,11 @@
         
           
           
-
-
-一个业务反应，环境多次出现大量服务不可使用，如app导入不响应，用户更新超时，bpm创单超时等等。查看数据库的processlist，发现有大量的处于Waiting for table metadata lock状态的查询，其中包含T_APP_INFO、TBL_UM_USER、T_TICKET
+&nbsp;&nbsp;&nbsp;&nbsp;在使用 VMware Workstation 克隆 Ubuntu Server 18.04 版本后，发现克隆前后的机器 ip地址 重复，且无论如何更改虚拟网络设置（编辑-虚拟网络编辑器）都无效。由于 Ubuntu 18.04 采用 netplan (
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190210 一次 mysql 死锁问题解决/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181013 vmware clone 机器地址重复_ubuntu18.04地址配置/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -458,7 +456,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190212 mysql_gtid_数据迁移/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 ubuntu 18.04 更改 hostname/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -477,7 +475,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190212 mysql_gtid_数据迁移/" itemprop="url">mysql gtid 主从复制数据迁移(物理备份)</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 ubuntu 18.04 更改 hostname/" itemprop="url">ubuntu 18.04 更改 hostname</a></h1>
         
 
         <div class="post-meta">
@@ -489,8 +487,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -562,34 +560,11 @@
       
         
           
+          1234vi /etc/cloud/cloud.cfg#preserve_hostname: false  ---&gt; 改成 truevi /etc/hostnamereboot
           
-方案整体概览
-
-
-
-安装好商业版本的mysql
-
-
-使用mysqlbackup备份旧库主机的数据
-
-
-停掉新库两台mysql，清空后台文件，恢复数据
-
-
-新库相互配置主从复制
-
-
-新库主机作为从机对接到旧库主机，同步数据
-
-
-切断新库主机和旧库主机的主从复制
-
-
-除第6步外，全innodb的库（n
-          ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190212 mysql_gtid_数据迁移/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181013 ubuntu 18.04 更改 hostname/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -640,7 +615,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190626 问题定位记录/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 hadoop 2.9.1 学习笔记/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -659,7 +634,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190626 问题定位记录/" itemprop="url">20190626 问题定位记录</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 hadoop 2.9.1 学习笔记/" itemprop="url">hadoop 2.9.1 学习笔记</a></h1>
         
 
         <div class="post-meta">
@@ -671,8 +646,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -744,30 +719,12 @@
       
         
           
-          20190626 问题定位记录
-
-
-序号
-提出人
-所属服务
-提出时间
-问题描述
-问题根因
-解决时间(h)
-
-
-
-
-1
-
-
-20190524
-mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid相关错误；
-解决：使用新版mysqlbackup的相关脚本，参照文档操作即可
+          hadoop 学习笔记HDFS读写流程HDFS文件权限安全模式注意事项JDK 版本应该使用 1.8，JDK 10 遇到启动过程中 warning 并且 datanode 无法启动的问题。
+集群安装最小配置文件（hadoop 2.9.1）core-site.xml12345678910111213&l
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190626 问题定位记录/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181013 hadoop 2.9.1 学习笔记/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -818,7 +775,7 @@ mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190217 centos7 docker 入门/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 免密码 ssh 到其它机器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -837,7 +794,7 @@ mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190217 centos7 docker 入门/" itemprop="url">centos7 docker 入门</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 免密码 ssh 到其它机器/" itemprop="url">免密码 ssh 到其它机器</a></h1>
         
 
         <div class="post-meta">
@@ -849,8 +806,8 @@ mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -922,18 +879,18 @@ mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid
       
         
           
-          
-快速上手
+          背景：在配置 hadoop 的时候这样设置会比较方便。目标：A 机器上输入 ssh root@B 可以直接访问，不需要输入密码
+步骤：
 
+首先在 A 机器上生成密钥对，一路回车
+ 1ssh-keygen -t rsa
 
-install(offline)
-
-# 在有网络的机器上，执行以下命令，获取安装所需的包
-$ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-persistent-data lvm
+在 A 机器上输入，输入 B 机器的密码一次即可
+ 1ssh-copy-id -
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190217 centos7 docker 入门/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181013 免密码 ssh 到其它机器/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -984,7 +941,7 @@ $ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-pe
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190322 让git在windows上使用LF换行符/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 更换 Python pip 软件源/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1003,7 +960,7 @@ $ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-pe
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190322 让git在windows上使用LF换行符/" itemprop="url">让git在windows上使用LF换行符</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 更换 Python pip 软件源/" itemprop="url">更换 python pip 软件源</a></h1>
         
 
         <div class="post-meta">
@@ -1015,8 +972,8 @@ $ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-pe
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1088,13 +1045,11 @@ $ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-pe
       
         
           
-          = 让git在windows上使用LF换行符:stem: latexmath:icons: font
-12git config --global core.eol lfgit config --global core.autocrlf input
-For repos that were checke
+          12345678910mkdir ~/.pipcd ~/.piptouch pip.conf## add these lines[global]  timeout = 6000  index-url = https://pypi.doubanio.com/simple/  [install]  us
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190322 让git在windows上使用LF换行符/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181013 更换 Python pip 软件源/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1145,7 +1100,7 @@ For repos that were checke
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190416 mysql 原厂检查清单/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/20181013 centos 7 安装 apache-ambari/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1164,7 +1119,7 @@ For repos that were checke
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190416 mysql 原厂检查清单/" itemprop="url">mysql 检查清单</a></h1>
+                <a class="post-title-link" href="/2019/09/22/20181013 centos 7 安装 apache-ambari/" itemprop="url">centos 7 安装 apache-ambari</a></h1>
         
 
         <div class="post-meta">
@@ -1176,8 +1131,8 @@ For repos that were checke
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1249,24 +1204,37 @@ For repos that were checke
       
         
           
-          
-oracle检查清单
+          版本说明
 
 
-根据电话沟通情况，请收集上传以下数据进行进一步分析：
+部件
+版本号
 
 
-1) MySQL配置文件 （my.cnf 或 my.ini）
 
 
-2) MySQL完整的错误日志文件 （error log file）.（如果文件太大，可以压缩后上传）
+Ambari
+2.6.2.2
 
 
-3) MySQL的 slow query
+CentOS
+7
+
+
+HDP
+2.6
+
+
+时间
+20180814
+
+
+
+背景对于 Ambari 能做什么，对于搜索到此文的同学来说应该毋庸赘述。目前 Ambari 安装的官方手册主要是 Apache 和 Hortonworks，我
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190416 mysql 原厂检查清单/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/20181013 centos 7 安装 apache-ambari/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1317,7 +1285,7 @@ oracle检查清单
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190418 suse11sp1 编译 apache 2.4.34/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181106 在 Asciidoc 文档中使用 latex/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1336,7 +1304,7 @@ oracle检查清单
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190418 suse11sp1 编译 apache 2.4.34/" itemprop="url">suse11sp1 编译 apache 2.4.34</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181106 在 Asciidoc 文档中使用 latex/" itemprop="url">在 Asciidoc 文档中使用 latex</a></h1>
         
 
         <div class="post-meta">
@@ -1348,8 +1316,8 @@ oracle检查清单
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1382,8 +1350,8 @@ oracle检查清单
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
+                  <a href="/categories/备忘/Asciidoctor/" itemprop="url" rel="index">
+                    <span itemprop="name">Asciidoctor</span>
                   </a>
                 </span>
 
@@ -1422,16 +1390,13 @@ oracle检查清单
         
           
           
-背景：suse 11 sp1 机器编译安装带有指定模块的 apache 2.4.34. 暂时没有bicp代码访问权限，先放这里
-第一步 安装openssl
-cd /data/bicpinstall/
-tar zxvf openssl-1.1.0i.tar.gz
-cd openssl-1.1.0i
 
+
+本文基于 asciidoctor 1.5.7.13，其通过 mathjax 实现 LaTex 字体的显示，方法和 markdown 差不多，区别是 markdown（不同差距实现方法不同）使用 $$ 或者 $``$ 包围 LaTex 语法，而 asciidoctor 使用 stem:[] 包围
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190418 suse11sp1 编译 apache 2.4.34/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181106 在 Asciidoc 文档中使用 latex/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1482,7 +1447,7 @@ cd openssl-1.1.0i
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190418 suse12 安装 nginx rpm/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181010 hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1501,7 +1466,7 @@ cd openssl-1.1.0i
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190418 suse12 安装 nginx rpm/" itemprop="url">suse12 安装 nginx rpm</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181010 hello-world/" itemprop="url">Hello World</a></h1>
         
 
         <div class="post-meta">
@@ -1513,8 +1478,8 @@ cd openssl-1.1.0i
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1523,39 +1488,6 @@ cd openssl-1.1.0i
             
           </span>
 
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/" itemprop="url" rel="index">
-                    <span itemprop="name">备忘</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1586,14 +1518,11 @@ cd openssl-1.1.0i
       
         
           
-          
-http://nginx.org/packages/mainline/
-http://nginx.org/packages/mainline/sles/12/x86_64/
-http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1
+          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in 
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190418 suse12 安装 nginx rpm/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181010 hello-world/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1644,7 +1573,7 @@ http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190419 docker phpmyadmin/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181229 mysql 访问常见问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1663,7 +1592,7 @@ http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190419 docker phpmyadmin/" itemprop="url">docker phpmyadmin</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181229 mysql 访问常见问题/" itemprop="url">mysql 访问常见问题</a></h1>
         
 
         <div class="post-meta">
@@ -1675,8 +1604,8 @@ http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1749,23 +1678,21 @@ http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1
         
           
           
-docker phpmyadmin
+配置文件参见[如何确定 mysql 的配置文件](待补充)
 
 
 
 
+只能从本机访问
+lsof -i:3306 查看发现，mysql 只监听本机。
+解决：以我本机为例，在 /etc/mysql/mysql.conf.d/mysqld.cnf 中，将以下行注释掉
 
-路线1 公司suse12容器导出包作为基础镜像，使用xampp作为服务器
 
-
-探索镜像内容
-
-docker run -v /root/temp:/root/temp -it test/suse12sp2:20190418 bash
-docker run
+bind-address:127.
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190419 docker phpmyadmin/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181229 mysql 访问常见问题/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1816,7 +1743,7 @@ docker run
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190425 mysql 主从复制异常恢复/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181216 线性代数快速复习[双语]/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1835,7 +1762,7 @@ docker run
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190425 mysql 主从复制异常恢复/" itemprop="url">mysql 主从复制异常恢复</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181216 线性代数快速复习[双语]/" itemprop="url">线性代数快速复习[双语]</a></h1>
         
 
         <div class="post-meta">
@@ -1847,8 +1774,8 @@ docker run
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1881,8 +1808,8 @@ docker run
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
+                  <a href="/categories/备忘/数学/" itemprop="url" rel="index">
+                    <span itemprop="name">数学</span>
                   </a>
                 </span>
 
@@ -1921,27 +1848,21 @@ docker run
         
           
           
-mysql 主从复制异常恢复
 
-
-检查版本
-
-如果版本较老，基于binlog而不是gtid的版本，
-数据量较小，可以参考  基于binlog的老版本。
+向量加法与数乘 Addition and Scalar Multiplication
 
 
 
-基于binlog的老版本
 
-
-1. 登录主机数据库，
-mysql --login-path=local
-执行
-mysql&gt; stop 
+\[\vec&#123;a&#125; =
+\left[\begin&#123;array&#125;&#123;rrrr&#125;
+  x\\
+  y
+\end&#123;array&#125;\r
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190425 mysql 主从复制异常恢复/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181216 线性代数快速复习[双语]/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1983,7 +1904,7 @@ mysql&gt; stop
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2031,7 +1952,7 @@ mysql&gt; stop
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-count">61</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

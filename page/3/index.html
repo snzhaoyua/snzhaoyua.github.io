@@ -296,7 +296,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190425 mysql双主自增主键配置及测试/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181229 Upsource 服务器搭建和集成 idea 插件/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -315,7 +315,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190425 mysql双主自增主键配置及测试/" itemprop="url">mysql双主自增主键配置及测试</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181229 Upsource 服务器搭建和集成 idea 插件/" itemprop="url">Upsource 服务器搭建和集成 idea 插件</a></h1>
         
 
         <div class="post-meta">
@@ -327,8 +327,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -400,34 +400,15 @@
       
         
           
-          
-mysql双主自增主键配置及主从复制影响测试
-
-
-术语
-
-
-
-binlog_format=ROW
-
-
-sbr
-
-
-rbr
-
-
-autoinc_lock_mode=2
-
-
-Mysql_Server_auto_increment_offset=1
-
-
-Mysql_Server_auto_increme
+          【客户端安装、配置篇】
+安装 idea 插件 upsource
+重启 idea
+右下角有新增的 up 图标，点击之
+进行此步一定要记得先关闭 idea 的代理。填写 upsource 服务器地址，这个http://100.107.166.116:8080 是我自己搭的测试服务器，没有配 https（
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190425 mysql双主自增主键配置及测试/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181229 Upsource 服务器搭建和集成 idea 插件/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -478,7 +459,7 @@ Mysql_Server_auto_increme
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190413 mysql 问题与源码/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -497,7 +478,7 @@ Mysql_Server_auto_increme
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190413 mysql 问题与源码/" itemprop="url">mysql 问题与源码</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/" itemprop="url">MySQL loaddata 数据膨胀（mysql 后台文件大小分析）</a></h1>
         
 
         <div class="post-meta">
@@ -509,8 +490,8 @@ Mysql_Server_auto_increme
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -582,16 +563,12 @@ Mysql_Server_auto_increme
       
         
           
-          
-问题1: 连接数为214， 登录经常报错 too many connections
-
-
-在公司mysql企业版服务化开发的初期，我们曾经遇到一个问题，即在连接mysql的时候报错 too many connections,
-即使是新安装的mysql。在以前的社区版mysql也曾经遇到过类似的问题（
+          1. 发现问题100w 100字段数据 后台膨胀系数较大。用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。膨胀系数(50f100w)代表使用了50个字段100w行的数据进行测试。
+2. 分解问题2.1 是否是数据量较大，导致
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190413 mysql 问题与源码/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -642,7 +619,7 @@ Mysql_Server_auto_increme
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190524 mysql order by 对同一值的varchar列排序问题/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181230 右键添加在此处打开cygwin/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -661,7 +638,7 @@ Mysql_Server_auto_increme
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190524 mysql order by 对同一值的varchar列排序问题/" itemprop="url">mysql order by 对同一值的varchar列排序问题</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2018/20181230 右键添加在此处打开cygwin/" itemprop="url">右键添加在此处打开cygwin</a></h1>
         
 
         <div class="post-meta">
@@ -673,8 +650,8 @@ Mysql_Server_auto_increme
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -746,25 +723,17 @@ Mysql_Server_auto_increme
       
         
           
-          
-mysql order by 对同一值的varchar列排序问题
+          系统：windows 10目标：在空白处点击右键菜单，显示如图菜单项，点击后可以打开 cygwin 并切换到当前所在目录
 
+方法一：步骤：
 
-背景
-
-TODO
-
-
-
-数据
-
-
-DROP TABLE IF EXISTS `tbl_rn_log`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
+开始菜单运行 regedit 打开注册表
+定位到
+ 1计算机\HKEY_CLASSES_ROOT\Directory\Background\shell\Cyg
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190524 mysql order by 对同一值的varchar列排序问题/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2018/20181230 右键添加在此处打开cygwin/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -815,7 +784,7 @@ DROP TABLE IF EXISTS `tbl_rn_log`;
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190601 mysql jdbc 报错 operation not allowed after statement closed/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190105 keepalived 原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -834,7 +803,7 @@ DROP TABLE IF EXISTS `tbl_rn_log`;
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190601 mysql jdbc 报错 operation not allowed after statement closed/" itemprop="url">mysql jdbc 报错 operation not allowed after statement closed</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2019/20190105 keepalived 原理/" itemprop="url">keepalived 原理</a></h1>
         
 
         <div class="post-meta">
@@ -846,8 +815,8 @@ DROP TABLE IF EXISTS `tbl_rn_log`;
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -920,20 +889,17 @@ DROP TABLE IF EXISTS `tbl_rn_log`;
         
           
           
-mysql jdbc 报错 No operations allowed after statement closed
+vrrp
 
 
+参考：[vrrp rfc3768](https://tools.ietf.org/html/rfc3768)
 
-
-
-背景
-
-
-业务上来说，连你们的mysql连不上，连别人的（其它部门的mysql）都能连上。查看其日志，报了一行错误"No operations allowed after
+The Virtual Router Redundancy Protocol (VRRP) is designed to
+eliminate the single poin
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190601 mysql jdbc 报错 operation not allowed after statement closed/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2019/20190105 keepalived 原理/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -984,7 +950,7 @@ mysql jdbc 报错 No operations allowed after statement closed
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190217 docker 应用案例-开发环境搭建/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190112 ip_address/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1003,7 +969,7 @@ mysql jdbc 报错 No operations allowed after statement closed
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190217 docker 应用案例-开发环境搭建/" itemprop="url">docker 应用案例-开发环境搭建</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2019/20190112 ip_address/" itemprop="url">ip_network.adoc</a></h1>
         
 
         <div class="post-meta">
@@ -1015,8 +981,8 @@ mysql jdbc 报错 No operations allowed after statement closed
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1089,16 +1055,25 @@ mysql jdbc 报错 No operations allowed after statement closed
         
           
           
-proxy
-
-export http_proxy=http://192.168.31.159:2080
-export https_proxy=https://192.168.31.159:2080
+terminology
 
 
-          
+
+multicast
+ip multicast
+multicast address
+subnetwork
+subnetword mask
+CIDR notation
+
+
+
+
+   The IP address is expressed according to the 
+          ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190217 docker 应用案例-开发环境搭建/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2019/20190112 ip_address/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1149,7 +1124,7 @@ export https_proxy=https://192.168.31.159:2080
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190112 tcpdump/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1168,7 +1143,7 @@ export https_proxy=https://192.168.31.159:2080
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/" itemprop="url">mysql 远程连接无法访问的问题（密码与connection_control插件）</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2019/20190112 tcpdump/" itemprop="url">tcpdump 原理</a></h1>
         
 
         <div class="post-meta">
@@ -1180,8 +1155,508 @@ export https_proxy=https://192.168.31.159:2080
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          
+
+
+
+
+man tcpdump
+
+
+https://en.wikipedia.org/wiki/Multicast_address
+
+
+https://en.wikipedia.org/wiki/Subnetwork
+
+
+[ip address classes]
+(http://www.vlsm-
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/09/22/2019/20190112 tcpdump/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190120 使用service启动mysql最大连接数始终在480多左右/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/22/2019/20190120 使用service启动mysql最大连接数始终在480多左右/" itemprop="url">使用service启动mysql最大连接数始终在480多左右</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          
+背景：
+mysql 最大连接数在设置为2000的情况下，并发始终只能达到480多；
+其它遇到过类似情况的项目组更改ulimit -s（stack size）到1024可以解决问题，但是我们经过测试无效；
+据说前期定位人员咨询过mysql原厂的人，没发现有什么配置问题。
+
+使用service启动my
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/09/22/2019/20190120 使用service启动mysql最大连接数始终在480多左右/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 使用 Ambari 安装 HDP 集群/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/22/2018/20181013 使用 Ambari 安装 HDP 集群/" itemprop="url">使用 Ambari 安装 HDP 集群</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          请先参考 CentOs 7 安装 apache-ambari 获得一台 ambari 服务器。
+HDP 并不是 hadoop 的辅音简称，而是 Hortonworks 的产品 Hortonworks Data Platform 的简称，是包含 Hadoop 在内的一揽子解决方案。
+前置要求：3-4台
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/09/22/2018/20181013 使用 Ambari 安装 HDP 集群/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190201 mysql 远程无法连接问题定位记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/22/2019/20190201 mysql 远程无法连接问题定位记录/" itemprop="url">mysql 远程连接无法访问的问题（密码与connection_control插件）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1262,7 +1737,7 @@ Access denied for user 'matexxx'@'xxxx' (using password: YES);
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2019/20190201 mysql 远程无法连接问题定位记录/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1313,7 +1788,7 @@ Access denied for user 'matexxx'@'xxxx' (using password: YES);
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql 查询锁状态常用命令/">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190210 mysql 兴趣小组主题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhaoyu025@gmail.com">
@@ -1332,7 +1807,7 @@ Access denied for user 'matexxx'@'xxxx' (using password: YES);
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/09/19/2019/20190210 mysql 查询锁状态常用命令/" itemprop="url">查询锁状态常用命令</a></h1>
+                <a class="post-title-link" href="/2019/09/22/2019/20190210 mysql 兴趣小组主题/" itemprop="url">mysql knowledge</a></h1>
         
 
         <div class="post-meta">
@@ -1344,506 +1819,8 @@ Access denied for user 'matexxx'@'xxxx' (using password: YES);
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/" itemprop="url" rel="index">
-                    <span itemprop="name">备忘</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-
-show status like '%lock%;
-
-select * from information_schema.processlist;
-select * from information_schema.processlist where state like "%Waiting%";
-
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190210 mysql 查询锁状态常用命令/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql_5.7_replication/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoyu025@gmail.com">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="胖子的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/19/2019/20190210 mysql_5.7_replication/" itemprop="url">mysql 5.7 replication</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/" itemprop="url" rel="index">
-                    <span itemprop="name">备忘</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-大纲
-
-
-本文参考或翻译自：
-https://dev.mysql.com/doc/refman/5.7/en/replication.html
-
-
-
-mysql 5.7 支持多种主从复制的方法
-
-
-
-
-传统方法：依赖binlog文件和文件的position保持同步
-（https://dev.mys
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190210 mysql_5.7_replication/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 prime_number/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoyu025@gmail.com">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="胖子的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/19/2019/20190210 prime_number/" itemprop="url">测试驱动开发的一个示例代码——求质因数</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/" itemprop="url" rel="index">
-                    <span itemprop="name">备忘</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
-                    <span itemprop="name">技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          12345678910111213141516171819202122232425262728293031323334353637package test;import java.util.ArrayList;import java.util.Arrays;import java.util.List
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190210 prime_number/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql 兴趣小组主题/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zhaoyu025@gmail.com">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="胖子的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/19/2019/20190210 mysql 兴趣小组主题/" itemprop="url">mysql knowledge</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
-                2019-09-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
               </time>
             
 
@@ -1922,7 +1899,7 @@ mysql 5.7 支持多种主从复制的方法
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2019/09/19/2019/20190210 mysql 兴趣小组主题/#more" rel="contents">
+            <a class="btn" href="/2019/09/22/2019/20190210 mysql 兴趣小组主题/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1964,7 +1941,7 @@ mysql 5.7 支持多种主从复制的方法
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2012,7 +1989,7 @@ mysql 5.7 支持多种主从复制的方法
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-count">61</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

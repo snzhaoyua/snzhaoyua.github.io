@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="centos7,ambari,BigData,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="版本说明   部件 版本号     Ambari 2.6.2.2   CentOS 7   HDP 2.6   时间 20180814    背景对于 Ambari 能做什么，对于搜索到此文的同学来说应该毋庸赘述。目前 Ambari 安装的官方手册主要是 Apache 和 Hortonworks，我首先是参考 Apache 的说明，通过 maven 编译源码的方式，在 安装 linux-mint">
+<meta name="keywords" content="centos7,ambari,BigData">
+<meta property="og:type" content="article">
+<meta property="og:title" content="centos 7 安装 apache-ambari">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/22/2018/20181013 centos 7 安装 apache-ambari/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content="版本说明   部件 版本号     Ambari 2.6.2.2   CentOS 7   HDP 2.6   时间 20180814    背景对于 Ambari 能做什么，对于搜索到此文的同学来说应该毋庸赘述。目前 Ambari 安装的官方手册主要是 Apache 和 Hortonworks，我首先是参考 Apache 的说明，通过 maven 编译源码的方式，在 安装 linux-mint">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.618Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="centos 7 安装 apache-ambari">
+<meta name="twitter:description" content="版本说明   部件 版本号     Ambari 2.6.2.2   CentOS 7   HDP 2.6   时间 20180814    背景对于 Ambari 能做什么，对于搜索到此文的同学来说应该毋庸赘述。目前 Ambari 安装的官方手册主要是 Apache 和 Hortonworks，我首先是参考 Apache 的说明，通过 maven 编译源码的方式，在 安装 linux-mint">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 centos 7 安装 apache-ambari/">
+
+
+
+
+
+  <title>centos 7 安装 apache-ambari | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181013 centos 7 安装 apache-ambari/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">centos 7 安装 apache-ambari</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="版本说明"><a href="#版本说明" class="headerlink" title="版本说明"></a>版本说明</h2><table>
+<thead>
+<tr>
+<th>部件</th>
+<th>版本号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ambari</td>
+<td>2.6.2.2</td>
+</tr>
+<tr>
+<td>CentOS</td>
+<td>7</td>
+</tr>
+<tr>
+<td>HDP</td>
+<td>2.6</td>
+</tr>
+<tr>
+<td>时间</td>
+<td>20180814</td>
+</tr>
+</tbody>
+</table>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>对于 Ambari 能做什么，对于搜索到此文的同学来说应该毋庸赘述。目前 Ambari 安装的官方手册主要是 <a href="https://cwiki.apache.org/confluence/display/AMBARI/Installation+Guide+for+Ambari+2.6.2" target="_blank" rel="noopener">Apache</a> 和 <a href="https://docs.hortonworks.com/HDPDocuments/Ambari-2.6.2.2/bk_ambari-installation/content/install-ambari-server.html" target="_blank" rel="noopener">Hortonworks</a>，我首先是参考 Apache 的说明，通过 maven 编译源码的方式，在 安装 linux-mint 的机器上尝试安装 <code>Ambari 2.7.0</code>，遇到过以下问题：</p>
+<ol>
+<li>由于系统不符合 Ambari 的要求，因此通过更改其中的 <code>ambari-commons/OSCheck.py:is_ubuntu_family()</code> 函数强制安装 server 和 agent.</li>
+<li>由于采用的国内 maven 仓库，ambari web legacy 始终编译不过，通过更改其依赖编译通过.</li>
+<li>maven compiler plugin 报错 json-simple 的相关依赖问题，最后删除该 legacy 模块.</li>
+<li>其它 node, yarn, npm 的代理设置问题.<br>最终在安装 agent 的时候遇到 ssl 连接错误，时间已晚，选择放弃这种安装方式。转而使用文档支持较好的 CentOS 和 yum 仓库安装的方式。虽然如此，Hortonworks 的文档逻辑也稍显混乱，过于简单，本文对安装过程做详细记录，以备查询。<code>本文所有操作均使用 root 用户完成。</code></li>
+</ol>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h4 id="几台虚拟机"><a href="#几台虚拟机" class="headerlink" title="几台虚拟机"></a>几台虚拟机</h4><p>我使用的是 Vmware WorkStation，CentOS 7 下载路径为  <a href="http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso" target="_blank" rel="noopener">点我</a>，安装步骤略过，建议安装 4 台机器(网络方式选择NAT模式)，其中安装 Ambari 服务器的机器硬盘大小不得小于 30 GB，如果不小心硬盘大小分配过小，参见另一篇博文<a href="/2018/10/13/如何对 centos 7 分区进行扩容/">如何对 centos 7 分区进行扩容</a>。其余 3 台机器作为集群机器以备后续使用。</p>
+<h6 id="静态-IP-，hostname-设置，关闭防火墙，设置NTP时间同步服务"><a href="#静态-IP-，hostname-设置，关闭防火墙，设置NTP时间同步服务" class="headerlink" title="静态 IP ，hostname 设置，关闭防火墙，设置NTP时间同步服务"></a>静态 IP ，hostname 设置，关闭防火墙，设置NTP时间同步服务</h6><p>参见另一篇博文 <a href="/2018/10/13/CentOS 7 如何...">CentOS 7 如何…</a></p>
+<h6 id="设置-hosts-文件以便识别自定义的-hostname"><a href="#设置-hosts-文件以便识别自定义的-hostname" class="headerlink" title="设置 hosts 文件以便识别自定义的 hostname"></a>设置 hosts 文件以便识别自定义的 hostname</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> vi /etc/hosts</span></span><br><span class="line">x.x.x.x linux-1</span><br><span class="line">x.x.x.x linux-2</span><br><span class="line">x.x.x.x linux-3</span><br><span class="line">x.x.x.x linux-4</span><br></pre></td></tr></table></figure>
+<p>然后 <code>scp /etc/hosts 其它机器主机名:/etc/hosts</code> 到其它机器。</p>
+<h6 id="设置无密码访问-ssh"><a href="#设置无密码访问-ssh" class="headerlink" title="设置无密码访问 ssh"></a>设置无密码访问 ssh</h6><p>参见另一篇博文 <a href="/2018/10/13/免密码 ssh 到其它机器">免密码 ssh 到其它机器</a></p>
+<h6 id="umask-文件默认权限设置"><a href="#umask-文件默认权限设置" class="headerlink" title="umask 文件默认权限设置"></a>umask 文件默认权限设置</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">## 默认权限更改为 755</span><br><span class="line">umask 0022</span><br></pre></td></tr></table></figure>
+<h6 id="关闭-ssl-检查（注意，后面安装-HDP-还会有一次-openssl-相关的报错）"><a href="#关闭-ssl-检查（注意，后面安装-HDP-还会有一次-openssl-相关的报错）" class="headerlink" title="关闭 ssl 检查（注意，后面安装 HDP 还会有一次 openssl 相关的报错）"></a>关闭 ssl 检查（注意，后面安装 HDP 还会有一次 openssl 相关的报错）</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/python/cert-verification.cfg </span><br><span class="line"># verify=platformxxx 改为</span><br><span class="line">verify=disable</span><br></pre></td></tr></table></figure>
+<h6 id="安装-httpd-服务器作为后续离线安装包服务器"><a href="#安装-httpd-服务器作为后续离线安装包服务器" class="headerlink" title="安装 httpd 服务器作为后续离线安装包服务器"></a>安装 httpd 服务器作为后续离线安装包服务器</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install httpd</span><br><span class="line">chkconfig httpd on</span><br><span class="line">service httpd start</span><br></pre></td></tr></table></figure>
+<h6 id="关于-JDK"><a href="#关于-JDK" class="headerlink" title="关于 JDK"></a>关于 JDK</h6><p>如果环境中没有 JDK，ambari 在安装设置阶段可以自动在线安装 JDK。但是如果已经安装了 JDK（要求1.8 版本），设置阶段指定 JDK_HOME 所在的路径即可，参见后续 ambari-server setup 阶段。</p>
+<h6 id="关于-python-和其它"><a href="#关于-python-和其它" class="headerlink" title="关于 python 和其它"></a>关于 python 和其它</h6><p>如果你使用的是我上面提供的官方 CentOS 7 镜像，python 的版本应该为 2.7，不需要任何修改。<br>后续安装需要使用 wget 工具，请使用 <code>yum install wget</code> 安装。<br>后续安装需要使用其它软件源管理工具，请使用 <code>yum install yum-utils createrepo yum-plugin-priorities -y</code> 安装。执行以下修改，以关闭 gpg 校验（否则后面安装会报错）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/yum/pluginconf.d/priorities.conf</span><br><span class="line">## 添加或更改为以下内容</span><br><span class="line">gpgcheck = 0</span><br></pre></td></tr></table></figure></p>
+<h2 id="安装包获取"><a href="#安装包获取" class="headerlink" title="安装包获取"></a>安装包获取</h2><p>CentOS 7 采用 yum 安装 ambari-server，该软件可以通过<code>在线</code>和<code>离线</code>两种方式下载到本地，出于国情，很明显我们应该选择离线安装的方式。</p>
+<h6 id="步骤1-下载离线包到本地"><a href="#步骤1-下载离线包到本地" class="headerlink" title="步骤1 下载离线包到本地"></a>步骤1 下载离线包到本地</h6><p>由于我们使用的是 Ambari 2.6.2.2 ，配套的 HDP 版本为 2.[4|5|6]，本文选用 HDP 2.6，附上需要下载的所有包路径(<code>以下 tar 包都需要下载</code>)：</p>
+<table>
+<thead>
+<tr>
+<th>包名</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ambari</td>
+<td><a href="http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.6.2.2/ambari-2.6.2.2-centos7.tar.gz" target="_blank" rel="noopener">点我</a></td>
+</tr>
+<tr>
+<td>HDP</td>
+<td><a href="http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.6.5.0/HDP-2.6.5.0-centos7-rpm.tar.gz" target="_blank" rel="noopener">点我</a></td>
+</tr>
+<tr>
+<td>HDP-UTILS</td>
+<td><a href="http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7/HDP-UTILS-1.1.0.22-centos7.tar.gz" target="_blank" rel="noopener">点我</a></td>
+</tr>
+</tbody>
+</table>
+<h6 id="步骤2-上传到需要安装-Ambari-的机器上，解压到-httpd-的服务器目录中"><a href="#步骤2-上传到需要安装-Ambari-的机器上，解压到-httpd-的服务器目录中" class="headerlink" title="步骤2 上传到需要安装 Ambari 的机器上，解压到 httpd 的服务器目录中"></a>步骤2 上传到需要安装 Ambari 的机器上，解压到 httpd 的服务器目录中</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd /var/www/html</span><br><span class="line">mkdir hdp ambari</span><br><span class="line">tar zxvf &lt;你上传的路径&gt;/ambari-2.6.2.2-centos7.tar.gz -C /var/www/html/ambari</span><br><span class="line">tar zxvf &lt;你上传的路径&gt;/HDP-2.6.5.0-centos7-rpm.tar.gz -C /var/www/html/hdp</span><br><span class="line">tar zxvf &lt;你上传的路径&gt;/HDP-UTILS-1.1.0.22-centos7.tar.gz -C /var/www/html/hdp</span><br></pre></td></tr></table></figure>
+<h6 id="步骤3-使用-createrepo-工具配置生成源描述文件-可省略，会影响后续-repo-文件的路径配置"><a href="#步骤3-使用-createrepo-工具配置生成源描述文件-可省略，会影响后续-repo-文件的路径配置" class="headerlink" title="步骤3 使用 createrepo 工具配置生成源描述文件(可省略，会影响后续 repo 文件的路径配置)"></a>步骤3 使用 createrepo 工具配置生成源描述文件(可省略，会影响后续 repo 文件的路径配置)</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd /var/www/html/ambari</span><br><span class="line">createrepo ./</span><br><span class="line">cd /var/www/html/hdp</span><br><span class="line">createrepo ./</span><br></pre></td></tr></table></figure>
+<h6 id="步骤4-下载-HDP-和-Ambari-的-yum-repo-文件"><a href="#步骤4-下载-HDP-和-Ambari-的-yum-repo-文件" class="headerlink" title="步骤4 下载 HDP 和 Ambari 的 yum repo 文件"></a>步骤4 下载 HDP 和 Ambari 的 yum repo 文件</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /etc/yum.repos.d</span><br><span class="line">wget -nv http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.6.5.0/hdp.repo</span><br><span class="line">wget -nv http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.6.2.2/ambari.repo</span><br></pre></td></tr></table></figure>
+<h6 id="步骤5-配置-yum-repo-文件指向本地的软件源"><a href="#步骤5-配置-yum-repo-文件指向本地的软件源" class="headerlink" title="步骤5 配置 yum repo 文件指向本地的软件源"></a>步骤5 配置 yum repo 文件指向本地的软件源</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/yum.repos.d/ambari.repo</span><br><span class="line">## 更改 baseurl 和 gpgcheck 两项</span><br><span class="line">baseurl=http:///&lt;你的主机名&gt;/ambari</span><br><span class="line">gpgcheck=0</span><br><span class="line"></span><br><span class="line">vi /etc/yum.repos.d/hdp.repo ## 根据步骤3，HDP 和 HDP-UTILS 可以使用同一个 baseurl</span><br><span class="line">## 更改 baseurl 和 gpgcheck 两项</span><br><span class="line">baseurl=http:///&lt;你的主机名&gt;/hdp</span><br><span class="line">gpgcheck=0</span><br></pre></td></tr></table></figure>
+<h6 id="步骤6-刷新软件源"><a href="#步骤6-刷新软件源" class="headerlink" title="步骤6 刷新软件源"></a>步骤6 刷新软件源</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum clean all</span><br><span class="line">yum makecache</span><br><span class="line">## 如果此过程出现 404 错误，检查 httpd 服务是否正常，或者步骤3</span><br></pre></td></tr></table></figure>
+<h2 id="安装、配置、启动与登录"><a href="#安装、配置、启动与登录" class="headerlink" title="安装、配置、启动与登录"></a>安装、配置、启动与登录</h2><p>此过程较为简单。</p>
+<h6 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install ambari-server</span><br></pre></td></tr></table></figure>
+<h6 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ambari-server setup</span><br><span class="line">其中可以配置是否创建用户、JDK、Ambari 自用元数据库（默认 Postgre）等，可以选择一路回车。</span><br></pre></td></tr></table></figure>
+<h6 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service ambari-server start</span><br></pre></td></tr></table></figure>
+<h6 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h6><p>访问 <code>http://&lt;你的主机 IP 地址&gt;:8080/</code>，使用默认的 <code>admin/admin</code> 账户登录即可。</p>
+<p>使用 Ambari 安装 hadoop 集群可以参考另外一篇博文<a href="/2018/10/13/使用 Ambari 安装 HDP 集群">使用 Ambari 安装 hadoop 集群</a>。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/centos7/" rel="tag"># centos7</a>
+          
+            <a href="/tags/ambari/" rel="tag"># ambari</a>
+          
+            <a href="/tags/BigData/" rel="tag"># BigData</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181013 vmware clone 机器地址重复_ubuntu18.04地址配置/" rel="next" title="vmware clone 机器地址重复_ubuntu18.04地址配置">
+                <i class="fa fa-chevron-left"></i> vmware clone 机器地址重复_ubuntu18.04地址配置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181013 npm, yarn 代理或国内镜像设置/" rel="prev" title="npm, yarn 代理或国内镜像设置">
+                npm, yarn 代理或国内镜像设置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#版本说明"><span class="nav-number">1.</span> <span class="nav-text">版本说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">2.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">3.</span> <span class="nav-text">准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#几台虚拟机"><span class="nav-number">3.0.1.</span> <span class="nav-text">几台虚拟机</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#静态-IP-，hostname-设置，关闭防火墙，设置NTP时间同步服务"><span class="nav-number">3.0.1.0.1.</span> <span class="nav-text">静态 IP ，hostname 设置，关闭防火墙，设置NTP时间同步服务</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#设置-hosts-文件以便识别自定义的-hostname"><span class="nav-number">3.0.1.0.2.</span> <span class="nav-text">设置 hosts 文件以便识别自定义的 hostname</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#设置无密码访问-ssh"><span class="nav-number">3.0.1.0.3.</span> <span class="nav-text">设置无密码访问 ssh</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#umask-文件默认权限设置"><span class="nav-number">3.0.1.0.4.</span> <span class="nav-text">umask 文件默认权限设置</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#关闭-ssl-检查（注意，后面安装-HDP-还会有一次-openssl-相关的报错）"><span class="nav-number">3.0.1.0.5.</span> <span class="nav-text">关闭 ssl 检查（注意，后面安装 HDP 还会有一次 openssl 相关的报错）</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#安装-httpd-服务器作为后续离线安装包服务器"><span class="nav-number">3.0.1.0.6.</span> <span class="nav-text">安装 httpd 服务器作为后续离线安装包服务器</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#关于-JDK"><span class="nav-number">3.0.1.0.7.</span> <span class="nav-text">关于 JDK</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#关于-python-和其它"><span class="nav-number">3.0.1.0.8.</span> <span class="nav-text">关于 python 和其它</span></a></li></ol></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#安装包获取"><span class="nav-number">4.</span> <span class="nav-text">安装包获取</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤1-下载离线包到本地"><span class="nav-number">4.0.0.0.1.</span> <span class="nav-text">步骤1 下载离线包到本地</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤2-上传到需要安装-Ambari-的机器上，解压到-httpd-的服务器目录中"><span class="nav-number">4.0.0.0.2.</span> <span class="nav-text">步骤2 上传到需要安装 Ambari 的机器上，解压到 httpd 的服务器目录中</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤3-使用-createrepo-工具配置生成源描述文件-可省略，会影响后续-repo-文件的路径配置"><span class="nav-number">4.0.0.0.3.</span> <span class="nav-text">步骤3 使用 createrepo 工具配置生成源描述文件(可省略，会影响后续 repo 文件的路径配置)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤4-下载-HDP-和-Ambari-的-yum-repo-文件"><span class="nav-number">4.0.0.0.4.</span> <span class="nav-text">步骤4 下载 HDP 和 Ambari 的 yum repo 文件</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤5-配置-yum-repo-文件指向本地的软件源"><span class="nav-number">4.0.0.0.5.</span> <span class="nav-text">步骤5 配置 yum repo 文件指向本地的软件源</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#步骤6-刷新软件源"><span class="nav-number">4.0.0.0.6.</span> <span class="nav-text">步骤6 刷新软件源</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装、配置、启动与登录"><span class="nav-number">5.</span> <span class="nav-text">安装、配置、启动与登录</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#安装"><span class="nav-number">5.0.0.0.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#配置"><span class="nav-number">5.0.0.0.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#启动"><span class="nav-number">5.0.0.0.3.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#登录"><span class="nav-number">5.0.0.0.4.</span> <span class="nav-text">登录</span></a></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

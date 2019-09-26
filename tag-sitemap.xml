@@ -58,20 +58,6 @@
     </url>
 
     <url>
-        <loc>https://snzhaoyua.github.io/tags/BigData/</loc>
-        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>https://snzhaoyua.github.io/tags/ambari/</loc>
-        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>https://snzhaoyua.github.io/tags/Linux/</loc>
         <lastmod>2019-09-19T03:41:58.622Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -93,6 +79,20 @@
     </url>
 
     <url>
+        <loc>https://snzhaoyua.github.io/tags/Asciidoctor/</loc>
+        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/</loc>
+        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
         <loc>https://snzhaoyua.github.io/tags/Java/</loc>
         <lastmod>2019-09-19T03:41:58.622Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -108,20 +108,6 @@
 
     <url>
         <loc>https://snzhaoyua.github.io/tags/MySQL/</loc>
-        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>https://snzhaoyua.github.io/tags/Asciidoctor/</loc>
-        <lastmod>2019-09-19T03:41:58.622Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>https://snzhaoyua.github.io/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/</loc>
         <lastmod>2019-09-19T03:41:58.622Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -233,13 +219,6 @@
     </url>
 
     <url>
-        <loc>https://snzhaoyua.github.io/tags/centos7/</loc>
-        <lastmod>2019-09-19T03:41:58.626Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>https://snzhaoyua.github.io/tags/mysqlbackup/</loc>
         <lastmod>2019-09-19T03:41:58.626Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -282,20 +261,6 @@
     </url>
 
     <url>
-        <loc>https://snzhaoyua.github.io/tags/object-Object/</loc>
-        <lastmod>2019-09-19T03:41:58.630Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>https://snzhaoyua.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
-        <lastmod>2019-09-19T03:41:58.630Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>https://snzhaoyua.github.io/tags/cgroup/</loc>
         <lastmod>2019-09-19T03:41:58.630Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -303,7 +268,7 @@
     </url>
 
     <url>
-        <loc>https://snzhaoyua.github.io/tags/oracle/</loc>
+        <loc>https://snzhaoyua.github.io/tags/ssh/</loc>
         <lastmod>2019-09-19T03:41:58.630Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -324,8 +289,43 @@
     </url>
 
     <url>
-        <loc>https://snzhaoyua.github.io/tags/ssh/</loc>
-        <lastmod>2019-09-19T03:41:58.630Z</lastmod>
+        <loc>https://snzhaoyua.github.io/tags/centos7/</loc>
+        <lastmod>2019-09-19T08:06:41.353Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/ambari/</loc>
+        <lastmod>2019-09-19T08:06:41.353Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/BigData/</loc>
+        <lastmod>2019-09-19T08:06:41.353Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
+        <lastmod>2019-09-26T07:09:55.741Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/oracle/</loc>
+        <lastmod>2019-09-26T07:09:55.741Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://snzhaoyua.github.io/tags/object-Object/</loc>
+        <lastmod>2019-09-26T10:02:32.472Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>

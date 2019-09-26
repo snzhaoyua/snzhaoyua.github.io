@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mysql,mysqldump,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content=".strike&amp;#123;     text-decoration:line-through &amp;#125;  mysqldump 迁移数据  背景   客户N在使用H部门提供的mysql遇到部分性能问题后，未得到H部门的及时支撑。机缘巧合，我们的服务化mysql刚刚发布第一版，客户N有意切换我们的mysql。由于部门策略调整，我们准备由原来的社区mysql切换为部门R的商业版mysql，其间对接">
+<meta name="keywords" content="mysql,mysqldump">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysqldump_迁移数据">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/22/2019/20190210 mysql_dump/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content=".strike&amp;#123;     text-decoration:line-through &amp;#125;  mysqldump 迁移数据  背景   客户N在使用H部门提供的mysql遇到部分性能问题后，未得到H部门的及时支撑。机缘巧合，我们的服务化mysql刚刚发布第一版，客户N有意切换我们的mysql。由于部门策略调整，我们准备由原来的社区mysql切换为部门R的商业版mysql，其间对接">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysqldump_迁移数据">
+<meta name="twitter:description" content=".strike&amp;#123;     text-decoration:line-through &amp;#125;  mysqldump 迁移数据  背景   客户N在使用H部门提供的mysql遇到部分性能问题后，未得到H部门的及时支撑。机缘巧合，我们的服务化mysql刚刚发布第一版，客户N有意切换我们的mysql。由于部门策略调整，我们准备由原来的社区mysql切换为部门R的商业版mysql，其间对接">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/22/2019/20190210 mysql_dump/">
+
+
+
+
+
+  <title>mysqldump_迁移数据 | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2019/20190210 mysql_dump/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysqldump_迁移数据</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <style type="text/css">
+.strike&#123;
+    text-decoration:line-through
+&#125;
+</style>
+<h1 id="_mysqldump_迁移数据" class="sect0">mysqldump 迁移数据</h1>
+<div class="sect1">
+<h2 id="_背景">背景</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="big">客</span>户N在使用H部门提供的mysql遇到部分性能问题后，未得到H部门的及时支撑。机缘巧合，我们的服务化mysql刚刚发布第一版，客户N有意切换我们的mysql。由于部门策略调整，我们准备由原来的社区mysql切换为部门R的商业版mysql，其间对接问题不提，客户提出的首要问题是前期尝试通过mysqldump备份数据，发现有报错并且很慢，我们的策略是 <span class="strike">为拓展业务先把锅接下来吧</span> 答应先提供数据迁移方案供客户评估。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_机器_数据_应用情况">机器、数据、应用情况</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>源机器cpu核心数16，内存32G；</p>
+</li>
+<li>
+<p>两台机器，一个是master，一个是slave；未配置互为主备；</p>
+</li>
+<li>
+<p>开启了基于GTID的主从复制；</p>
+</li>
+<li>
+<p>从镜像库来看，数据量3800W左右，实际生产环境每天还会增加约不到100w；</p>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2858%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0-1w</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1w-10w</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10w-50w</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">50w-100w</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">100w-1000w</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&gt;1000w</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">表数量约</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2105</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">83</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">28</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>mysql为社区版5.7.23，所有表均为INNODB引擎；</p>
+</li>
+<li>
+<p>据客户N的业务人员反馈，他们尝试使用mysqldump可能会报错。</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_一些准备工作">一些准备工作</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>为了能够顺滑的开展后期工作，我习惯先整理一些常用的命令，以备随时复制粘贴&#8230;&#8203;</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>-- 查询所有业务数据库的表名，数据库，存储引擎信息
+select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');
+
+-- 查询所有业务数据库的表的数量
+select count(*) from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');
+
+-- 查询所有表的数据量
+SELECT CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) AS table_name, IFNULL(TABLE_ROWS,0) as table_rows FROM information_schema.tables WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ORDER BY 2;
+
+
+-- 查询所有业务数据库的视图数量
+select table_name,table_schema from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');
+select count(*) from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');
+
+-- 查询所有routines(存储过程和函数)的数量
+select * from mysql.proc where db not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有触发器的数量
+SELECT * FROM information_schema.triggers where TRIGGER_SCHEMA not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有事件的数量
+SELECT * FROM information_schema.EVENTS where EVENT_SCHEMA not in ('mysql','information_schema','performance_schema','sys')\G
+
+-- 查询所有用户数量
+select user,host from mysql.user;
+
+-- 查看磁盘IO信息
+iostat -x -p /dev/mapper/vg02-lv02 1 10 -m
+iostat -x -p 1 10 -m</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_首先尝试使用原生mysqldump">首先尝试使用原生mysqldump</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>业务诚不欺我，果然有坑，报错如下(安全需要，隐藏关键信息)。</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>mysqldump: Couldn&#8217;t execute 'SHOW FIELDS FROM `XX&#8217;: View 'XX.XX' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them (1356)</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>报错信息很明显了，本次实践中，主要是视图引用创建语句中子查询的列不存在，select 都会报错，这个我们只能让业务自己去审视，决策是否删除或者修复。</p>
+</div>
+<div class="paragraph">
+<p>由于通过mysqldump来发现那些视图有问题非常不效率，所有写了一个简单的脚本：</p>
+</div>
+<div class="listingblock">
+<div class="title">搜集所有有问题的视图</div>
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash"><span class="meta">#!/usr/bin/env bash</span>
+
+<span class="keyword">function</span> usage &#123;
+  <span class="built_in">echo</span> <span class="string">"Usage: <span class="variable">$0</span> [-u USER_NAME] [-p PASSWORD] [-d WORKDIR] [-D:DROP ERROR VIEWS]"</span>
+  <span class="built_in">echo</span> <span class="string">"Do not support -uroot, using -u root please."</span>
+  <span class="comment"># too 2</span>
+  <span class="built_in">exit</span> 2
+&#125;
+
+<span class="keyword">function</span> set_variable &#123;
+  <span class="built_in">local</span> varname=<span class="variable">$1</span>
+  <span class="built_in">shift</span>
+  <span class="keyword">if</span> [[ -z <span class="string">"<span class="variable">$&#123;!varname&#125;</span>"</span> ]]; <span class="keyword">then</span>
+    <span class="built_in">eval</span> <span class="string">"<span class="variable">$varname</span>=\"<span class="variable">$@</span>\""</span>
+  <span class="keyword">else</span>
+    <span class="built_in">echo</span> <span class="string">"Error: <span class="variable">$varname</span> already set"</span>
+    usage
+  <span class="keyword">fi</span>
+&#125;
+
+<span class="keyword">function</span> execMysqlCommand &#123;
+    mysql -u<span class="variable">$&#123;USER_NAME&#125;</span> -p<span class="variable">$&#123;PASSWORD&#125;</span> --skip-column-names -e <span class="string">"<span class="variable">$1</span>"</span>
+&#125;
+
+<span class="keyword">function</span> checkView &#123;
+    viewName=<span class="string">"<span class="variable">$1</span>"</span>
+    <span class="comment"># too slow</span>
+    <span class="comment"># mysql -u$&#123;USER_NAME&#125; -p$&#123;PASSWORD&#125; -e "select 1 from $&#123;viewName&#125; limit 1" &gt;/dev/null 2&gt;&gt;/home/mysql/temp/view_error</span>
+    <span class="comment"># not good either</span>
+    <span class="comment"># mysql -u$&#123;USER_NAME&#125; -p$&#123;PASSWORD&#125; -e "update $&#123;viewName&#125; set thisIsANotExistCol=123;" &gt;/dev/null 2&gt;&gt;/home/mysql/temp/view_error</span>
+    <span class="comment">#</span>
+    execMysqlCommand <span class="string">"show fields from <span class="variable">$&#123;viewName&#125;</span>;"</span> &gt;/dev/null 2&gt;&gt;/home/mysql/temp/view_error
+    <span class="built_in">return</span> $?
+&#125;
+
+<span class="keyword">function</span> checkAllViewsAndGetErrorViews &#123;
+    <span class="built_in">echo</span> <span class="string">""</span>&gt;/home/mysql/temp/view_error
+    i=1
+    <span class="keyword">for</span> view <span class="keyword">in</span> <span class="variable">$&#123;views[@]&#125;</span>;<span class="keyword">do</span>
+        <span class="built_in">echo</span> -n <span class="string">"checking <span class="variable">$view</span> ...<span class="variable">$i</span>/<span class="variable">$&#123;#views[@]&#125;</span>"</span> <span class="string">"..."</span>
+        checkView <span class="variable">$&#123;view&#125;</span>
+        result=$?
+        [[ <span class="variable">$&#123;result&#125;</span> -ne 0 ]] &amp;&amp; <span class="built_in">echo</span> <span class="string">"bad"</span>
+        [[ <span class="variable">$&#123;result&#125;</span> -ne 0 ]] &amp;&amp; <span class="built_in">echo</span> <span class="string">"pass"</span>
+        ((i++))
+    <span class="keyword">done</span>;
+    cat /home/mysql/temp/view_error|grep <span class="string">"1356"</span>|awk -F<span class="string">"'"</span> <span class="string">'&#123;print $2&#125;'</span>&gt;/home/mysql/temp/error_list
+    rm /home/mysql/temp/view_error -rf
+    error_views=(`cat /home/mysql/temp/error_list`)
+&#125;
+
+<span class="keyword">function</span> printIgnoreMsg &#123;
+    [[ <span class="variable">$&#123;#error_views[@]&#125;</span> -gt 0 ]] &amp;&amp; <span class="built_in">echo</span> <span class="string">"You can add these statements to mysqldump to ignore those error views:"</span>
+    <span class="keyword">for</span> view <span class="keyword">in</span> <span class="variable">$&#123;error_views[@]&#125;</span>;<span class="keyword">do</span>
+        <span class="built_in">echo</span> -n <span class="string">" --ignore-table=<span class="variable">$&#123;view&#125;</span>"</span>
+    <span class="keyword">done</span>
+    <span class="built_in">echo</span> <span class="string">""</span>
+&#125;
+
+<span class="keyword">function</span> backupErrorViewsSql &#123;
+    <span class="built_in">echo</span> <span class="string">"Backing up create statement of error views to <span class="variable">$&#123;WORKDIR&#125;</span>..."</span>
+    <span class="built_in">echo</span> <span class="string">""</span> &gt; /home/mysql/temp/backup_create_view_sql -rf
+    <span class="keyword">for</span> view <span class="keyword">in</span> <span class="variable">$&#123;error_views[@]&#125;</span>;<span class="keyword">do</span>
+        execMysqlCommand <span class="string">"show create view <span class="variable">$view</span>;"</span> &gt;&gt;/home/mysql/temp/backup_create_view_sql 2&gt;/dev/null
+    <span class="keyword">done</span>
+    cat /home/mysql/temp/backup_create_view_sql|awk -F<span class="string">'\t'</span> <span class="string">'&#123;print $2";"&#125;'</span>|grep -v <span class="string">'Create View;'</span>&gt;&gt;/home/mysql/temp/backup_create_view
+    rm -rf /home/mysql/temp/backup_create_view_sql
+    <span class="built_in">echo</span> <span class="string">"Done backing up create statement of error views."</span>
+
+&#125;
+
+<span class="keyword">function</span> deleteErrorViews &#123;
+    <span class="built_in">echo</span> <span class="string">"Dropping error views..."</span>
+    <span class="keyword">for</span> view <span class="keyword">in</span> <span class="variable">$&#123;error_views[@]&#125;</span>;<span class="keyword">do</span>
+        <span class="keyword">while</span> [[ <span class="string">"X"</span> == <span class="string">"X<span class="variable">$&#123;confirm&#125;</span>"</span> ]];<span class="keyword">do</span>
+            <span class="built_in">read</span> -p <span class="string">"please confirm to delete <span class="variable">$&#123;view&#125;</span>:(y/n)"</span> confirm
+        <span class="keyword">done</span>
+        <span class="keyword">if</span> [[ <span class="string">"Xy"</span> == <span class="string">"X<span class="variable">$&#123;confirm&#125;</span>"</span> ]];<span class="keyword">then</span>
+            execMysqlCommand <span class="string">"drop view <span class="variable">$view</span>;"</span> 2&gt;/dev/null
+        <span class="keyword">fi</span>
+    <span class="keyword">done</span>
+    <span class="built_in">echo</span> <span class="string">"Done dropping error views."</span>
+&#125;
+
+<span class="function"><span class="title">init</span></span>() &#123;
+    <span class="built_in">unset</span> DELETE_VIEWS USER_NAME PASSWORD WORKDIR
+
+    <span class="keyword">while</span> <span class="built_in">getopts</span> <span class="string">'u:p:d:D?h'</span> option
+    <span class="keyword">do</span>
+      <span class="keyword">case</span> <span class="variable">$&#123;option&#125;</span> <span class="keyword">in</span>
+        d) set_variable WORKDIR <span class="variable">$OPTARG</span> ;;
+        D) set_variable DELETE_VIEWS <span class="literal">true</span> ;;
+        u) set_variable USER_NAME <span class="variable">$OPTARG</span> ;;
+        p) set_variable PASSWORD <span class="variable">$OPTARG</span> ;;
+        h|?) usage ;; <span class="keyword">esac</span>
+    <span class="keyword">done</span>
+
+    [[ -z <span class="string">"<span class="variable">$&#123;USER_NAME&#125;</span>"</span> ]] &amp;&amp; usage
+    [[ -z <span class="string">"<span class="variable">$&#123;PASSWORD&#125;</span>"</span> ]] &amp;&amp; usage
+    [[ -z <span class="string">"<span class="variable">$&#123;WORKDIR&#125;</span>"</span> ]] &amp;&amp; set_variable WORKDIR <span class="string">"/home/mysql/temp"</span> &amp;&amp; mkdir -p <span class="variable">$&#123;WORKDIR&#125;</span>
+
+    <span class="built_in">echo</span> <span class="string">"Using directory <span class="variable">$&#123;WORKDIR&#125;</span> as temp dir."</span>
+&#125;
+
+<span class="function"><span class="title">getAllViews</span></span>() &#123;
+    <span class="built_in">echo</span> <span class="string">"Getting all views from schema..."</span>
+    views=(`execMysqlCommand <span class="string">"select concat(table_schema,'.',table_name) from information_schema.views where table_schema not in ('mysql','information_schema','performance_schema','sys');"</span> 2&gt;/dev/null`)
+&#125;
+
+init <span class="variable">$@</span>
+getAllViews
+checkAllViewsAndGetErrorViews
+printIgnoreMsg
+
+[[ X<span class="string">"true"</span> == X<span class="string">"<span class="variable">$&#123;DELETE_VIEWS&#125;</span>"</span> &amp;&amp;  <span class="variable">$&#123;#error_views[@]&#125;</span> -gt 0 ]] &amp;&amp; backupErrorViewsSql &amp;&amp; deleteErrorViews</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_命令优化x">命令优化x</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>具体方案之前，先加上一些基本的备份对象</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>--hex-blob --single-transaction --quick --routines --triggers</pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_方案一_160分钟">方案一 160分钟</h3>
+<div class="paragraph">
+<p>单线程直接执行mysqldump，大概160分钟</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&gt; /data01/chroot/usr/local/mysql5.7.23/bin/mysqldump -udbXXXX -pXXXX --all-databases --hex-blob --ignore-table=netcxx.xxxxx --ignore-table=netxxx.rxxx(此处很多忽略的视图) | gzip &gt; /temp/back0129.sql.gz</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_方案二_90分钟">方案二 90分钟</h3>
+<div class="paragraph">
+<p>考虑一个表一个文件，10个线程，大概90分钟；TODO 测试增加线程</p>
+</div>
+<div class="listingblock">
+<div class="title">multidump.sh[lines=25..55]</div>
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash"><span class="function"><span class="title">multidump</span></span>() &#123;
+    rm -rf <span class="variable">$&#123;WORKDIR&#125;</span>/backup
+    mkdir -p <span class="variable">$&#123;WORKDIR&#125;</span>/backup
+
+    COMMIT_COUNT=0
+    COMMIT_LIMIT=10
+    error_views_file=<span class="string">"<span class="variable">$&#123;WORKDIR&#125;</span>/error_list"</span>
+    DBTBS=(`cat <span class="variable">$&#123;WORKDIR&#125;</span>/listOfTables`)
+    i=1
+    <span class="keyword">for</span> DBTB <span class="keyword">in</span> <span class="variable">$&#123;DBTBS[@]&#125;</span>;<span class="keyword">do</span>
+        <span class="built_in">echo</span> <span class="string">"processing <span class="variable">$i</span>/<span class="variable">$&#123;#DBTBS[@]&#125;</span>"</span>
+        ((i++))
+        DB=`<span class="built_in">echo</span> <span class="variable">$&#123;DBTB&#125;</span> | sed <span class="string">'s/\./ /g'</span> | awk <span class="string">'&#123;print $1&#125;'</span>`
+        TB=`<span class="built_in">echo</span> <span class="variable">$&#123;DBTB&#125;</span> | sed <span class="string">'s/\./ /g'</span> | awk <span class="string">'&#123;print $2&#125;'</span>`
+        <span class="keyword">if</span> [[ <span class="string">"X"</span>`grep -w <span class="variable">$&#123;DBTB&#125;</span> <span class="variable">$&#123;error_views_file&#125;</span>` != X<span class="string">""</span> ]];<span class="keyword">then</span>
+            <span class="built_in">echo</span> skip <span class="string">"<span class="variable">$&#123;DBTB&#125;</span>"</span>
+            <span class="built_in">continue</span>
+        <span class="keyword">fi</span>
+        dumpIt <span class="variable">$&#123;DB&#125;</span> <span class="variable">$&#123;TB&#125;</span>
+        (( COMMIT_COUNT++ ))
+        <span class="keyword">if</span> [[ <span class="variable">$&#123;COMMIT_COUNT&#125;</span> -eq <span class="variable">$&#123;COMMIT_LIMIT&#125;</span> ]]
+        <span class="keyword">then</span>
+            COMMIT_COUNT=0
+            <span class="built_in">wait</span>
+        <span class="keyword">fi</span>
+    <span class="keyword">done</span>
+    <span class="keyword">if</span> [[ <span class="variable">$&#123;COMMIT_COUNT&#125;</span> -gt 0 ]]
+    <span class="keyword">then</span>
+        <span class="built_in">wait</span>
+    <span class="keyword">fi</span>
+&#125;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_方案三_15_22分钟">方案三 15-22分钟</h3>
+<div class="paragraph">
+<p>mysqlpump 是 mysql 提供的工具，文档和网上教程一大堆，这里只谈使用。
+可以很直观的看到执行到哪个表，剩余多少行；注意：mysqlpump遇到错误会停止继续，比如命令不正确、数据结构有问题。而且这个数据库开启GTID，所以如果你的数据库没有此选项，要把命令中的&#8212;&#8203;set-gtid-purged=ON去掉。</p>
+</div>
+<div class="paragraph">
+<p>两种压缩格式的时间差距还是很明显：</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 1. zlib格式 可用 zlib_decompress 解压；100个线程的mysqlpump，时间大概22分钟</div>
+<div class="content">
+<div class="paragraph">
+<p>mysqlpump -u<em>username</em> -p<em>password</em> --compress-output=ZLIB --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users |gzip &gt; /temp/test.sql.gz</p>
+</div>
+<div class="paragraph">
+<p>Dump progress: 0/xx tables, xx/xxxxxxxxx rows
+Dump completed in xxxxxx milliseconds</p>
+</div>
+</div>
+</div>
+<div class="exampleblock">
+<div class="title">Example 2. lz4 15分钟 可用 lz4_decompress 解压</div>
+<div class="content">
+<div class="paragraph">
+<p>mysqlpump -u<em>username</em> -p<em>password</em> --compress-output=LZ4 --default-parallelism=100 --set-gtid-purged=ON --hex-blob --add-drop-database --add-drop-table --add-drop-user --users &gt; /temp/testlz4.lz4</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_方案四">方案四</h3>
+<div class="paragraph">
+<p>mysqlpump 可以针对database进行多线程导出，但是有时候数据分布不均匀，90%的数据可能都在一个表内，这种情况下mysqlpump显得无能为力。有没有可以对单个大表继续进行分拆的工具呢？ <a href="https://github.com/maxbube/mydumper/releases" target="_blank" rel="noopener">mydumper</a> 可以做这件事。</p>
+</div>
+<div class="sect3">
+<h4 id="_首先统计表的分布">首先统计表的分布</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">totalSql=<span class="string">"SELECT IFNULL(SUM(TABLE_ROWS),0) as t_rows_sum FROM information_schema.tables WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys');"</span>
+eachTableSql=<span class="string">"SELECT CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) AS table_name, IFNULL(TABLE_ROWS,0) as table_rows FROM information_schema.tables WHERE TABLE_SCHEMA NOT IN ('mysql','information_schema','performance_schema','sys') ORDER BY 2;"</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_验证mydumper导出database的效率">验证mydumper导出database的效率</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>只导出netcare，17分钟-20分钟左右</p>
+</li>
+</ol>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>mydumper -u <em>username</em> -p <em>password</em>  -v 3 -B <em>databaseName</em> --triggers --events --routines --rows=500000 --compress-protocol -c -t <em>threadNum.ie.100</em> --trx-consistency-only --outputdir /temp/mydumper</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_验证mydumper导出某一个大表的效率">验证mydumper导出某一个大表的效率</h4>
+
+</div>
+</div>
+<div class="sect2">
+<h3 id="_方案五_最终方案">方案五(最终方案)</h3>
+<div class="paragraph">
+<p><a href="https://dev.mysql.com/doc/mysql-enterprise-backup/8.0/en/" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/mysql-enterprise-backup/8.0/en/</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>方案五 优化前：21分钟
+unset tempdir
+tempdir=/data03/backup_`date '+%y%m%d%H%M%S'`
+mkdir $&#123;tempdir&#125;
+~/mysqlbackup -udbAdmin -pabcd1234 --backup-dir=$&#123;tempdir&#125; --compress backup
+echo "Successfully backing up data to $&#123;tempdir&#125;"
+
+# 有待优化 https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/backup-capacity-options.html
+--limit-memory=MB （default 100）
+--read-threads=num_threads （default 1）
+--process-threads=num_threads （default 6）
+--write-threads=num_threads （default 1）
+~/mysqlbackup -udbAdmin -pabcd1234 --backup-dir=$&#123;tempdir&#125; --compress backup
+
+#优化后： 15分钟
+# 整库备份到单个文件
+~/mysqlbackup -udbAdmin -pabcd1234 --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=$&#123;tempdir&#125; --backup-image=/data03/`basename $&#123;tempdir&#125;`.bin backup-to-image
+
+#直接备份到目标机器：
+~/mysqlbackup -udbAdmin -pabcd1234 --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=$&#123;tempdir&#125; --backup-image=- backup-to-image | ssh root@10.15.32.73 'cat &gt; /opt/temp_for_restore/my_backup.bin'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>具体备份恢复使用见另一篇文章 mysql gtid 主从复制数据迁移(物理备份)</p>
+</div>
+</div>
+</div>
+</div>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+            <a href="/tags/mysqldump/" rel="tag"># mysqldump</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/22/2019/20190210 vmware+centos7 双网卡平面设置/" rel="next" title="vmware+centos7 双网卡平面设置">
+                <i class="fa fa-chevron-left"></i> vmware+centos7 双网卡平面设置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/22/2019/20190210 prime_number/" rel="prev" title="测试驱动开发的一个示例代码——求质因数">
+                测试驱动开发的一个示例代码——求质因数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#_mysqldump_迁移数据"><span class="nav-number">1.</span> <span class="nav-text">mysqldump 迁移数据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#_背景"><span class="nav-number">1.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_机器_数据_应用情况"><span class="nav-number">1.2.</span> <span class="nav-text">机器、数据、应用情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_一些准备工作"><span class="nav-number">1.3.</span> <span class="nav-text">一些准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_首先尝试使用原生mysqldump"><span class="nav-number">1.4.</span> <span class="nav-text">首先尝试使用原生mysqldump</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_命令优化x"><span class="nav-number">1.5.</span> <span class="nav-text">命令优化x</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#_方案一_160分钟"><span class="nav-number">1.5.1.</span> <span class="nav-text">方案一 160分钟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#_方案二_90分钟"><span class="nav-number">1.5.2.</span> <span class="nav-text">方案二 90分钟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#_方案三_15_22分钟"><span class="nav-number">1.5.3.</span> <span class="nav-text">方案三 15-22分钟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#_方案四"><span class="nav-number">1.5.4.</span> <span class="nav-text">方案四</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#_首先统计表的分布"><span class="nav-number">1.5.4.1.</span> <span class="nav-text">首先统计表的分布</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#_验证mydumper导出database的效率"><span class="nav-number">1.5.4.2.</span> <span class="nav-text">验证mydumper导出database的效率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#_验证mydumper导出某一个大表的效率"><span class="nav-number">1.5.4.3.</span> <span class="nav-text">验证mydumper导出某一个大表的效率</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#_方案五_最终方案"><span class="nav-number">1.5.5.</span> <span class="nav-text">方案五(最终方案)</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

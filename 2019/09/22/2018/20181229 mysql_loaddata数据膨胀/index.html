@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="MySQL,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="1. 发现问题100w 100字段数据 后台膨胀系数较大。用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。膨胀系数(50f100w)代表使用了50个字段100w行的数据进行测试。 2. 分解问题2.1 是否是数据量较大，导致膨胀系数较大？构造 10f10w 和 10f100w 进行对比，排除单纯因数据量导致膨胀的推测。">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL loaddata 数据膨胀（mysql 后台文件大小分析）">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content="1. 发现问题100w 100字段数据 后台膨胀系数较大。用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。膨胀系数(50f100w)代表使用了50个字段100w行的数据进行测试。 2. 分解问题2.1 是否是数据量较大，导致膨胀系数较大？构造 10f10w 和 10f100w 进行对比，排除单纯因数据量导致膨胀的推测。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL loaddata 数据膨胀（mysql 后台文件大小分析）">
+<meta name="twitter:description" content="1. 发现问题100w 100字段数据 后台膨胀系数较大。用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。膨胀系数(50f100w)代表使用了50个字段100w行的数据进行测试。 2. 分解问题2.1 是否是数据量较大，导致膨胀系数较大？构造 10f10w 和 10f100w 进行对比，排除单纯因数据量导致膨胀的推测。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/">
+
+
+
+
+
+  <title>MySQL loaddata 数据膨胀（mysql 后台文件大小分析） | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181229 mysql_loaddata数据膨胀/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MySQL loaddata 数据膨胀（mysql 后台文件大小分析）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="1-发现问题"><a href="#1-发现问题" class="headerlink" title="1. 发现问题"></a>1. 发现问题</h1><p>100w 100字段数据 后台膨胀系数较大。<br>用膨胀系数表示load data后mysql后台 表名.ibd 文件的大小与所 load 的 data.xdr 文件的比值。<br>膨胀系数(50f100w)代表使用了50个字段100w行的数据进行测试。</p>
+<h1 id="2-分解问题"><a href="#2-分解问题" class="headerlink" title="2. 分解问题"></a>2. 分解问题</h1><h2 id="2-1-是否是数据量较大，导致膨胀系数较大？"><a href="#2-1-是否是数据量较大，导致膨胀系数较大？" class="headerlink" title="2.1 是否是数据量较大，导致膨胀系数较大？"></a>2.1 是否是数据量较大，导致膨胀系数较大？</h2><p>构造 10f10w 和 10f100w 进行对比，排除单纯因数据量导致膨胀的推测。</p>
+<table>
+<thead>
+<tr>
+<th>数据模型（字段数）</th>
+<th>数据模型（行数）</th>
+<th>数据文件大小（MB）</th>
+<th>load 时长(s)</th>
+<th>表文件大小(MB)</th>
+<th>单次导入增加</th>
+<th>字段类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>10w</td>
+<td>58.9</td>
+<td>3.02</td>
+<td>76</td>
+<td>76</td>
+<td>“3 int,</td>
+</tr>
+<tr>
+<td>3 double(20,2),</td>
+</tr>
+<tr>
+<td>4 VARCHAR(256)</td>
+</tr>
+<tr>
+<td>“</td>
+</tr>
+<tr>
+<td>10</td>
+<td>100w</td>
+<td>592</td>
+<td>33.96</td>
+<td>688</td>
+<td>688</td>
+<td>“3 int,</td>
+</tr>
+<tr>
+<td>3 double(20,2),</td>
+</tr>
+<tr>
+<td>4 VARCHAR(256)</td>
+</tr>
+<tr>
+<td>“</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-2-是否是因字段数不同，导致膨胀系数较大？"><a href="#2-2-是否是因字段数不同，导致膨胀系数较大？" class="headerlink" title="2.2 是否是因字段数不同，导致膨胀系数较大？"></a>2.2 是否是因字段数不同，导致膨胀系数较大？</h2><h3 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> loadtest10f(</span><br><span class="line">    record_001 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_002 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_003 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_004 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_005 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_006 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_007 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_008 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_009 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    record_010 <span class="built_in">VARCHAR</span>(<span class="number">256</span>),</span><br><span class="line">    ....</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>因构造数据工具内存限制，100字段最多构造出2w行数据，为了方便对比，以下所有数据都构造2w行；<br>因mysql 默认row size为65535，构造的数据模型为varchar(256)，且服务器采用utf8(每个字符3个字节)，所以最多构造到65535/256/3个字段；</p>
+<p>构造同样是2w行数据的 10f,20f,50f,60f,70f,80f,85f 等数据进行测试，结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>数据模型（字段数）</th>
+<th>数据模型（行数）</th>
+<th>数据文件大小（MB）</th>
+<th>load 时长(s)</th>
+<th>表文件大小(MB)</th>
+<th>字段类型</th>
+<th>最大行大小</th>
+<th>B+树高度</th>
+<th>膨胀系数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>20000</td>
+<td>15</td>
+<td>0.63</td>
+<td>26</td>
+<td>varchar(256)</td>
+<td>7680</td>
+<td>1</td>
+<td>1.733333333</td>
+</tr>
+<tr>
+<td>20</td>
+<td>20000</td>
+<td>29</td>
+<td>1.04</td>
+<td>42</td>
+<td>varchar(256)</td>
+<td>15360</td>
+<td>1</td>
+<td>1.448275862</td>
+</tr>
+<tr>
+<td>30</td>
+<td>20000</td>
+<td>44</td>
+<td>1.63</td>
+<td>63</td>
+<td>varchar(256)</td>
+<td>23040</td>
+<td>1</td>
+<td>1.431818182</td>
+</tr>
+<tr>
+<td>50</td>
+<td>20000</td>
+<td>72</td>
+<td>3.07</td>
+<td>110</td>
+<td>varchar(256)</td>
+<td>38400</td>
+<td>1</td>
+<td>1.527777778</td>
+</tr>
+<tr>
+<td>60</td>
+<td>20000</td>
+<td>87</td>
+<td>12.88</td>
+<td>680</td>
+<td>varchar(256)</td>
+<td>46080</td>
+<td>3</td>
+<td>7.816091954</td>
+</tr>
+<tr>
+<td>70</td>
+<td>20000</td>
+<td>101</td>
+<td>35.61</td>
+<td>1921</td>
+<td>varchar(256)</td>
+<td>53760</td>
+<td>3</td>
+<td>19.01980198</td>
+</tr>
+<tr>
+<td>80</td>
+<td>20000</td>
+<td>115</td>
+<td>61.87</td>
+<td>3280</td>
+<td>varchar(256)</td>
+<td>61440</td>
+<td>3</td>
+<td>28.52173913</td>
+</tr>
+<tr>
+<td>85</td>
+<td>20000</td>
+<td>123</td>
+<td>70.04</td>
+<td>3985</td>
+<td>varchar(256)</td>
+<td>65280</td>
+<td>3</td>
+<td>32.39837398</td>
+</tr>
+<tr>
+<td>100</td>
+<td>20000</td>
+<td>144</td>
+<td></td>
+<td></td>
+<td>varchar(256)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>数据显示，字段在50f左右开始，膨胀系数曲线较之前更为陡峭，该变化记为 d1；<br>在50f之后曲线再次平缓，增长速度小于 d1.</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>几点说明：</p>
+<ol>
+<li><p>innodb 默认 page size 为 16834.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like 'innodb_page_size';</span><br><span class="line">+<span class="comment">------------------+-------+</span></span><br><span class="line">| Variable_name    | Value |</span><br><span class="line">+<span class="comment">------------------+-------+</span></span><br><span class="line">| innodb_page_size | 16384 |</span><br><span class="line">+<span class="comment">------------------+-------+</span></span><br><span class="line">1 row in <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>innodb 采用B+Tree数据结构，查询这几个构造的数据表，其根节点页起始页码为3：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SELECT</span><br><span class="line">    -&gt; b.name, a.name, index_id, type, a.space, a.PAGE_NO</span><br><span class="line">    -&gt; FROM</span><br><span class="line">    -&gt; information_schema.INNODB_SYS_INDEXES a,</span><br><span class="line">    -&gt; information_schema.INNODB_SYS_TABLES b</span><br><span class="line">    -&gt; WHERE</span><br><span class="line">    -&gt; a.table_id = b.table_id AND a.space &lt;&gt; 0 AND b.name like '%loadtest%';</span><br><span class="line">+<span class="comment">-----------------------+-----------------+----------+------+-------+---------+</span></span><br><span class="line">| name                  | name            | index_id | type | space | PAGE_NO |</span><br><span class="line">+<span class="comment">-----------------------+-----------------+----------+------+-------+---------+</span></span><br><span class="line">| test/loadtest100f100w | GEN_CLUST_INDEX |    30333 |    1 | 16650 |       3 |</span><br><span class="line">| test/loadtest10f      | GEN_CLUST_INDEX |    30334 |    1 | 16651 |       3 |</span><br><span class="line">| test/loadtest10f100w  | GEN_CLUST_INDEX |    30329 |    1 | 16646 |       3 |</span><br><span class="line">| test/loadtest10f10w   | GEN_CLUST_INDEX |    30328 |    1 | 16645 |       3 |</span><br><span class="line">| test/loadtest20f      | GEN_CLUST_INDEX |    30335 |    1 | 16652 |       3 |</span><br><span class="line">| test/loadtest20f100w  | GEN_CLUST_INDEX |    30330 |    1 | 16647 |       3 |</span><br><span class="line">| test/loadtest30f      | GEN_CLUST_INDEX |    30336 |    1 | 16653 |       3 |</span><br><span class="line">| test/loadtest50f      | GEN_CLUST_INDEX |    30337 |    1 | 16654 |       3 |</span><br><span class="line">| test/loadtest50f100w  | GEN_CLUST_INDEX |    30331 |    1 | 16648 |       3 |</span><br><span class="line">| test/loadtest60f      | GEN_CLUST_INDEX |    30340 |    1 | 16657 |       3 |</span><br><span class="line">| test/loadtest70f      | GEN_CLUST_INDEX |    30341 |    1 | 16658 |       3 |</span><br><span class="line">| test/loadtest80f      | GEN_CLUST_INDEX |    30338 |    1 | 16655 |       3 |</span><br><span class="line">| test/loadtest85f      | GEN_CLUST_INDEX |    30342 |    1 | 16659 |       3 |</span><br><span class="line">+<span class="comment">-----------------------+-----------------+----------+------+-------+---------+</span></span><br><span class="line">13 rows in <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查询其 pagelevel （根页偏移64字节的前2位，即16834*3+64=49216）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest10f.ibd</span></span><br><span class="line">000c040 0000 0000 0000 0000 7e76</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest20f.ibd</span></span><br><span class="line">000c040 0000 0000 0000 0000 7f76</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest30f.ibd</span></span><br><span class="line">000c040 0000 0000 0000 0000 8076</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest50f.ibd</span></span><br><span class="line">000c040 0000 0000 0000 0000 8176</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest60f.ibd</span></span><br><span class="line">000c040 0200 0000 0000 0000 8476</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest70f.ibd</span></span><br><span class="line">000c040 0200 0000 0000 0000 8576</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest80f.ibd</span></span><br><span class="line">000c040 0200 0000 0000 0000 8276</span><br><span class="line">000c04a</span><br><span class="line">SHA1000130993:/usr/<span class="built_in">local</span>/mysql/data/<span class="built_in">test</span> <span class="comment"># hexdump -s 49216 -n 10 loadtest85f.ibd</span></span><br><span class="line">000c040 0200 0000 0000 0000 8676</span><br><span class="line">000c04a</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取 page level 和 B+Tree 高度<br>由于本人测试机器字节序为小端，所以000c040 0200十六进制字节实际值为000c040 0002，即2.<br>从上一步骤得出50f以后的表pagelevel为2,50f之前pagelevel为0.<br>所以50f以后的表B+Tree高度为page level+1=3.<br>B+Tree高度一般为1-3，很少有4。3 属于较高的高度，怀疑数据全为索引所占。</p>
+</li>
+<li><p>获取index所占page的粗略信息。由于本文测试数据未建索引，所以默认索引为GEN_CLUST_INDEX。主键、聚簇索引，本身即是数据，可以看到磁盘基本都是索引占据。</p>
+</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SELECT</span><br><span class="line">    -&gt; table_name,</span><br><span class="line">    -&gt;        sum(stat_value) pages,</span><br><span class="line">    -&gt;        index_name,</span><br><span class="line">    -&gt;        sum(stat_value) * @@innodb_page_size size</span><br><span class="line">    -&gt; FROM</span><br><span class="line">    -&gt;        mysql.innodb_index_stats</span><br><span class="line">    -&gt; WHERE</span><br><span class="line">    -&gt;            table_name like '%load%'</span><br><span class="line">    -&gt;        AND database_name = 'test'</span><br><span class="line">    -&gt;        AND stat_description = 'Number of pages in the index'</span><br><span class="line">    -&gt; GROUP BY</span><br><span class="line">    -&gt;        table_name,index_name;</span><br><span class="line">+<span class="comment">------------------+--------+-----------------+-------------+</span></span><br><span class="line">| table_name       | pages  | index_name      | size        |</span><br><span class="line">+<span class="comment">------------------+--------+-----------------+-------------+</span></span><br><span class="line">| loadtest100f100w | 785472 | GEN_CLUST_INDEX | 12869173248 |</span><br><span class="line">| loadtest10f      |   1059 | GEN_CLUST_INDEX |    17350656 |</span><br><span class="line">| loadtest10f100w  |  42112 | GEN_CLUST_INDEX |   689963008 |</span><br><span class="line">| loadtest10f10w   |   4327 | GEN_CLUST_INDEX |    70893568 |</span><br><span class="line">| loadtest20f      |   2084 | GEN_CLUST_INDEX |    34144256 |</span><br><span class="line">| loadtest20f100w  |  85568 | GEN_CLUST_INDEX |  1401946112 |</span><br><span class="line">| loadtest30f      |   3366 | GEN_CLUST_INDEX |    55148544 |</span><br><span class="line">| loadtest50f      |   6121 | GEN_CLUST_INDEX |   100286464 |</span><br><span class="line">| loadtest50f100w  |  99456 | GEN_CLUST_INDEX |  1629487104 |</span><br><span class="line">| loadtest60f      |  40425 | GEN_CLUST_INDEX |   662323200 |</span><br><span class="line">| loadtest70f      | 115114 | GEN_CLUST_INDEX |  1886027776 |</span><br><span class="line">| loadtest80f      | 196778 | GEN_CLUST_INDEX |  3224010752 |</span><br><span class="line">| loadtest85f      | 239466 | GEN_CLUST_INDEX |  3923410944 |</span><br><span class="line">+<span class="comment">------------------+--------+-----------------+-------------+</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181230 右键添加在此处打开cygwin/" rel="next" title="右键添加在此处打开cygwin">
+                <i class="fa fa-chevron-left"></i> 右键添加在此处打开cygwin
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181229 Upsource 服务器搭建和集成 idea 插件/" rel="prev" title="Upsource 服务器搭建和集成 idea 插件">
+                Upsource 服务器搭建和集成 idea 插件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-发现问题"><span class="nav-number">1.</span> <span class="nav-text">1. 发现问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-分解问题"><span class="nav-number">2.</span> <span class="nav-text">2. 分解问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-是否是数据量较大，导致膨胀系数较大？"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 是否是数据量较大，导致膨胀系数较大？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-是否是因字段数不同，导致膨胀系数较大？"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 是否是因字段数不同，导致膨胀系数较大？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#数据模型"><span class="nav-number">2.2.1.</span> <span class="nav-text">数据模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#说明"><span class="nav-number">2.2.2.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析"><span class="nav-number">2.2.3.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

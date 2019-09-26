@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,btrace,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="BTrace 是 Java 的一个诊断工具，可以在不重启应用的情况下，对应用进行时间耗费、参数及结果跟踪、方法调用跟踪等分析。     BTrace 术语    Probe Point  位置  Trace Actions or Actions  追踪语句  Action Methods  追踪语句所在的静态方法       BTrace 程序结构   一个 BTrace 程序 是一个 Ja">
+<meta name="keywords" content="Java,btrace">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BTrace 使用教程">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/22/2018/20181019 BTrace 使用教程/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content="BTrace 是 Java 的一个诊断工具，可以在不重启应用的情况下，对应用进行时间耗费、参数及结果跟踪、方法调用跟踪等分析。     BTrace 术语    Probe Point  位置  Trace Actions or Actions  追踪语句  Action Methods  追踪语句所在的静态方法       BTrace 程序结构   一个 BTrace 程序 是一个 Ja">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BTrace 使用教程">
+<meta name="twitter:description" content="BTrace 是 Java 的一个诊断工具，可以在不重启应用的情况下，对应用进行时间耗费、参数及结果跟踪、方法调用跟踪等分析。     BTrace 术语    Probe Point  位置  Trace Actions or Actions  追踪语句  Action Methods  追踪语句所在的静态方法       BTrace 程序结构   一个 BTrace 程序 是一个 Ja">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/22/2018/20181019 BTrace 使用教程/">
+
+
+
+
+
+  <title>BTrace 使用教程 | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/22/2018/20181019 BTrace 使用教程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">BTrace 使用教程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-22T12:56:05+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>BTrace</strong> 是 Java 的一个诊断工具，可以在不重启应用的情况下，对应用进行时间耗费、参数及结果跟踪、方法调用跟踪等分析。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_btrace_术语">BTrace 术语</h2>
+<div class="sectionbody">
+<div class="dlist quota">
+<dl>
+<dt>Probe Point</dt>
+<dd>
+<p>位置</p>
+</dd>
+<dt>Trace Actions or Actions</dt>
+<dd>
+<p>追踪语句</p>
+</dd>
+<dt>Action Methods</dt>
+<dd>
+<p>追踪语句所在的静态方法</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_btrace_程序结构">BTrace 程序结构</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>一个 <strong>BTrace 程序</strong> 是一个 Java 类，包含数个由 <code>BTrace 注解</code> 注释的 <code>public static void</code> 方法。这些注解被用来指定被追踪程序的 <strong>Probe Point</strong>. <strong>Tracing Actions</strong> 在这些静态方法内定义。这些静态方法也即上文提到的 <strong>Action Methods</strong>。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_btrace_的限制_i_class_fa_fa_exclamation_triangle_i">BTrace 的限制 <i class="fa fa-exclamation-triangle"></i></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>不能 创建对象，数组。</p>
+</li>
+<li>
+<p>不能 抛出、捕获异常。</p>
+</li>
+<li>
+<p>不能 调用任意实例或静态方法，只能调用 BTraceUtils 中的方法。</p>
+</li>
+<li>
+<p>不能 修改目标程序的静态或实例变量，不过 BTrace 程序自己不做限制。</p>
+</li>
+<li>
+<p>不能 有实例变量或方法，方法不能有返回值类型，BTrace 程序的所有方法必须是 public static 1. oid 的，所有的字段都必须是 static 的。</p>
+</li>
+<li>
+<p>不能 有 outer, inner, nested 或 local 类。</p>
+</li>
+<li>
+<p>不能 用 synchronized 关键字。</p>
+</li>
+<li>
+<p>不能 有循环 (for, while, do..while)。</p>
+</li>
+<li>
+<p>不能 继承任何类 (即父类只能是 java.lang.Object)。</p>
+</li>
+<li>
+<p>不能 实现接口。</p>
+</li>
+<li>
+<p>不能 包含 assert 语句.</p>
+</li>
+<li>
+<p>不能 使用 class literals.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>虽然不需要重启就可以使用 BTrace, 但是使用不当仍然会导致应用终止，比如目标程序可能会发生下面这种错误:</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Exception in thread "main" java.lang.NoSuchMethodError: com.foo.btraceDemo.Target.$btrace$com$foo$btraceDemo$Tracer$func(Ljava/lang/Object;IJII)V</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_一个简单的_code_btrace_程序_code_演示">一个简单的 <code>BTrace 程序</code> 演示</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">Tracer.java&#8201;&#8212;&#8201;BTrace 要执行的程序（脚本）</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="comment">// 导入所有 BTrace 注解。</span>
+<span class="keyword">import</span> com.sun.btrace.annotations.*;
+<span class="comment">// 导入 BTraceUtils 的静态方法。</span>
+<span class="keyword">import</span> <span class="keyword">static</span> com.sun.btrace.BTraceUtils.*;
+
+<span class="comment">// @BTrace annotation tells that this is a BTrace program</span>
+<span class="meta">@BTrace</span> (<span class="number">3</span>)
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloWorld</span> </span>&#123;
+
+    <span class="comment">// @OnMethod 注解表明 Probe Point(位置)。</span>
+    <span class="comment">// 在这个例子中，我们对进入 Thread.start() 方法感兴趣。</span>
+    <span class="meta">@OnMethod</span>(
+        clazz=<span class="string">"java.lang.Thread"</span>,
+        method=<span class="string">"start"</span>
+    )
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;
+        <span class="comment">// println 是 BTraceUtils 的静态方法</span>
+        println(<span class="string">"about to start a thread!"</span>);
+        <span class="comment">// System.out.println("123"); (1)</span>
+        <span class="comment">// new Tracer(); : (2)</span>
+    &#125;
+&#125;</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>错误: Tracer.java:21:method calls are not allowed - only calls to BTraceUtils are allowed</p>
+</li>
+<li>
+<p>错误: Tracer.java:22:object creation is not allowed</p>
+</li>
+<li>
+<p>不要忘记 @BTrace 注解</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="title">Target.java&#8201;&#8212;&#8201;模拟的线上应用</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="keyword">import</span> java.util.concurrent.TimeUnit;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Target</span> </span>&#123;
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;
+        <span class="keyword">try</span> &#123;
+            TimeUnit.SECONDS.sleep(<span class="number">15</span>);
+        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+        System.out.println(<span class="string">"start main method..."</span>);
+        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;
+            System.out.println(<span class="string">"starting new thread..."</span>);
+            <span class="keyword">new</span> Thread(() -&gt; &#123;
+                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;
+                    <span class="keyword">try</span> &#123;
+                        TimeUnit.SECONDS.sleep(<span class="number">1</span>);
+                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;
+                        e.printStackTrace();
+                    &#125;
+                &#125;
+            &#125;).start();
+            TimeUnit.SECONDS.sleep(<span class="number">5</span>);
+        &#125;
+    &#125;
+&#125;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>运行 Target.java 后，使用 jps -v 查看该程序 pid 号。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&gt; jps -v
+
+21952 Target -javaagent:D:\program\JetBrains\IntelliJ IDEA017.2.2\lib\idea_rt.jar=55132:D:\program\JetBrains\IntelliJ
+IDEA 2017.2.2\bin -Dfile.encoding=UTF-8</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>使用 btrace 启用 Tracer.java。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>## 首先切换到 Tracer.java 所在目录，然后执行
+&gt; btrace -v 21952 Tracer.java <b class="conum">(1)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>-v 打印出 DEBUG 信息，无 -v 只输出你自己想要输出的信息</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>可以看到在 Target.java 和 BTrace 的窗口都输出了调试信息。在 Target 中一旦一个新线程被创建，BTrace 便可以打印出相关信息。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_继续_btrace_注解">继续&#8201;&#8212;&#8201;BTrace 注解</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>假设我们想诊断这样一个 add 方法：</p>
+</div>
+<div class="listingblock">
+<div class="title">Target.java</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="keyword">package</span> com.foo.btraceDemo;
+
+<span class="keyword">import</span> java.lang.management.ManagementFactory;
+<span class="keyword">import</span> java.util.concurrent.TimeUnit;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Target</span> </span>&#123;
+    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String pid = ManagementFactory.getRuntimeMXBean().getName().split(<span class="string">"@"</span>)[<span class="number">0</span>];
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;
+        System.out.println(<span class="string">"pid: "</span> + pid);
+        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;
+            System.out.println(<span class="string">"准备调用 add 方法..."</span>);
+            add(<span class="number">3</span>, <span class="number">5</span>);
+            System.out.println(<span class="string">"调用 add 方法结束..."</span>);
+        &#125;
+    &#125;
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;
+        TimeUnit.SECONDS.sleep(<span class="number">5</span>);
+        a = a + a;
+        System.out.println(<span class="string">"dododo"</span>);
+        a = a / <span class="number">2</span>;
+        <span class="keyword">return</span> a + b;
+    &#125;
+&#125;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_method_annotations_方法注释">Method Annotations 方法注释</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>@OnMethod</p>
+<div class="listingblock">
+<div class="title">Tracer.java:func</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz=<span class="string">"com.foo.btraceDemo.Target"</span>, method=<span class="string">"add"</span>,      location = <span class="meta">@Location</span>(Kind.RETURN))
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">(@Return <span class="keyword">int</span> result, @Duration <span class="keyword">long</span>     time, <span class="keyword">int</span> paramA, <span class="keyword">int</span> paramB)</span> </span>&#123;
+        println(<span class="string">"param:"</span> + paramA + <span class="string">", "</span> + paramB);
+        println(<span class="string">"result:"</span> + result);
+        println(<span class="string">"costs(ms):"</span> + time/<span class="number">1000</span>/<span class="number">1000</span>);
+    &#125;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>输出结果</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>param:3, 5
+result:8
+costs(ms):5020
+param:3, 5
+result:8
+costs(ms):5013</pre>
+</div>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>如何通过 clazz/method 指定要诊断的方法</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>全限定名</p>
+<div class="literalblock">
+<div class="content">
+<pre>clazz="com.foo.btraceDemo.Target", method="add"</pre>
+</div>
+</div>
+</li>
+<li>
+<p>正则表达式</p>
+<div class="literalblock">
+<div class="content">
+<pre>clazz = "+java.sql.Statement", method = "/execute($|Update|Query|Batch)/"</pre>
+</div>
+</div>
+</li>
+<li>
+<p>接口/父类，注解</p>
+<div class="literalblock">
+<div class="content">
+<pre>clazz = "+java.sql.Statement" // 匹配所有实现该接口或父类的类
+clazz = "@org.springframework.stereotype.Controller" // 匹配所有 @Controller 注解的类</pre>
+</div>
+</div>
+</li>
+<li>
+<p>构造函数</p>
+<div class="literalblock">
+<div class="content">
+<pre>clazz="java.lang.Throwable",method="&lt;init&gt;",
+    location=@Location(Kind.RETURN) // 匹配任何异常被构造完成准备抛出</pre>
+</div>
+</div>
+</li>
+<li>
+<p>静态内部类</p>
+<div class="literalblock">
+<div class="content">
+<pre>clazz="com.foo.bar$YourInnerClass", method="mName")</pre>
+</div>
+</div>
+</li>
+<li>
+<p>重载方法区别方法见下文</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>如何通过 @Location 指定诊断方法的时机</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>Kind.Entry Kind.Return</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Kind.Entry 方法进入时，为默认值。</p>
+</li>
+<li>
+<p>Kind.Return 方法完成时, 指定此 Kind 可以使用 @Duration 获取方法耗时, @Return 获取方法返回结果</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz=<span class="string">"com.foo.btraceDemo.Target"</span>, method=<span class="string">"add"</span>,    ocation = <span class="meta">@Location</span>(Kind.RETURN))
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">(@Return <span class="keyword">int</span> result, @Duration <span class="keyword">long</span> me,     <span class="keyword">int</span> paramA, <span class="keyword">int</span> paramB)</span> </span>&#123;
+          println(<span class="string">"param:"</span> + paramA + <span class="string">", "</span> + paramB);
+    println(<span class="string">"result:"</span> + result);
+    println(<span class="string">"costs(ms):"</span> + time/<span class="number">1000</span>/<span class="number">1000</span>);
+&#125;</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Kind.Error, Kind.Throw和 Kind.Catch</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Kind.Error: 异常抛出方法之外</p>
+</li>
+<li>
+<p>Kind.Throw: 异常被 throw 之处</p>
+</li>
+<li>
+<p>Kind.Catch: 异常被 catch 之处</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz = <span class="string">"java.net.ServerSocket"</span>, method = <span class="string">"bind"</span>, ocation = <span class="meta">@Location</span>(Kind.ERROR))
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">onBind</span><span class="params">(Throwable exception, @Duration <span class="keyword">long</span> uration)</span> <span class="comment">// 这种写法待验证</span></span></code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Kind.Call与Kind.Line</p>
+<div class="literalblock">
+<div class="content">
+<pre>Kind.ENTRY （默认值）只关注目标方法（OnMethod 的clazz/method），Kind.CALL 关注目标方法中，调用的其它哪些类哪些方法（Location的class，method）。注意，一般网上的教程，在描述 Kind.ENTRY 和 Kind.CALL 时，会将 CALL 描述为“还关注目标方法中其它方法的调用”，但是经过验证，此处不是“还”的关系，而是过滤的逻辑。也就是说，指定了这里的 clazz 和 method（例如 MethodB），将忽略目标方法（MethodA）的其它逻辑的时间。示例代码如下：</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Target.java&#8201;&#8212;&#8201;add</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;
+    TimeUnit.SECONDS.sleep(<span class="number">5</span>);
+    a = a + a;
+    System.out.println(<span class="string">"dododo"</span>);
+    a = a / <span class="number">2</span>;
+    <span class="keyword">return</span> a + b;
+&#125;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Kind.ENTRY</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz = <span class="string">"com.foo.btraceDemo.Target"</span>, method = <span class="string">"add"</span>, location = <span class="meta">@Location</span>(value = Kind.RETURN))
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add1</span><span class="params">(@Duration <span class="keyword">long</span> time, <span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;
+    print(<span class="string">"add1 costs1(ns):"</span> + time);
+    totalTime += time;
+    counter ++;
+    println(<span class="string">", average(ns): "</span> + (totalTime/counter));
+&#125;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>add1 costs1(ns):5053722750, average(ns): 5053722750
+add1 costs1(ns):5050729632, average(ns): 5052226191
+add1 costs1(ns):5036155712, average(ns): 5046869364</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">KIND.CALL 匹配 println</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz = <span class="string">"com.foo.btraceDemo.Target"</span>, method = <span class="string">"add"</span>,
+            location = <span class="meta">@Location</span>(value = Kind.CALL, clazz = <span class="string">"java.io.PrintStream"</span>, method = <span class="string">"println"</span>, where = Where.AFTER))
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add2</span><span class="params">(@Duration <span class="keyword">long</span> time)</span> </span>&#123;
+    print(<span class="string">"add2 costs(ns):"</span> + time);
+    totalTime += time;
+    counter ++;
+    println(<span class="string">", average(ns): "</span> + (totalTime/counter));
+&#125;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>add2 costs(ns):148064, average(ns): 148064
+add2 costs(ns):91911, average(ns): 119987
+add2 costs(ns):143314, average(ns): 127763</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">KIND.CALL 匹配 *</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnMethod</span>(clazz = <span class="string">"com.foo.btraceDemo.Target"</span>, method = <span class="string">"add"</span>,
+            location = <span class="meta">@Location</span>(value = Kind.CALL, clazz = <span class="string">"/.*/"</span>, method = <span class="string">"/.*/"</span>, where = Where.AFTER))
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add3</span><span class="params">(@Duration <span class="keyword">long</span> time)</span> </span>&#123;
+    print(<span class="string">"add3 costs(ns):"</span> + time);
+    totalTime += time;
+    counter ++;
+    println(<span class="string">", average(ns): "</span> + (totalTime/counter));
+&#125;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>add3 costs(ns):5166920098, average(ns): 5166920098 <b class="conum">(1)</b>
+add3 costs(ns):81295, average(ns): 2583500696
+add3 costs(ns):5160914306, average(ns): 3442638566
+add3 costs(ns):68445, average(ns): 2581996036
+add3 costs(ns):5075955184, average(ns): 3080787865
+add3 costs(ns):67048, average(ns): 2567334396
+add3 costs(ns):5060307945, average(ns): 2923473474
+add3 costs(ns):115098, average(ns): 2558053677
+add3 costs(ns):5276136213, average(ns): 2860062848
+add3 costs(ns):93308, average(ns): 2574065894</pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>注意这种写法打印的时间，你看出什么规律了吗?</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>@OnTimer
+定时任务，单位 ms, 没有什么好解释的。</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnTimer</span>(<span class="number">5000</span>)
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;
+    println(counter);
+&#125;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>@OnEvent</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"><span class="meta">@OnEvent</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">defalutEvent</span><span class="params">()</span></span>&#123;
+    println(<span class="string">"default event sent..."</span>);
+&#125;
+<span class="meta">@OnEvent</span>(<span class="string">"speak"</span>)
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">namedEvent</span><span class="params">()</span></span>&#123;
+    println(<span class="string">"speak something..."</span>);
+&#125;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>输出结果</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Please enter your option:
+        1. exit
+        2. send an event
+        3. send a named event
+        4. flush console output
+&gt;3
+Please enter the event name: &gt;speak
+speak something...
+&gt;1
+default event sent...</pre>
+</div>
+</div>
+</li>
+<li>
+<p>@OnError</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Arguments Annotations 参数注释</dt>
+<dd>
+<p>jstat -J-Djstat.showUnsupported=true -name btrace.com.sun.btrace.samples.ThreadCounter.count &lt;pid&gt;</p>
+</dd>
+</dl>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>更多解释请参考 BTrace 本地安装路径下的帮助文档，或者 wiki</p>
+</div>
+<div class="ulist bibliography">
+<ul class="bibliography">
+<li>
+<p><a href="https://github.com/btraceio/btrace/wiki/BTrace-Annotations" target="_blank" rel="noopener">wiki 页面</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/lirenzuo/article/details/76576064" target="_blank" rel="noopener">Btrace使用小结</a></p>
+</li>
+<li>
+<p><a href="http://agapple.iteye.com/blog/962119?spm=a2c4e.11153940.blogcont7569.25.3d5955c8anNsnZ" target="_blank" rel="noopener">btrace记忆</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/btrace/" rel="tag"># btrace</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181013 [Scala] [sbt] 使用自定义的 maven 仓库/" rel="next" title="Scala sbt 使用自定义的 maven 仓库">
+                <i class="fa fa-chevron-left"></i> Scala sbt 使用自定义的 maven 仓库
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/22/2018/20181013 如何对 centos 7 分区进行扩容/" rel="prev" title="如何对 centos 7 分区进行扩容">
+                如何对 centos 7 分区进行扩容 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#_btrace_术语"><span class="nav-number">1.</span> <span class="nav-text">BTrace 术语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_btrace_程序结构"><span class="nav-number">2.</span> <span class="nav-text">BTrace 程序结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_btrace_的限制_i_class_fa_fa_exclamation_triangle_i"><span class="nav-number">3.</span> <span class="nav-text">BTrace 的限制 </span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_一个简单的_code_btrace_程序_code_演示"><span class="nav-number">4.</span> <span class="nav-text">一个简单的 BTrace 程序 演示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_继续_btrace_注解"><span class="nav-number">5.</span> <span class="nav-text">继续 — BTrace 注解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_method_annotations_方法注释"><span class="nav-number">6.</span> <span class="nav-text">Method Annotations 方法注释</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
