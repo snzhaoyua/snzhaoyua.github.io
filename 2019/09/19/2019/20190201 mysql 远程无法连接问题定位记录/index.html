@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mysql,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="某业务通过Hibernate访问mysql，后台报错 Access denied for user &apos;matexxx&apos;@&apos;xxxx&apos; (using password: YES); 一般搞过开发的人都知道，这种问题不是密码错了，就是远程连接未打开，这两者其实都属于一个问题，就是用户的grant权限问题，但是此业务情况稍特殊。定位过程如下。     查看用户    SELECT USER,HOS">
+<meta name="keywords" content="mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql 远程连接无法访问的问题（密码与connection_control插件）">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content="某业务通过Hibernate访问mysql，后台报错 Access denied for user &apos;matexxx&apos;@&apos;xxxx&apos; (using password: YES); 一般搞过开发的人都知道，这种问题不是密码错了，就是远程连接未打开，这两者其实都属于一个问题，就是用户的grant权限问题，但是此业务情况稍特殊。定位过程如下。     查看用户    SELECT USER,HOS">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql 远程连接无法访问的问题（密码与connection_control插件）">
+<meta name="twitter:description" content="某业务通过Hibernate访问mysql，后台报错 Access denied for user &apos;matexxx&apos;@&apos;xxxx&apos; (using password: YES); 一般搞过开发的人都知道，这种问题不是密码错了，就是远程连接未打开，这两者其实都属于一个问题，就是用户的grant权限问题，但是此业务情况稍特殊。定位过程如下。     查看用户    SELECT USER,HOS">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/">
+
+
+
+
+
+  <title>mysql 远程连接无法访问的问题（密码与connection_control插件） | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190201 mysql 远程无法连接问题定位记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysql 远程连接无法访问的问题（密码与connection_control插件）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
+                2019-09-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>某业务通过Hibernate访问mysql，后台报错
+Access denied for user 'matexxx'@'xxxx' (using password: YES);
+一般搞过开发的人都知道，这种问题不是密码错了，就是远程连接未打开，这两者其实都属于一个问题，就是用户的grant权限问题，但是此业务情况稍特殊。定位过程如下。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_查看用户">查看用户</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>SELECT USER,HOST FROM MYSQL.USER;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>发现用户matexxx对应的host为 %，说明远程连接已经打开；询问业务是否更改过密码，引出问题背景：
+业务曾重装过mysql，使用mysqldump将旧库数据备份，并且只在新库的master上执行了一次恢复操作。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_查看主从复制的状态">查看主从复制的状态</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>SHOW SLAVE STATUS\G</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>发现互为主备的mysql机器，其中一台的slave io状态为connecting，Last_IO_Error 显示复制用户 replicator 禁止登录。既然复制用户和业务用户都无法登录，怀疑点聚焦在用户的grant语句方面，原因可能是其备份恢复过程中出现错误操作，其要求紧急恢复，原因就暂不深挖。</p>
+</div>
+<div class="paragraph">
+<p>【解决】
+主从复制的问题要先解决。错误产生的原因很可能是其使用mysqldump --all-databases备份，然后在配置好主从的机器上直接恢复，导致两边的机器replicator主从复制用户的ip并不正确（实际应该配置对方ip）。恢复方法：</p>
+</div>
+<div class="listingblock">
+<div class="title">请将下面语句中的变量替换为实际的值</div>
+<div class="content">
+<pre>GRANT REPLICATION SLAVE ON *.* TO '$&#123;repl_user_name&#125;'@'$&#123;IP&#125;' IDENTIFIED BY '$&#123;repl_user_pwd&#125;';
+FLUSH PRIVILEGES;
+
+SHOW MASTER LOGS; --在master(互为主备的机器，master就是你要复制的机器，请自行理解)上执行
+-- 记录上面执行语句的结果，例如
+-- Log_name：mysql-bin.000002
+-- File_size：483
+
+STOP SLAVE; --在出错的机器上，执行
+CHANGE MASTER TO MASTER_HOST='$&#123;master_ip&#125;',MASTER_PORT='3306',MASTER_LOG_FILE='mysql-bin.000002',MASTER_LOG_POS=483;
+START SLAVE;</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_回到主要问题">回到主要问题</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>重启业务应用（反正已经坏了）发现仍然无法登录，查看进程列表，发现大量连接状态都为  Waiting in connection_control plugin ，而且在另一台机器C上面使用matexxx登录一直卡住，而使用root却没有问题，证明此用户登录失败，被拒绝后触发了 connection_control 的机制。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>show processlist;
++----+------+-----------+------+---------+------+--------------------------------------+------------------+
+| Id | User | Host      | db   | Command | Time | State                                | Info             |
++----+------+-----------+------+---------+------+--------------------------------------+------------------+
+|  3 | mmmm | x.x.x.x | NULL | Query   |    0 | init                                 | show processlist |
+| 32 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 33 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 34 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 35 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 36 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 37 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 38 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 39 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 40 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 41 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 42 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 43 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 44 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 45 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |
+| 46 | mmmm | x.x.x.x | NULL | Connect | NULL | Waiting in connection_control plugin | NULL             |</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_此处解释一下_connection_control_的作用">此处解释一下 connection_control 的作用</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>一句话，防暴力破解。</p>
+</div>
+<div class="paragraph">
+<p>官网曾有人对此插件发表过疑问，官方表示不应该在开放远程连接的外网机器上配置此插件，而且在生产环境上也不应存在host为%的用户。
+<a href="https://bugs.mysql.com/bug.php?id=89155" class="bare" target="_blank" rel="noopener">https://bugs.mysql.com/bug.php?id=89155</a></p>
+</div>
+<div class="paragraph">
+<p>此插件的作用是，多次登录失败，服务器增加对客户端的响应延迟，以增加暴力破解的时间；少量的失败登录对用户的正常登录没有影响，如果存在大量的失败登录（被暴力破解时）则用户正常登录时耗时会增加。</p>
+</div>
+<div class="listingblock">
+<div class="title">查看插件是否启用</div>
+<div class="content">
+<pre>show plugins;
+select plugin_name,plugin_library,load_option from information_schema.plugins;
+show variables like "%connection_control%";
+
+connection_control_failed_connections_threshold: 3 <b class="conum">(1)</b>
+connection_control_max_connection_dely: 214xxxxxxxx <b class="conum">(2)</b>
+connection_control_min_connection_dely: 1000 <b class="conum">(3)</b></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>在机制生效前允许的失败次数</p>
+</li>
+<li>
+<p>允许延长到的最大时间</p>
+</li>
+<li>
+<p>最小时间，单位ms</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_暂时规避插件的作用_简化问题">暂时规避插件的作用，简化问题</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>注释掉/etc/my.cnf的connection_control相关的行，重新启动两台机器。使用机器C重新登录两台机器，发现其中一台远程可以登录了， 但是另一台开始很快反馈报错信息。怀疑在有问题的机器上，用户密码被错误的修改过。</p>
+</div>
+<div class="paragraph">
+<p>【解决】在无法登陆的机器上，重新运行grant语句并指定密码</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>GRANT ALL PRIVILEGES ON *.* TO "matexxx"@"%" IDENTIFIED BY "$&#123;userPWD&#125;";
+FLUSH PRIVILEGES；</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>重启应用后问题消失。打开插件。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_正确的恢复方法">正确的恢复方法</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>由于前期人员备份脚本使用的 --all-databases，会一起导出用户信息。所以正确的恢复方法，大体是：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>在旧的主机和备机上各自执行备份命令。
+在安装好的新的机器上，各自登录并执行
+STOP SLAVE;
+各自导入备份的文件，查看show master logs并在两台机器上重新配置指定binlog文件：
+CHANGE MASTER TO MASTER_LOG_FILE='XXXX.bin0000001', MASTER_LOG_POS=123;
+START SLAVE;</pre>
+</div>
+</div>
+</div>
+</div>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/19/2019/20190210 mysql 查询锁状态常用命令/" rel="next" title="查询锁状态常用命令">
+                <i class="fa fa-chevron-left"></i> 查询锁状态常用命令
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/19/2019/20190217 docker 应用案例-开发环境搭建/" rel="prev" title="docker 应用案例-开发环境搭建">
+                docker 应用案例-开发环境搭建 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#_查看用户"><span class="nav-number">1.</span> <span class="nav-text">查看用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_查看主从复制的状态"><span class="nav-number">2.</span> <span class="nav-text">查看主从复制的状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_回到主要问题"><span class="nav-number">3.</span> <span class="nav-text">回到主要问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_此处解释一下_connection_control_的作用"><span class="nav-number">4.</span> <span class="nav-text">此处解释一下 connection_control 的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_暂时规避插件的作用_简化问题"><span class="nav-number">5.</span> <span class="nav-text">暂时规避插件的作用，简化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_正确的恢复方法"><span class="nav-number">6.</span> <span class="nav-text">正确的恢复方法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

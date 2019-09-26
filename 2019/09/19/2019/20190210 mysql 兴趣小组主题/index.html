@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mysql,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="胖子的博客" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="第一部分 MySQL篇     1 MySQL源代码入门MySQL源代码的组织结构Linux下的编译安装MySQL库MySQL 5.7权限处理     2 MySQL启动过程3 连接的生命与使命用户连接线程创建MySQL处理请求总结     4 MySQL表对象缓存表结构的实现原理涉及的参数变量优缺点总结存在的问题5 InnoDB初探     InnoDB的源代码目录结构InnoDB存储引擎文件组">
+<meta name="keywords" content="mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql knowledge">
+<meta property="og:url" content="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql 兴趣小组主题/index.html">
+<meta property="og:site_name" content="胖子的博客">
+<meta property="og:description" content="第一部分 MySQL篇     1 MySQL源代码入门MySQL源代码的组织结构Linux下的编译安装MySQL库MySQL 5.7权限处理     2 MySQL启动过程3 连接的生命与使命用户连接线程创建MySQL处理请求总结     4 MySQL表对象缓存表结构的实现原理涉及的参数变量优缺点总结存在的问题5 InnoDB初探     InnoDB的源代码目录结构InnoDB存储引擎文件组">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-19T03:41:58.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql knowledge">
+<meta name="twitter:description" content="第一部分 MySQL篇     1 MySQL源代码入门MySQL源代码的组织结构Linux下的编译安装MySQL库MySQL 5.7权限处理     2 MySQL启动过程3 连接的生命与使命用户连接线程创建MySQL处理请求总结     4 MySQL表对象缓存表结构的实现原理涉及的参数变量优缺点总结存在的问题5 InnoDB初探     InnoDB的源代码目录结构InnoDB存储引擎文件组">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql 兴趣小组主题/">
+
+
+
+
+
+  <title>mysql knowledge | 胖子的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">胖子的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">zhaoyu's blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://snzhaoyua.github.io/2019/09/19/2019/20190210 mysql 兴趣小组主题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhaoyu025@gmail.com">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="胖子的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysql knowledge</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-19T11:41:58+08:00">
+                2019-09-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/" itemprop="url" rel="index">
+                    <span itemprop="name">备忘</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/备忘/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读次数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>第一部分 MySQL篇    </p>
+<h3 id="1-MySQL源代码入门"><a href="#1-MySQL源代码入门" class="headerlink" title="1 MySQL源代码入门"></a>1 MySQL源代码入门</h3><p>MySQL源代码的组织结构<br>Linux下的编译<br>安装MySQL库<br>MySQL 5.7权限处理    </p>
+<h3 id="2-MySQL启动过程"><a href="#2-MySQL启动过程" class="headerlink" title="2 MySQL启动过程"></a>2 MySQL启动过程</h3><h3 id="3-连接的生命与使命"><a href="#3-连接的生命与使命" class="headerlink" title="3 连接的生命与使命"></a>3 连接的生命与使命</h3><p>用户连接线程创建<br>MySQL处理请求<br>总结    </p>
+<h3 id="4-MySQL表对象缓存"><a href="#4-MySQL表对象缓存" class="headerlink" title="4 MySQL表对象缓存"></a>4 MySQL表对象缓存</h3><p>表结构的实现原理<br>涉及的参数变量<br>优缺点总结<br>存在的问题<br>5 InnoDB初探    </p>
+<h3 id="InnoDB的源代码目录结构"><a href="#InnoDB的源代码目录结构" class="headerlink" title="InnoDB的源代码目录结构"></a>InnoDB的源代码目录结构</h3><p>InnoDB存储引擎文件组织<br>InnoDB体系结构<br>InnoDB存储引擎启动与关闭<br>InnoDB 存储引擎的启动<br>InnoDB存储引擎的关闭    </p>
+<h3 id="6-InnoDB数据字典"><a href="#6-InnoDB数据字典" class="headerlink" title="6 InnoDB数据字典"></a>6 InnoDB数据字典</h3><p>背景<br>系统表结构<br>字典表加载<br>Rowid管理<br>总结    </p>
+<h3 id="7-InnoDB数据存储结构"><a href="#7-InnoDB数据存储结构" class="headerlink" title="7 InnoDB数据存储结构"></a>7 InnoDB数据存储结构</h3><p>表空间文件组成结构<br>段<br>簇<br>页面<br>段、簇、页面组织结构    </p>
+<h3 id="8-InnoDB索引实现原理"><a href="#8-InnoDB索引实现原理" class="headerlink" title="8 InnoDB索引实现原理"></a>8 InnoDB索引实现原理</h3><p>背景<br>B 树及B树的区别<br>索引的设计<br>聚簇索引和二级索引<br>二级索引指针<br>神奇的B 树网络<br>InnoDB索引的插入过程<br>一个页面至少要存储几条记录<br>页面结构管理<br>文件管理头信息<br>页面头信息<br>最小记录和最大记录<br>页面数据空间管理<br>经典的槽管理<br>页面尾部<br>页面重组<br>索引页面的回收    </p>
+<h3 id="9-InnoDB记录格式"><a href="#9-InnoDB记录格式" class="headerlink" title="9 InnoDB记录格式"></a>9 InnoDB记录格式</h3><p>背景<br>从源码入手了解行格式<br>总结    </p>
+<h3 id="10-揭秘独特的两次写"><a href="#10-揭秘独特的两次写" class="headerlink" title="10 揭秘独特的两次写"></a>10 揭秘独特的两次写</h3><p>单一页面刷盘<br>批量页面刷盘<br>两次写组织结构<br>批量刷盘两次写实现原理<br>两次写的作用<br>发散思维<br>总结    </p>
+<h3 id="11-InnoDB日志管理机制"><a href="#11-InnoDB日志管理机制" class="headerlink" title="11 InnoDB日志管理机制"></a>11 InnoDB日志管理机制</h3><p>InnoDB Buffer Pool<br>REDO LOG日志文件管理的用途<br>MTR InnoDB物理事务<br>日志的意义<br>日志记录格式<br>日志刷盘时机<br>REDO日志恢复<br>数据库回滚<br>数据库UNDO段管理<br>数据库UNDO日志记录格式<br>回滚时刻<br>总结    </p>
+<h3 id="12-MySQL-5-7中崭新的MySQL-sys-Schema"><a href="#12-MySQL-5-7中崭新的MySQL-sys-Schema" class="headerlink" title="12 MySQL 5.7中崭新的MySQL sys Schema"></a>12 MySQL 5.7中崭新的MySQL sys Schema</h3><p>Performance Schema的改进<br>sys Schema介绍<br>sys Schema视图摘要<br>sys Schema重点视图与应用场景<br>使用风险<br>总结    </p>
+<h3 id="13-方便的MySQL-GTID"><a href="#13-方便的MySQL-GTID" class="headerlink" title="13 方便的MySQL GTID"></a>13 方便的MySQL GTID</h3><p>GTID 相关概念<br>什么是GTID<br>GTID集合<br>GTID生命周期<br>GTID的维护<br>gtid_executed表<br>gtid_executed表压缩<br>GTID搭建主从<br>搭建主从时，需要注意的MySQL参数<br>开启GTID<br>搭建主从<br>使用GTID案例总结<br>如何跳过一个GTID<br>利用GTID模式快速改变主从复制关系<br>在线将传统模式复制改为GTID模式复制<br>在线将GTID模式复制改为传统模式复制<br>GTID的限制    </p>
+<h3 id="14-MySQL半同步复制"><a href="#14-MySQL半同步复制" class="headerlink" title="14 MySQL半同步复制"></a>14 MySQL半同步复制</h3><p>半同步特性<br>半同步主库端<br>半同步从库端<br>半同步实现<br>插件安装<br>半同步自动开关    </p>
+<h3 id="15-MySQL-5-7多线程复制原理"><a href="#15-MySQL-5-7多线程复制原理" class="headerlink" title="15 MySQL 5.7多线程复制原理"></a>15 MySQL 5.7多线程复制原理</h3><p>背景<br>行之有效的延迟优化方法<br>MySQL 5.6的多线程复制<br>MySQL 5.7的多线程复制<br>ordered commit<br>多线程复制分发原理<br>异常故障恢复    </p>
+<h3 id="16-大量MySQL表导致服务变慢的问题"><a href="#16-大量MySQL表导致服务变慢的问题" class="headerlink" title="16 大量MySQL表导致服务变慢的问题"></a>16 大量MySQL表导致服务变慢的问题</h3><p>背景<br>问题分析<br>案例解决<br>总结    </p>
+<h3 id="17-MySQL快速删除大表"><a href="#17-MySQL快速删除大表" class="headerlink" title="17 MySQL快速删除大表"></a>17 MySQL快速删除大表</h3><p>背景<br>问题分析<br>案例解决<br>发散思维<br>总结    </p>
+<h3 id="18-两条不同的插入语句导致的死锁"><a href="#18-两条不同的插入语句导致的死锁" class="headerlink" title="18 两条不同的插入语句导致的死锁"></a>18 两条不同的插入语句导致的死锁</h3><p>背景<br>问题分析<br>发散思维<br>总结    </p>
+<h3 id="19-MySQL在并发删除同一行数据时导致死锁的分析"><a href="#19-MySQL在并发删除同一行数据时导致死锁的分析" class="headerlink" title="19 MySQL在并发删除同一行数据时导致死锁的分析"></a>19 MySQL在并发删除同一行数据时导致死锁的分析</h3><p>背景<br>问题分析<br>发散思维<br>总结    </p>
+<h3 id="20-参数SQL-SLAVE-SKIP-COUNTER的奥秘"><a href="#20-参数SQL-SLAVE-SKIP-COUNTER的奥秘" class="headerlink" title="20 参数SQL_SLAVE_SKIP_COUNTER的奥秘"></a>20 参数SQL_SLAVE_SKIP_COUNTER的奥秘</h3><h3 id="21-Binlog中的时间戳"><a href="#21-Binlog中的时间戳" class="headerlink" title="21 Binlog中的时间戳"></a>21 Binlog中的时间戳</h3><p>背景<br>问题分析<br>发散思维<br>事务中的事件顺序<br>问题延伸<br>show processlist中的Time<br>总结    </p>
+<h3 id="22-InnoDB中Rowid对Binlog的影响"><a href="#22-InnoDB中Rowid对Binlog的影响" class="headerlink" title="22 InnoDB中Rowid对Binlog的影响"></a>22 InnoDB中Rowid对Binlog的影响</h3><p>背景<br>问题分析<br>总结    </p>
+<h3 id="23-MySQL备份：Percona-XtraBackup的原理与实践"><a href="#23-MySQL备份：Percona-XtraBackup的原理与实践" class="headerlink" title="23 MySQL备份：Percona XtraBackup的原理与实践"></a>23 MySQL备份：Percona XtraBackup的原理与实践</h3><p>备份背景及类型<br>认识Percona XtraBackup<br>XtraBackup的工作流程<br>XtraBackup的备份原理<br>XtraBackup 需要的权限<br>innobackupex常用的备份选项说明<br>XtraBackup备份实践<br>全量备份<br>增量备份<br>并行备份<br>其他备份<br>案例实践与心得<br>建议与提醒    </p>
+<h3 id="24-MySQL分库分表"><a href="#24-MySQL分库分表" class="headerlink" title="24 MySQL分库分表"></a>24 MySQL分库分表</h3><p>分库分表的种类<br>分库分表的原则<br>分库分表实现<br>数据库层的实现<br>业务层的实现    </p>
+<h3 id="25-MySQL数据安全"><a href="#25-MySQL数据安全" class="headerlink" title="25 MySQL数据安全"></a>25 MySQL数据安全</h3><p>单机安全<br>集群安全<br>备份安全<br>MySQL实例安全保证<br>Double Write<br>REDO LOG<br>MySQL集群安全保证<br>传统的主从模式如何保证数据库安全<br>Semi_Sync Replication方式的复制<br>MySQL集群化如何保证数据库安全<br>总结    </p>
+<h3 id="26-MySQL-性能拾遗"><a href="#26-MySQL-性能拾遗" class="headerlink" title="26 MySQL 性能拾遗"></a>26 MySQL 性能拾遗</h3><p>适当的数据文件大小<br>碎片空洞问题<br>设计问题<br>合理设计表结构<br>冗余存储<br>拆分存储<br>重复存储<br>特别提醒<br>正确使用索引<br>MySQL系统参数<br>内存和CPU<br>磁盘的革命<br>云中漫步<br>总结    </p>
+<h3 id="27-MySQL-Group-Replication"><a href="#27-MySQL-Group-Replication" class="headerlink" title="27 MySQL Group Replication"></a>27 MySQL Group Replication</h3><p>Group Replication概述<br>组的概念<br>多主复制<br>单独的通信机制<br>Group Replication服务模式<br>单主模式<br>多主模式<br>服务模式的配置<br>Binlog Event的多线程执行<br>group_replication_applier通道<br>基于主键的并行执行<br>搭建Group Replication复制环境<br>MySQL的参数设置<br>Group Replication插件的使用<br>Group Replication插件的基本参数设置<br>Group Replication的数据库用户<br>Group Replication组初始化<br>新成员加入组<br>Group Replication的高可用性<br>组内成员数量的变化<br>强制移除故障成员<br>Group Replication的监控<br>Group Replication的基本原理<br>状态机复制<br>分布式的状态机复制<br>分布式的高可用数据库<br>深入理解Group Replication中事务的执行过程<br>本地事务控制模块<br>成员间的通信模块<br>全局事务认证模块<br>异地事务执行模块<br>事务流程的总结<br>深入理解成员加入组的过程<br>组视图<br>加入组时视图的切换<br>View_change_log_event<br>恢复    </p>
+<h3 id="28-MySQL-Document-Store面面观"><a href="#28-MySQL-Document-Store面面观" class="headerlink" title="28 MySQL Document Store面面观"></a>28 MySQL Document Store面面观</h3><p>新的JSON数据类型和JSON函数<br>JSON数据类型<br>JSON函数详解<br>JSON函数的运用<br>MySQL X Plugin 和 X Protocol<br>支持NoSQL所做的努力<br>安装MySQL X Plugin<br>MySQL Shell<br>安装MySQL Shell<br>运行MySQL Shell<br>在MySQL Shell中操作JSON文档<br>用脚本执行MySQL Shell<br>X DevAPI<br>总结<br>参考资料<br>第二部分 Galera篇    </p>
+<h3 id="29-Galera-Cluster的设计与实现"><a href="#29-Galera-Cluster的设计与实现" class="headerlink" title="29 Galera Cluster的设计与实现"></a>29 Galera Cluster的设计与实现</h3><p>Galera Cluster的优点<br>Galera的引入<br>Galera接口<br>总结    </p>
+<h3 id="30-Galera-参数解析"><a href="#30-Galera-参数解析" class="headerlink" title="30 Galera 参数解析"></a>30 Galera 参数解析</h3><p>状态参数<br>变量参数    </p>
+<h3 id="31-Galera的验证方法"><a href="#31-Galera的验证方法" class="headerlink" title="31 Galera的验证方法"></a>31 Galera的验证方法</h3><p>Binlog与Galera的关系<br>验证方法    </p>
+<h3 id="32-Galera的消息传送"><a href="#32-Galera的消息传送" class="headerlink" title="32 Galera的消息传送"></a>32 Galera的消息传送</h3><h3 id="33-GCache实现原理"><a href="#33-GCache实现原理" class="headerlink" title="33 GCache实现原理"></a>33 GCache实现原理</h3><p>配置参数<br>实现原理<br>发散思维    </p>
+<h3 id="34-大话SST-IST细节"><a href="#34-大话SST-IST细节" class="headerlink" title="34 大话SST/IST细节"></a>34 大话SST/IST细节</h3><p>初始化节点环境<br>连接到集群并且做SST/IST<br>如何提供增量数据<br>总结    </p>
+<h3 id="35-Donor-Desynced详解"><a href="#35-Donor-Desynced详解" class="headerlink" title="35 Donor/Desynced详解"></a>35 Donor/Desynced详解</h3><p>实现方式<br>意义何在<br>问答环节    </p>
+<h3 id="36-Galera的并发控制机制"><a href="#36-Galera的并发控制机制" class="headerlink" title="36 Galera的并发控制机制"></a>36 Galera的并发控制机制</h3><p>数据复制<br>写集验证<br>写集APPLY<br>事务Commit    </p>
+<h3 id="37-Galera的流量控制"><a href="#37-Galera的流量控制" class="headerlink" title="37 Galera的流量控制"></a>37 Galera的流量控制</h3><p>流量控制的定义<br>流量控制的实现原理及影响<br>两个问题    </p>
+<h3 id="38-Galera-Cluster影响单节点执行效率的因素"><a href="#38-Galera-Cluster影响单节点执行效率的因素" class="headerlink" title="38 Galera Cluster影响单节点执行效率的因素"></a>38 Galera Cluster影响单节点执行效率的因素</h3><p>单点验证<br>并发控制<br>等待GTID<br>总结    </p>
+<h3 id="39-grastate-dat文件揭秘"><a href="#39-grastate-dat文件揭秘" class="headerlink" title="39 grastate.dat文件揭秘"></a>39 grastate.dat文件揭秘</h3><p>引子<br>分析研究<br>总结    </p>
+<h3 id="40-Galera-Cluster从库的转移"><a href="#40-Galera-Cluster从库的转移" class="headerlink" title="40 Galera Cluster从库的转移"></a>40 Galera Cluster从库的转移</h3><p>没有开启Server级GTID的情况<br>开启了GTID（server级）的情况<br>总结    </p>
+<h3 id="41-Galera-Cluster节点与其从库的随意转换"><a href="#41-Galera-Cluster节点与其从库的随意转换" class="headerlink" title="41 Galera Cluster节点与其从库的随意转换"></a>41 Galera Cluster节点与其从库的随意转换</h3><p>背景<br>从节点向PXC节点的转换<br>PXC节点向异步从节点的转换    </p>
+<h3 id="42-业务更新慢，不是由Galera引起的"><a href="#42-业务更新慢，不是由Galera引起的" class="headerlink" title="42 业务更新慢，不是由Galera引起的"></a>42 业务更新慢，不是由Galera引起的</h3><h3 id="43-在线改表引发的Galera-Cluster集群死锁"><a href="#43-在线改表引发的Galera-Cluster集群死锁" class="headerlink" title="43 在线改表引发的Galera Cluster集群死锁"></a>43 在线改表引发的Galera Cluster集群死锁</h3><p>背景<br>用Binlog来代替触发器<br>表名交换<br>Galera Cluster中的问题<br>一个有趣的实验<br>解决方案<br>总结<br>第三部分 Inception篇    </p>
+<h3 id="44-Inception诞生记"><a href="#44-Inception诞生记" class="headerlink" title="44 Inception诞生记"></a>44 Inception诞生记</h3><p>关于SQL审核<br>半自动化方法<br>人肉法<br>不满现状的追求<br>何谓Inception    </p>
+<h3 id="45-Inception安装与使用"><a href="#45-Inception安装与使用" class="headerlink" title="45 Inception安装与使用"></a>45 Inception安装与使用</h3><p>下载和编译<br>启动配置<br>线上配置需求<br>需要额外注意的点<br>使用方法<br>举例说明<br>环境变量的设置    </p>
+<h3 id="46-支持选项"><a href="#46-支持选项" class="headerlink" title="46 支持选项"></a>46 支持选项</h3><p>选项说明<br>DDL与DML语句分离<br>小技巧    </p>
+<h3 id="47-Inception的备份回滚"><a href="#47-Inception的备份回滚" class="headerlink" title="47 Inception的备份回滚"></a>47 Inception的备份回滚</h3><p>备份存储架构<br>备份所需条件    </p>
+<h3 id="48-审核规范"><a href="#48-审核规范" class="headerlink" title="48 审核规范"></a>48 审核规范</h3><p>支持的语句类型<br>公共检查项<br>插入语句检查项<br>更新、删除语句检查项<br>表属性检查项<br>列属性检查项<br>索引属性检查项<br>修改表语句检查项<br>总结    </p>
+<h3 id="49-参数变量"><a href="#49-参数变量" class="headerlink" title="49 参数变量"></a>49 参数变量</h3><p>语法和变量<br>注意事</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/19/2019/20190210 suse 新增磁盘/" rel="next" title="suse 新增磁盘">
+                <i class="fa fa-chevron-left"></i> suse 新增磁盘
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/19/2019/20190210 prime_number/" rel="prev" title="测试驱动开发的一个示例代码——求质因数">
+                测试驱动开发的一个示例代码——求质因数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MDI1OS8xNjc4Ng=="></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="zhaoyu025@gmail.com">
+            
+              <p class="site-author-name" itemprop="name">zhaoyu025@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">欢迎给我发邮件，我会很开心忽略你</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-MySQL源代码入门"><span class="nav-number">1.</span> <span class="nav-text">1 MySQL源代码入门</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-MySQL启动过程"><span class="nav-number">2.</span> <span class="nav-text">2 MySQL启动过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-连接的生命与使命"><span class="nav-number">3.</span> <span class="nav-text">3 连接的生命与使命</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-MySQL表对象缓存"><span class="nav-number">4.</span> <span class="nav-text">4 MySQL表对象缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InnoDB的源代码目录结构"><span class="nav-number">5.</span> <span class="nav-text">InnoDB的源代码目录结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-InnoDB数据字典"><span class="nav-number">6.</span> <span class="nav-text">6 InnoDB数据字典</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-InnoDB数据存储结构"><span class="nav-number">7.</span> <span class="nav-text">7 InnoDB数据存储结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-InnoDB索引实现原理"><span class="nav-number">8.</span> <span class="nav-text">8 InnoDB索引实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-InnoDB记录格式"><span class="nav-number">9.</span> <span class="nav-text">9 InnoDB记录格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-揭秘独特的两次写"><span class="nav-number">10.</span> <span class="nav-text">10 揭秘独特的两次写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-InnoDB日志管理机制"><span class="nav-number">11.</span> <span class="nav-text">11 InnoDB日志管理机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-MySQL-5-7中崭新的MySQL-sys-Schema"><span class="nav-number">12.</span> <span class="nav-text">12 MySQL 5.7中崭新的MySQL sys Schema</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-方便的MySQL-GTID"><span class="nav-number">13.</span> <span class="nav-text">13 方便的MySQL GTID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-MySQL半同步复制"><span class="nav-number">14.</span> <span class="nav-text">14 MySQL半同步复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-MySQL-5-7多线程复制原理"><span class="nav-number">15.</span> <span class="nav-text">15 MySQL 5.7多线程复制原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-大量MySQL表导致服务变慢的问题"><span class="nav-number">16.</span> <span class="nav-text">16 大量MySQL表导致服务变慢的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-MySQL快速删除大表"><span class="nav-number">17.</span> <span class="nav-text">17 MySQL快速删除大表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-两条不同的插入语句导致的死锁"><span class="nav-number">18.</span> <span class="nav-text">18 两条不同的插入语句导致的死锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-MySQL在并发删除同一行数据时导致死锁的分析"><span class="nav-number">19.</span> <span class="nav-text">19 MySQL在并发删除同一行数据时导致死锁的分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-参数SQL-SLAVE-SKIP-COUNTER的奥秘"><span class="nav-number">20.</span> <span class="nav-text">20 参数SQL_SLAVE_SKIP_COUNTER的奥秘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-Binlog中的时间戳"><span class="nav-number">21.</span> <span class="nav-text">21 Binlog中的时间戳</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-InnoDB中Rowid对Binlog的影响"><span class="nav-number">22.</span> <span class="nav-text">22 InnoDB中Rowid对Binlog的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#23-MySQL备份：Percona-XtraBackup的原理与实践"><span class="nav-number">23.</span> <span class="nav-text">23 MySQL备份：Percona XtraBackup的原理与实践</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#24-MySQL分库分表"><span class="nav-number">24.</span> <span class="nav-text">24 MySQL分库分表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#25-MySQL数据安全"><span class="nav-number">25.</span> <span class="nav-text">25 MySQL数据安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#26-MySQL-性能拾遗"><span class="nav-number">26.</span> <span class="nav-text">26 MySQL 性能拾遗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#27-MySQL-Group-Replication"><span class="nav-number">27.</span> <span class="nav-text">27 MySQL Group Replication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#28-MySQL-Document-Store面面观"><span class="nav-number">28.</span> <span class="nav-text">28 MySQL Document Store面面观</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#29-Galera-Cluster的设计与实现"><span class="nav-number">29.</span> <span class="nav-text">29 Galera Cluster的设计与实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#30-Galera-参数解析"><span class="nav-number">30.</span> <span class="nav-text">30 Galera 参数解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#31-Galera的验证方法"><span class="nav-number">31.</span> <span class="nav-text">31 Galera的验证方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#32-Galera的消息传送"><span class="nav-number">32.</span> <span class="nav-text">32 Galera的消息传送</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#33-GCache实现原理"><span class="nav-number">33.</span> <span class="nav-text">33 GCache实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#34-大话SST-IST细节"><span class="nav-number">34.</span> <span class="nav-text">34 大话SST/IST细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#35-Donor-Desynced详解"><span class="nav-number">35.</span> <span class="nav-text">35 Donor/Desynced详解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#36-Galera的并发控制机制"><span class="nav-number">36.</span> <span class="nav-text">36 Galera的并发控制机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#37-Galera的流量控制"><span class="nav-number">37.</span> <span class="nav-text">37 Galera的流量控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#38-Galera-Cluster影响单节点执行效率的因素"><span class="nav-number">38.</span> <span class="nav-text">38 Galera Cluster影响单节点执行效率的因素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#39-grastate-dat文件揭秘"><span class="nav-number">39.</span> <span class="nav-text">39 grastate.dat文件揭秘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#40-Galera-Cluster从库的转移"><span class="nav-number">40.</span> <span class="nav-text">40 Galera Cluster从库的转移</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#41-Galera-Cluster节点与其从库的随意转换"><span class="nav-number">41.</span> <span class="nav-text">41 Galera Cluster节点与其从库的随意转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-业务更新慢，不是由Galera引起的"><span class="nav-number">42.</span> <span class="nav-text">42 业务更新慢，不是由Galera引起的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#43-在线改表引发的Galera-Cluster集群死锁"><span class="nav-number">43.</span> <span class="nav-text">43 在线改表引发的Galera Cluster集群死锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#44-Inception诞生记"><span class="nav-number">44.</span> <span class="nav-text">44 Inception诞生记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#45-Inception安装与使用"><span class="nav-number">45.</span> <span class="nav-text">45 Inception安装与使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#46-支持选项"><span class="nav-number">46.</span> <span class="nav-text">46 支持选项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#47-Inception的备份回滚"><span class="nav-number">47.</span> <span class="nav-text">47 Inception的备份回滚</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#48-审核规范"><span class="nav-number">48.</span> <span class="nav-text">48 审核规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#49-参数变量"><span class="nav-number">49.</span> <span class="nav-text">49 参数变量</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhaoyu025@gmail.com</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

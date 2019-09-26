@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>胖子的博客</title>
+  
+  <subtitle>zhaoyu&#39;s blog</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://snzhaoyua.github.io/"/>
+  <updated>2019-09-19T03:41:58.630Z</updated>
+  <id>https://snzhaoyua.github.io/</id>
+  
+  <author>
+    <name>zhaoyu025@gmail.com</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>一次ssh免密无法登录的问题</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190810_%E4%B8%80%E6%AC%A1ssh%E5%85%8D%E5%AF%86%E6%97%A0%E6%B3%95%E7%99%BB%E5%BD%95%E7%9A%84%E9%97%AE%E9%A2%98/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190810_一次ssh免密无法登录的问题/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_一次ssh免密无法登录的问题">一次ssh免密无法登录的问题</h2><div class="sectionbody"><div class="paragraph"><p>自研数据库升级的过程中，需要配置一次ssh免密登录，以便在其中一台机器，很方便的升级集群所有服务器。但是在测试过程中，创建免密登录的脚本失效了。</p></div></div></div><div class="sect1"><h2 id="_问题定位">问题定位</h2><div class="sectionbody"><div class="paragraph"><p>通过手动创建公钥，拷贝到其它机器的authrized_keys，发现仍然需要输入密码登录；</p></div><div class="paragraph"><p>通过ssh -v user@ip，查看详细信息，发现其提示：Authentication can continue: publickey, gssapi-key&#8230;&#8203;..passwordtry publickey .ssh/&#8230;&#8203;..try publickey .ssh/&#8230;&#8203;..using password:</p></div><div class="paragraph"><p>而正常的服务器上，该行为：Servert accepted key&#8230;&#8203;</p></div><div class="olist arabic"><ol class="arabic"><li><p>看日志，怀疑ssh客户端没有找到正确的公钥文件，但是该文件确实存在在正确的路径，且拥有正确的600权限。</p></li><li><p>尝试使用其它端口，启动服务端的sshd，发现可以免密登录</p></li><li><p>尝试在客户端新建其它用户，并使用22默认端口，一样可以免密登录</p></li><li><p>执行以下命令，对比新建用户的目录，和问题用户的目录，发现问题</p><div class="listingblock"><div class="content"><pre>ls -laZ</pre></div></div></li></ol></div><div class="paragraph"><p>在问题用户的目录中，.ssh目录的label为unlabel，而正常用户的.ssh，为user_t。通过查询及测试，发现该目录为user_t或者ssh_home_t的标签，都可以测试通过，但是为ublabeled不行。那么该目录为什么为unlabel呢？毕竟我们执行的只是ssh-keygen，目录并非我们生成。其实这个目录的标签，会继承父目录的标签，而父目录的标签，由于未知原因，丢失了。因此，selinux的机制不允许ssh使用该目录作为公钥目录。该问题可以通过以下两种方法解决：</p></div><div class="olist arabic"><ol class="arabic"><li><p>restorecon -vv -r ~/.ssh</p></li><li><p>setenforce 0等关闭selinux</p></li></ol></div><div class="paragraph"><p>至于标签为什么会丢失，目前仍在定位中。</p></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_一次ssh免密无法登录的问题&quot;&gt;一次ssh免密无法登录的问题&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;自研数据库升级的过程中，需要配置一次ssh免
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="linux" scheme="https://snzhaoyua.github.io/tags/linux/"/>
+    
+      <category term="ssh" scheme="https://snzhaoyua.github.io/tags/ssh/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mount 磁盘被秒 umount 的一个问题</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190918_mount%E7%A3%81%E7%9B%98%E8%A2%AB%E7%A7%92umount%E7%9A%84%E4%B8%80%E4%B8%AA%E9%97%AE%E9%A2%98/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190918_mount磁盘被秒umount的一个问题/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<p>== mount 磁盘被秒 umount 的一个问题<br>:stem: latexmath<br>:icons: font</p><p>=== 问题描述</p><p>在 ubuntu 18.04 的机器上（家用），自己搭了一个 samba 服务器。有一天要添加一块磁盘，因为服务器上还<br>运行了一些其他服务，不想重启，因此使用 partprobe 动态扫描了磁盘，分区，写入 /etc/fstab，一切正常。<br>执行 mount -a，没有任何报错，不过磁盘就是没有挂载上去。</p><p>=== 解决思路</p><ol><li>使用 mount 命令，可以手动挂载</li><li>无任何报错出现，使用 umount 提示并未挂载</li></ol><p>查看 journalctl -xe，发现是 systemd 在 umount 磁盘。最终还是搜索解决了问题，<a href="https://unix.stackexchange.com/questions/169909/systemd-keeps-unmounting-a-removable-drive" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/169909/systemd-keeps-unmounting-a-removable-drive</a> 描述了这个问题。</p><p>执行 systemctl daemon-reload 解决后，重新 mount -a 解决。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;== mount 磁盘被秒 umount 的一个问题&lt;br&gt;:stem: latexmath&lt;br&gt;:icons: font&lt;/p&gt;
+&lt;p&gt;=== 问题描述&lt;/p&gt;
+&lt;p&gt;在 ubuntu 18.04 的机器上（家用），自己搭了一个 samba 服务器。有一天要添加一块磁盘
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="systemd" scheme="https://snzhaoyua.github.io/tags/systemd/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>20190810_使用systemd限制自研数据库的cpu占用率</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190810_%E4%BD%BF%E7%94%A8systemd%E9%99%90%E5%88%B6%E8%87%AA%E7%A0%94%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84cpu%E5%8D%A0%E7%94%A8%E7%8E%87/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190810_使用systemd限制自研数据库的cpu占用率/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_使用systemd限制自研数据库的cpu占用率">使用systemd限制自研数据库的cpu占用率</h2><div class="sectionbody"><div class="paragraph"><p>接上篇，使用cgroup的方案，参考我博客中的《20190803_使用cgroup限制自研数据库cpu占比》，在实际操作中，由于镜像（其它部门）因社区已经移除cgred，多年无人维护，因此不建议我们使用cgred的方案。出于后续开源申请的考虑，我们决定废弃cgrou的方案，改用systemd。</p></div></div></div><div class="sect1"><h2 id="_如何使用systemd">如何使用systemd</h2><div class="sectionbody"><div class="paragraph"><p>我们前期没有一开始使用systemd的方案，一是因为团队中有个se发了一大段研究结果，说systemd不够精确，达不到我们的使用要求，二是我们拿自研的数据库，本身是没有service文件，需要自己改造；现在cgroup的方案走不通，只能走这条路，我们就自己研究。</p></div><div class="paragraph"><p>之前有过通过systemd的TasksMax提高mysql的并发连接数案例，参考这个博客中的《使用service启动mysql最大连接数始终在480多左右》，因此改造起来也很顺畅，最终，service文件大致如下：</p></div><div class="listingblock"><div class="title">出于公司要求，以下文件是伪代码，靠记忆写出来的</div><div class="content"><pre>[Unit]Description=....After=Network-Online.target（名字不一定准确，不要拷贝，请查询，一个服务如果需要在网络就绪后启动的target是什么）EnvironmentFile=..Environment=..ExecStart=''ExecStop=''CPUQuota=280%CPUAccounting=trueTasksMax=...WantedBy=multiuser.target</pre></div></div><div class="paragraph"><p>其中，CPUQuota和libcgroup中的cpuquota是一个概念，但是这里仅支持百分数。我们是4核cpu，想达到使用cpu使用率的总体70%，因此结果是280%。</p></div></div></div><div class="sect1"><h2 id="_普通用户如何使用sudo免密">普通用户如何使用sudo免密</h2><div class="sectionbody"><div class="paragraph"><p>业务场景中，监控软件需要启停数据库，但是监控软件是普通用户运行，因此systemctl是没有权限的。我们采取了以下方案，让普通用户可以sudo直接启停数据库而不需要密码：</p></div><div class="listingblock"><div class="title">/etc/sudoers (依然是伪代码)</div><div class="content"><pre>username All(All) NOPASSWD:/usr/bin/systemctl</pre></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_使用systemd限制自研数据库的cpu占用率&quot;&gt;使用systemd限制自研数据库的cpu占用率&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;接上篇，
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="systemd" scheme="https://snzhaoyua.github.io/tags/systemd/"/>
+    
+      <category term="数据库" scheme="https://snzhaoyua.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>自研数据库主备切换的一个bug记录</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190810_%E8%87%AA%E7%A0%94%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%BB%E5%A4%87%E5%88%87%E6%8D%A2%E7%9A%84%E4%B8%80%E4%B8%AAbug%E8%AE%B0%E5%BD%95/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190810_自研数据库主备切换的一个bug记录/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_自研数据库主备切换的一个bug记录">自研数据库主备切换的一个bug记录</h2><div class="sectionbody"><div class="paragraph"><p>还是要给自研数据库的人点个赞，以前可能有人要问，业界有mysql，有oracle，有postgresql，大量的收费免费数据库，你们为什么要自己开发数据库？相信过了今年，不会再有人问这个问题了。自研数据库虽然具体细节不能透露，但是其只有6m的安装包大小，完美支持与oracle对接并同步的特性，兼容sql标准，支持python，c，java，支持多个主备，简单如mysql的配置，简单的容灾能力，支持方便的升级等等，还是很有竞争力。</p></div></div></div><div class="sect1"><h2 id="_主备同步的bug">主备同步的bug</h2><div class="sectionbody"><div class="paragraph"><p>那么bug是什么呢？该数据库在一主一备的情况下，有两种手段可以进行主备倒换：1. switchover2. failoverswitchover的场景是，如果主机和备机都正常，想手动触发主备倒换；failover的场景是，如果主机宕机了，备机需要容灾，提升为主机。</p></div><div class="paragraph"><p>这个bug出现在failover的情况。在failover的场景，备机已经升为主机，但是如果主机又恢复，这个时候会出现双主的现象，就需要将其降为备（demote）。问题是，在demote后，数据库必然出现主备不一致的情况，导致发生该数据库一个著名的异常情况needrepair，而且恢复方案需要删除数据重建，因此没人愿意写自动脚本处理，需要手工干预。</p></div></div></div><div class="sect1"><h2 id="_问题定位">问题定位</h2><div class="sectionbody"><div class="paragraph"><p>我们首先快速排查自己触发切换代码，在排查后将问题范围指向该数据库本身；首先，主备不一致的情况，是可以在日志中查询到的。该数据库，在主机降备成功后的十秒钟左右，会打印一行类似如下的信息：standby redo point(1/1422) is faster than primary(2/1421)，need repair&#8230;&#8203;很清晰，说新的备机redo日志比主机要快。那么就是要找出，多出来的这个操作，到底是什么？</p></div><div class="paragraph"><p>路线分为两路：1. 通过解析redo日志，查看操作内容2. 通过其它日志手段，继续确认及排查</p></div><div class="paragraph"><p>由于环境与我们开发环境的网络较为复杂，速度也比较慢，而该redo日志有1个G，传输要1个小时。因此在等待传输的间隙，我们走路线2.</p></div><div class="paragraph"><p>通过类似以下命令开启audit日志以及debug日志。</p></div><div class="listingblock"><div class="content"><pre>alter system set audit_level=15;alter system set _log_level=255;</pre></div></div><div class="paragraph"><p>最终搜索通过debug日志，查到有insert语句在执行：cat debug.log|grep -i insert -C 2</p></div><div class="paragraph"><p>通过查询数据库的job，发现开启了wsr性能收集job：</p></div><div class="listingblock"><div class="content"><pre>select * from dba_jobs;</pre></div></div><div class="paragraph"><p>关闭该任务后，问题消失。自研数据库部门的人虽然确认问题，但是始终想不通，明明在停止和切换数据库的时间节点，已经停止wsr收集，为何还会导致该问题出现，该问题虽然不属于我们的范畴，但是以往写并发以及过程控制要求比较严格的场景的经验告诉我，自研数据库这块的job，包括wsr以及用户自定义的job的逻辑，都需要再仔细审视一下。</p></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_自研数据库主备切换的一个bug记录&quot;&gt;自研数据库主备切换的一个bug记录&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;还是要给自研数据库的人点个赞，以
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="数据库" scheme="https://snzhaoyua.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+      <category term="oracle" scheme="https://snzhaoyua.github.io/tags/oracle/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>20190803_使用cgroup限制自研数据库cpu占比</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190803_%E4%BD%BF%E7%94%A8cgroup%E9%99%90%E5%88%B6%E8%87%AA%E7%A0%94%E6%95%B0%E6%8D%AE%E5%BA%93cpu%E5%8D%A0%E6%AF%94/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190803_使用cgroup限制自研数据库cpu占比/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_20190803_使用cgroup限制自研数据库cpu占比">20190803_使用cgroup限制自研数据库cpu占比</h2><div class="sectionbody"><div class="sect2"><h3 id="_背景">背景</h3><div class="paragraph"><p>美国升级贸易战，为了A国业务连续性，全体产品数据库从mysql等切换自研数据库G数据库，该数据库近十年备胎之路，一朝转正，之前没有暴露出来的问题，最近如雨后春笋，层出不穷。以前几个月发一个版本，现在一周一个版本。我们在美国宣布将XX列入实体清单的前一个月，就已经着手G数据库的服务化，给公司去年150亿美元的产品线使用。且因为处理器和操作系统suse12被断货，我们的版本，还涉及了自研处理器及自研操作系统的版本，问题就出在这个自研操作系统。</p></div></div><div class="sect2"><h3 id="_问题表现">问题表现</h3><div class="paragraph"><p>我们使用低版本的G数据库，在x86的处理器，及2.5版本的欧拉系统上，一切正常；使用高版本的G数据库，在hi1620的处理器（虚拟一个4U8G的节点），及与该处理器匹配的2.8系统上，并发100的情况下，cpu就占到了99%；通过排除法，发现使用高版本的G数据库，在x86上依然有此问题。</p></div></div><div class="sect2"><h3 id="_原因及规避">原因及规避</h3><div class="paragraph"><p>在最近几个月以来，G数据库部门承受了较大的性能测试压力，因此其通过更改多种机制，榨干系统资源，满足多个业务的高性能要求；但是我们的业务，有把数据库和其它服务，或者监控程序合设在同一个节点的场景。如果G数据库榨干了资源，其它服务均会阻塞，导致异常发生。</p></div><div class="paragraph"><p>虽然长期来看，这个问题还是要G数据库的人员来解决，但是时间紧迫，我们目前短期的规避思路，是通过cgroup限制G数据库使用核心的时间，以及通过提升其它关键程序的优先级，来暂时达到服务可用的目的。</p></div></div><div class="sect2"><h3 id="_cgroup_cgconfig_conf_cgrules_conf">cgroup cgconfig.conf cgrules.conf</h3><div class="paragraph"><p>我们首先通过手动创建/sys/fs/cgroup/cpu/g_database文件夹，并执行以下命令：</p></div><div class="listingblock"><div class="content"><pre>echo 300000 &gt; /sys/fs/cgroup/cpu/g_database/cpu.quota.xxxxecho 100000 &gt; /sys/fs/cgroup/cpu/g_database/cpu.period.xxxx# 并将进程写入该目录下的cgroup.proc及tasks# 并执行以下命令，提高监控程序的优先级ps -ef|grep ...|renice -15</pre></div></div><div class="paragraph"><p>来验证效果，发现问题解决。</p></div><div class="paragraph"><p>因为服务可能频繁重启，不可能使用一个固定的进程，而在每次启动服务后获取pid并修改文件的做法，需要root权限，不符合规范。因此，我们使用cgconfig.conf和cgrules.conf来达到目的。</p></div><div class="paragraph"><p>网络上有大量cgroup的文章，但我们在实施过程中，遇到了一个坑。自研的欧拉系统，libcgroup-tools包中，缺失了cgred.servcie(cgsendgd二进制文件)，因此设置的cgrules.conf不生效。无奈重新arm编译该文件，先测试，后期推动系统组件更新。</p></div><div class="listingblock"><div class="title">cgconfig.conf</div><div class="content"><pre>cgroup&#123;    cpu&#123;        g_database&#123;            cpu.quota...            cpu.period...        &#125;    &#125;&#125;</pre></div></div><div class="listingblock"><div class="title">cgrules.conf</div><div class="content"><pre>username:/opt/xxxx/command  cpu  g_database</pre></div></div><div class="paragraph"><p>使用sysbench测试，其它程序不再被G数据库阻塞，且cpu占用率稳定在我们想要的数值。</p></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_20190803_使用cgroup限制自研数据库cpu占比&quot;&gt;20190803_使用cgroup限制自研数据库cpu占比&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="数据库" scheme="https://snzhaoyua.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+      <category term="cgroup" scheme="https://snzhaoyua.github.io/tags/cgroup/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql_文件管理</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190709_mysql_%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190709_mysql_文件管理/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_mysql_文件管理">mysql_文件管理</h2><div class="sectionbody"></div></div><div class="sect1"><h2 id="_reference">reference</h2><div class="sectionbody"><div class="paragraph"><p><a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-file-space.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/innodb-file-space.html</a><a href="https://docs.oracle.com/cd/B19306_01/server.102/b14220/physical.htm" class="bare" target="_blank" rel="noopener">https://docs.oracle.com/cd/B19306_01/server.102/b14220/physical.htm</a><a href="https://oracle-base.com/articles/misc/reclaiming-unused-space" class="bare" target="_blank" rel="noopener">https://oracle-base.com/articles/misc/reclaiming-unused-space</a><a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_page_size" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_page_size</a><a href="https://dev.mysql.com/doc/refman/5.7/en/optimizing-innodb-diskio.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/optimizing-innodb-diskio.html</a></p></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_mysql_文件管理&quot;&gt;mysql_文件管理&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_reference&quot;&gt;re
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="https://snzhaoyua.github.io/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>postgresql_mysql_oracle</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190627_postgresql_mysql_oracle/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190627_postgresql_mysql_oracle/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_postgresql_mysql_oracle">postgresql_mysql_oracle</h2><div class="sectionbody"><div class="sect2"><h3 id="_sql_standard">sql standard</h3></div><div class="sect2"><h3 id="_mysql_differences_from_standard_sql">mysql differences from standard sql</h3></div><div class="sect2"><h3 id="_oracle_differences_from_standard_sql">oracle differences from standard sql</h3></div><div class="sect2"><h3 id="_postgresql_differences_from_standard_sql">postgresql differences from standard sql</h3></div></div></div><div class="sect1"><h2 id="_mysql_and_oracle">mysql and oracle</h2><div class="sectionbody"></div></div><div class="sect1"><h2 id="_postgresql_and_the_others">postgresql and the others</h2><div class="sectionbody"></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_postgresql_mysql_oracle&quot;&gt;postgresql_mysql_oracle&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;_sq
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用nginx代理k8 cadvisor一例</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190918_%E4%BD%BF%E7%94%A8nginx%E4%BB%A3%E7%90%86k8%20cadvisor%E4%B8%80%E4%BE%8B/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190918_使用nginx代理k8 cadvisor一例/</id>
+    <published>2019-09-19T03:41:58.630Z</published>
+    <updated>2019-09-19T03:41:58.630Z</updated>
+    
+    <content type="html"><![CDATA[<p>== 使用nginx代理k8 cadvisor一例<br>:stem: latexmath<br>:icons: font</p><p>k8 自带 cadvisor 监控，UI 界面监听在 4194 端口，不过 HW 的 k8s 这里监听的地址是 127.0.0.1，因此相当于是一个摆设。使用开源的 nginx 可以代理该 url 并暴露在一个可以访问的网卡上，不过出于学习的目的，使用我们自己编译的类似于 nginx 的一个 NSP 来实现这个目的。</p><p>== 着手<br>包地址在内网，无法提供。运行此包有三个限制：</p><ol><li>使用名称为 lb 的用户执行，否则会报错 getpwnam(“lb”)，因为他们编译写死了执行用户</li><li>LD_LIBRARY_PATH要加上包目录中的 lib, luajit/lib, lualib/ 三个目录</li><li>包最好放在 /usr/local，因为编译写死了这个路径…</li></ol><p>== 配置<br>配置好在仍然兼容开源 nginx，关键配置如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">upstream my_server &#123;</span><br><span class="line">    server 127.0.0.1:4194;</span><br><span class="line">    keepalive 2000;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">    listen 4195;</span><br><span class="line">    server_name 172.200.8.173;</span><br><span class="line">    client_max_body_size 1024M;</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://127.0.0.1:4194;</span><br><span class="line">        index index.html;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>然后使用浏览器，访问 <a href="http://172.200.8.173:4195，即可出现" target="_blank" rel="noopener">http://172.200.8.173:4195，即可出现</a> cadvisor 的页面。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;== 使用nginx代理k8 cadvisor一例&lt;br&gt;:stem: latexmath&lt;br&gt;:icons: font&lt;/p&gt;
+&lt;p&gt;k8 自带 cadvisor 监控，UI 界面监听在 4194 端口，不过 HW 的 k8s 这里监听的地址是 127.0.0.1，因此
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="nginx" scheme="https://snzhaoyua.github.io/tags/nginx/"/>
+    
+      <category term="k8s" scheme="https://snzhaoyua.github.io/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql 性能测试报告惨不忍睹的一次原因</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190601%20mysql%20%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E6%8A%A5%E5%91%8A%E6%83%A8%E4%B8%8D%E5%BF%8D%E7%9D%B9%E7%9A%84%E4%B8%80%E6%AC%A1%E5%8E%9F%E5%9B%A0/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190601 mysql 性能测试报告惨不忍睹的一次原因/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_mysql_性能测试报告惨不忍睹的一次原因">mysql 性能测试报告惨不忍睹的一次原因</h2><div class="sectionbody"></div></div><div class="sect1"><h2 id="_背景">背景</h2><div class="sectionbody"><div class="paragraph"><p>新版本发布在即，新增与kafka，zk，redis等其它服务合设的场景，因此需要性能测试探个底。但是性能测试人员反馈，分设与合设性能差距数万倍，一句话甩过来：定位吧。</p></div></div></div><div class="sect1"><h2 id="_定位">定位</h2><div class="sectionbody"><div class="paragraph"><p>其实干这行这么久，处理的疑难问题也不少，总结一个规律：解决别人问题，大部分精力会浪费在理清问题甚至是帮助他问问题的过程中，尤其这个人是一些强势部门或者菜鸟（菜鸟也有会思考的，但是现在很少遇到了）的情况下，例如测试。虽然提出问题的人不会提问题，但是解决问题是有科学方法遵循的。</p></div><div class="sect2"><h3 id="_首先_明确问题_到底是什么问题">首先，明确问题----到底是什么问题</h3><div class="paragraph"><p>替他总结一下问题：</p></div><div class="olist arabic"><ol class="arabic"><li><p>安装两套某某版本的mysql，分别是与redis等服务合设的一套（32U64G），和mysql单独安装的一套（8U16G）。</p></li><li><p>使用jmeter并且采用同样的测试模型，对服务进行长稳测试，其中合设的一套资源，其它服务也会跑长稳。</p></li><li><p>观察jmeter报告，发现合设的mysql中，平均时间average为20s以上，throughput在10个/秒以下。而独立的mysql，average为ms级别，throughput为数万个。</p></li><li><p>此时应该随报告提供环境cpu，磁盘，内存，网络带宽，测试模型等情况</p></li></ol></div><div class="paragraph"><p>当然，这不是我司人员的工作方法，自始至终，我们得到的情况都是误导人的。比如</p></div><div class="olist arabic"><ol class="arabic"><li><p>独立和合设的mysql，其实使用的是不同的版本。</p></li><li><p>比如合设场景，没有人员进行管理，测自己组件的时候，不知道别人是不是在测试。</p></li><li><p>当我们要求以管理手段对整体测试方案进行管控，对方以现网难道没有这种情况为由，拒绝同意。</p></li><li><p>比如在我们咨询是否有停掉其它服务，单独在合设节点测试mysql以便控制变量，对比分设合设机器差异，我们得到的回答是很忙，哪有空给你单独测mysql。</p></li></ol></div><div class="paragraph"><p>这些都是通过辩证思维很容易得出的结论，却被人高举着“现网”的旗号强势拒绝，而其理由根本站不住脚，他要你做什么可以，你要他做什么，不行。习惯就好。</p></div></div><div class="sect2"><h3 id="_其次_明确测试模型和环境_你是怎么测的_测试的时候资源情况怎么样">其次，明确测试模型和环境----你是怎么测的，测试的时候资源情况怎么样</h3><div class="paragraph"><p>抛开分歧，找出原因。</p></div><div class="paragraph"><p>该测试模型很简单，使用一个1个int主键，20个varchar（256）字段共100w的数据（sql不提供），主键还建了索引。使用select * from xxx where id in random(1, 100w);（伪代码）进行1000并发测试。</p></div><div class="paragraph"><p>因为测试人员拒绝停止其它服务，并且无法提供独立安装的mysql环境信息，不知道如何以及收集哪些环境资源信息，不知道其它服务是否在测试，不知道mysql有没有其它人在连接。因此，我们要提早介入，主要收集以下几种信息。</p></div><div class="ulist"><ul><li><p>cpu及内存（top）</p></li><li><p>iostat -x 1 以及其它 /dev/mysqllv(mysql 数据挂载磁盘)</p></li><li><p>查看jmeter并发服务器的jmap histro</p></li><li><p>查看mysql show processlist，show status like "%Thread%"等</p></li></ul></div></div><div class="sect2"><h3 id="_定位_2">定位</h3><div class="paragraph"><p>正常开发会在这个阶段介入，根据信息情况，进一步定位，比如开启慢查询或者调试参数。根据以上收集的信息，发现</p></div><div class="olist arabic"><ol class="arabic"><li><p>cpu，内存等资源占用不高。</p></li><li><p>iostat 磁盘读写速度不高，但是%util占比居高不下</p></li><li><p>单独执行一条sql语句，偶尔很快，偶尔很慢</p></li><li><p>show processlist反馈，大量连接停留在freeing items的状态，说明连接在等候io操作，与上述iostat结论不谋而合</p></li><li><p>hdparm -Tt 合设机器只有60m/s的磁盘速度（未停服务，不准确）</p></li><li><p>查询审计日志，发现审计日志大量积压，5M/2分钟的速度在持续增加</p></li><li><p>走管理手段，要求测试人员提供独立mysql机器信息，其反馈非其本人测试并且已卸载。我们强烈要求重新安装独立mysql</p></li><li><p>独立mysql表现也慢，与合设无异（测试人员严重失误）</p></li><li><p>最终发现，其独立mysql测试版本为较老版本</p></li><li><p>对比版本差异，发现问题</p></li></ol></div></div><div class="sect2"><h3 id="_结论">结论</h3><div class="paragraph"><p>新版本mysql开启audit日志，并且安全部门参照公司《mysql 安全加固规范》中的必须修改项——审计日志的策略 audit_log_strategy 必须为 <code>SYNCHRONOUS</code> , 利用自动化工具扫描并发现我们的mysql没有开启此项，提了单。修改人员在修改时因为经验不足，未多想，便直接修改。</p></div><div class="paragraph"><p>该项的另一个可选值为ASYNCHRONOUS，即异步。与主从复制的同步，半同步及异步类似，作用不言自明。改为该值后，问题消失。</p></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_mysql_性能测试报告惨不忍睹的一次原因&quot;&gt;mysql 性能测试报告惨不忍睹的一次原因&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="https://snzhaoyua.github.io/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>如何炫酷地计算网段</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190610%20%E5%A6%82%E4%BD%95%E7%82%AB%E9%85%B7%E5%9C%B0%E8%AE%A1%E7%AE%97%E7%BD%91%E6%AE%B5/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190610 如何炫酷地计算网段/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_如何炫酷地计算网段">如何炫酷地计算网段</h2><div class="sectionbody"></div></div><div class="sect1"><h2 id="_背景">背景</h2><div class="sectionbody"><div class="paragraph"><p>我们有很多服务，使用了keepalived作为浮动ip切换的工具。在实际操作中，由于机器网络平面不止一个，因此keepalived的浮动ip，需要保持跟业务（比如mysql）的ip在同一个网段。以往，我们是通过用户自己控制，在安装的堆栈参数中，自行确保所填入的业务ip和浮动ip在同一个网段，但是这样不太友好。于是，可以做点小优化，算出浮动ip所在的网段，并与各个网卡的网段比较，如果相同，则取该网卡作为keepalived.conf中的interface值。如果两个网卡都在一个网段，这样keepalived会取第一个匹配到的网卡，也不会有问题。</p></div></div></div><div class="sect1"><h2 id="_脚本">脚本</h2><div class="sectionbody"><div class="paragraph"><p>在我们的部分机器上（自研操作系统）等，可能没有ipcalc软件可用，且携带而机制软件发布，本身是比较麻烦的一件事情。因此，考虑自行实现一个ipcalc.sh。</p></div><div class="listingblock"><div class="title">自行实现的ipcalc.sh</div><div class="content"><pre class="highlight"><code class="language-bash" data-lang="bash"><span class="meta">#!/bin/bash</span>net=<span class="string">"<span class="variable">$1</span>"</span>ip=(<span class="variable">$&#123;net%/*&#125;</span>)cdr=(<span class="variable">$&#123;net##*/&#125;</span>)<span class="function"><span class="title">cdr2mask</span></span>()&#123;    <span class="comment">#set -- $((5-("$1"/8))) 255 255 255 255 $((2**8-2**(8-"$1"%8))) 0 0 0</span>    <span class="built_in">set</span> -- $(( 5-(<span class="string">"<span class="variable">$1</span>"</span>/8) )) 255 255 255 255 $(( (255 &lt;&lt; (8-(<span class="string">"<span class="variable">$1</span>"</span>%8))) &amp; 255 )) 0 0 0    [[ <span class="variable">$1</span> -gt 1 ]] &amp;&amp; <span class="built_in">shift</span> <span class="variable">$1</span> || <span class="built_in">shift</span>    <span class="comment">#echo $#:$@</span>    <span class="comment">#255 255 255 255 253 0 0 0 shift</span>    <span class="comment">#^_____________^           255.255.255.255 shift</span>    <span class="comment">#    ^_____________^       255.255.255.253 shift 2</span>    <span class="comment">#        ^___________^     255.255.253.0   shift 3</span>    <span class="comment">#default 0, just in case</span>    <span class="built_in">echo</span> <span class="variable">$&#123;1-0&#125;</span>.<span class="variable">$&#123;2-0&#125;</span>.<span class="variable">$&#123;3-0&#125;</span>.<span class="variable">$&#123;4-0&#125;</span>&#125;msk=$(cdr2mask <span class="variable">$cdr</span>)IFS=. <span class="built_in">read</span> -r i1 i2 i3 i4 &lt;&lt;&lt; <span class="string">"<span class="variable">$&#123;ip&#125;</span>"</span>IFS=. <span class="built_in">read</span> -r m1 m2 m3 m4 &lt;&lt;&lt; <span class="string">"<span class="variable">$&#123;msk&#125;</span>"</span><span class="built_in">printf</span> <span class="string">"%d.%d.%d.%d"</span> <span class="string">"<span class="variable">$((i1 &amp; m1)</span>)"</span> <span class="string">"<span class="variable">$((i2 &amp; m2)</span>)"</span> <span class="string">"<span class="variable">$((i3 &amp; m3)</span>)"</span> <span class="string">"<span class="variable">$((i4 &amp; m5)</span>)"</span><span class="comment">## usage</span><span class="comment"># route=$(sh ipcalc.sh 192.168.31.123/24)</span><span class="comment"># echo $route</span></code></pre></div></div><div class="listingblock"><div class="title">基于上述脚本实现的小程序(伪代码)</div><div class="content"><pre class="highlight"><code class="language-bash" data-lang="bash"><span class="function"><span class="title">get_matched_interface</span></span>()&#123;    xxxx    <span class="keyword">for</span> eth <span class="keyword">in</span> eths;<span class="keyword">do</span>        ip=get_ip_eth <span class="variable">$eth</span>        <span class="keyword">if</span> ipcalc.sh <span class="variable">$ip</span> == ipcalc.sh <span class="variable">$float_ip</span>;<span class="keyword">then</span>            <span class="built_in">return</span> eth.name        <span class="keyword">fi</span>    <span class="keyword">done</span>&#125;</code></pre></div></div></div></div><div class="sect1"><h2 id="_如何炫酷">如何炫酷</h2><div class="sectionbody"><div class="paragraph"><p>这个小例子的最大意义，在于学习了ipcalc.sh中set的用法，以及令人目眩的shift和位运算。</p></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_如何炫酷地计算网段&quot;&gt;如何炫酷地计算网段&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_背景&quot;&gt;背景&lt;/h2&gt;
+&lt;di
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="bash" scheme="https://snzhaoyua.github.io/tags/bash/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>一次 mysql 死锁问题解决</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190210%20%E4%B8%80%E6%AC%A1%20mysql%20%E6%AD%BB%E9%94%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190210 一次 mysql 死锁问题解决/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div id="preamble"><div class="sectionbody"><div class="paragraph"><p>一个业务反应，环境多次出现大量服务不可使用，如app导入不响应，用户更新超时，bpm创单超时等等。查看数据库的processlist，发现有大量的处于Waiting for table metadata lock状态的查询，其中包含T_APP_INFO、TBL_UM_USER、T_TICKET_BASICINFO等表，跟故障服务一致，确定故障原因是数据库锁表引起；业务自行导出所有的阻塞task，并按照阻塞时间排序，发现第一条引起阻塞的是一条来来自于localhost的 由root用户发起的批量锁表语句，疑似是问题根因。</p></div><div class="paragraph"><p>上面这段是业务说的，已经排查的比较深入了，给个赞。</p></div><div class="paragraph"><p>我之前通过直接kill掉这个query线程，他们的业务就正常走下去了，因为忙其他事情，所以就没有再关注。后面他们又出现了这个问题，这次必须要解决了。所以记录一下定位过程。</p></div></div></div><div class="sect1"><h2 id="_定位思路">定位思路</h2><div class="sectionbody"><div class="olist arabic"><ol class="arabic"><li><p><strong>[WHAT]</strong>  root@localhost 的进程在做什么？</p><div class="listingblock"><div class="title">mysql 所有“卡住”问题，先看进程列表：</div><div class="content"><pre>show processlist;+---------+------+-----------+------+---------+------+----------+------------------+| Id      | User | Host      | db   | Command | Time | State    | Info             |+---------+------+-----------+------+---------+------+----------+------------------+| 3467133 | root | localhost | NULL | Query   |    320400 | Waiting for table metadata lock | LOCK TABLES `....|+---------+------+-----------+------+---------+------+----------+------------------+</pre></div></div><div class="paragraph"><p>看到 root@localhost 的用户，有一条状态为 Waiting for table metadata lock 的查询。查询语句为“LOCK TABLES&#8230;&#8203;&#8230;&#8203;”。</p></div><div class="admonitionblock note"><table><tr><td class="icon"><div class="title">Note</div></td><td class="content"><div class="paragraph"><p>猜测：是后台备份进程在锁表，由于也有可能业务自己登陆后台锁表，所以需要证明这个确实是备份工具发起的语句。</p></div><div class="paragraph"><p>证明：当前时间是2月12日下午，Time 时间显示此语句已经等待320400s（约89小时），往前推算约为2月9日凌晨0点。后台备份文件夹有一个0点的文件夹，里面备份文件为0字节。</p></div></td></tr></table></div></li><li><p><strong>[QUESTION]</strong>  为什么会导致这个问题出现</p><div class="paragraph"><p>在 <a href="https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_databases" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_databases</a> 第一句就有，mysqldump 如果不加 --single-transaction，执行mysqldump的用户就必须有LOCK TABLES的权限，由此推出，这种情况（不加 --single-transaction，当前gts mysql方案）下，就会锁表。那么这种锁表行为分不分存储引擎呢？答案是myisam都会锁表，而innodb会在&#8212;&#8203;single-transaction的时候不锁表，详见官网。</p></div><div class="paragraph"><p>由于业务在show processlist;的时候，还看到了有另外一条语句B</p></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>select * from activemq_lock for update;</p></div></div></div><div class="paragraph"><p>那么即使有这条语句在执行，如果其正常提交了事务，也不会阻塞备份工具锁表。业务由于直接用的开源activemq，所以也说不清楚这个表的作用，那么问题出在哪里？</p></div></li><li><p><strong>[控制变量]</strong>  和正常的环境来对比</p><div class="paragraph"><p>顶着业务的各种不满（业务：我也学会kill进程了，你要解决根本问题啊，不能再kill了），直接再次kill掉这个进程，查看正常环境的状态。发现语句B始终存在，并且show processlist发现该语句的Time一直在变化。说明其一直在频繁执行。</p></div><div class="admonitionblock note"><table><tr><td class="icon"><div class="title">Note</div></td><td class="content"><div class="paragraph"><p>猜测：语句B一直在执行获取锁，mysqldump在备份前先 LOCK TABLES 所有表，其它表都正常锁住，唯有这个表获取不到锁，就一直等待。而其它被锁住的表，此时是无法更新的。</p></div><div class="paragraph"><p>证明：当前环境再次手工执行一把备份，发现备份脚本卡住，查看processlist，发现与问题描述表现一致。此时业务果然发生了上面的问题。</p></div></td></tr></table></div></li></ol></div></div></div><div class="sect1"><h2 id="_解决方法">解决方法</h2><div class="sectionbody"><div class="olist arabic"><ol class="arabic"><li><p>疑问点</p><div class="paragraph"><p>早有耳闻mysqldump有&#8212;&#8203;skip-lock-tables、--single-transation、--ignore-table的选项，但是由于不熟悉，所以还要自己验证一番，看看各个参数是不是如自己所想：</p></div><div class="ulist"><ul><li><p>--skip-lock-tables 是跳过获取不到锁的表，还是备份前不加锁，还是备份的语句里面不加锁（曾被误导，以为是备份后的语句）</p></li><li><p>--single-transaction 看起来和锁没什么关系，能不能达到我们的目的呢？</p></li><li><p>--ignore-table 是忽略表和视图的意思，如果忽略这个表，那还会不会锁住这个表呢？</p></li></ul></div></li><li><p>验证</p><div class="paragraph"><p>带着上面的疑问去自己的测试数据库验证，首先了解本例涉及到的几种锁以及如何构造它们：</p></div><div class="listingblock"><div class="title">我们常使用的锁，语句一般就几种：</div><div class="content"><pre>flush tables with read lock;lock tables tablename read;select * from table name for update;-- 其它 share mode 等暂不谈，也不在此老生常谈排他锁、互斥锁、只读锁等的概念。</pre></div></div><div class="paragraph"><p>研究如下：</p></div><table class="tableblock frame-all grid-all spread"><colgroup><col style="width: 14.2857%;"><col style="width: 14.2857%;"><col style="width: 14.2857%;"><col style="width: 14.2857%;"><col style="width: 14.2857%;"><col style="width: 14.2857%;"><col style="width: 14.2858%;"></colgroup><tbody><tr><td class="tableblock halign-left valign-top"></td><td class="tableblock halign-left valign-top"><p class="tableblock">说明</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">影响</p></td><td class="tableblock halign-left valign-top"></td><td class="tableblock halign-left valign-top"><p class="tableblock">如何定位这种锁</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">如何释放</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">进阶</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">flush tables with read lock;</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">全部的表都刷上read lock</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">执行此语句的session，在修改数据会收到报错：<mark>ERROR1223 cant execute query because you hanve a conflicting lock</mark>.</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">其它session，在修改数据会卡住。</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">1. 无法通过show open tables查看<br>2. 无法通过information_schema.innodb_locks等表查看<br>3. 无法通过show engine innodb status\G查看<br>4. 其它被锁住的session，可以通过show processlist;查看到状态:Waiting for global read lock</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">session结束或者unlock tables;</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">在手工备份的时候很好用</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">lock tables t_test read;</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">只对某一个表刷上read lock</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">1. 执行此语句的session，在修改数据会收到报错：<mark>ERROR1099 table … was locked with read lock and cant be updated</mark>.<br>2. 只能查询锁住的表，如果查询其它的表，也会失败</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">其它session，在修改数据会卡住。</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">1. show open tables 可以看到表的 in_use + 1<br>2. 无法无法通过information_schema.innodb_locks等表查看<br>3. show engine innodb status\G其中的 transactions 一列显示 <mark>mysql tables in use 1,locked 1</mark><br>4. 其它被锁住的session，可以通过show processlist;查看到状态: <mark>Wating for table metadata lock</mark></p></td><td class="tableblock halign-left valign-top"><p class="tableblock">session结束或者unlock tables;还有其它一些场景会释放锁，比如alter table，详见官网文档；</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">释放锁会默认提交事务，具体详见官网文档</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">select * from t_test for update;</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">对某一个表刷上排他锁。 <mark>只能在一个事务中使用，不在事务中无效</mark> ， 使用见附录</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">执行此语句的session，就是为了更改数据。</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">其它session，在修改数据会卡住。</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">1. show open tables 可以看到表的 in_use + 1<br>2. 无法无法通过information_schema.innodb_locks等表查看<br>3. show engine innodb status\G其中的 transactions 一列显示 <mark>2 lock stucts, 2 row lock</mark>(表数据行+1数量的锁)<br>4. 其它被锁住的session，可以通过show processlist;查看到状态: <mark>Wating for table metadata lock</mark></p></td><td class="tableblock halign-left valign-top"><p class="tableblock">commit; 其它未commit的异常状态，锁也会随着session关闭释放掉，具体见官网文档"</p></td><td class="tableblock halign-left valign-top"><p class="tableblock"><mark>行锁需要有主键或者索引</mark> 。本例无，所以是表锁的效果。</p></td></tr></tbody></table><div class="paragraph"><p>经过组合 <code>select * from t_test for update</code> 和 <code>lock tables t_test read;</code> 重现了业务的问题。后续经过验证，上面提到的 mysqldump 的三个参数，都可以达到目的：</p></div><table class="tableblock frame-all grid-all spread"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3334%;"></colgroup><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">方案</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">说明</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">缺点</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">1. mysqldump –skip-lock-tables</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">备份前，不加锁</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">无法保证数据一致性</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">2. mysqldump –single-transaction</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">备份在一个事务中进行</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">备份期间表定义变化等可能导致备份失败（重新执行一次备份即可）</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">3. mysqldump –ignore-table=activemq_lock</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">略过该表，不会获取锁</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">不备份该表</p></td></tr></tbody></table></li></ol></div></div></div><div class="sect1"><h2 id="_附录">附录</h2><div class="sectionbody"><div class="listingblock"><div class="title">select&#8230;&#8203;for update 的使用方法</div><div class="content"><pre>begin;select * from t_test for update;commit;begin;select * from t_test where id=1111 for update;commit;https://dev.mysql.com/doc/refman/5.7/en/select.html</pre></div></div><div class="listingblock"><div class="title">lock tables 的使用方法</div><div class="content"><pre>lock tables t_test read;</pre></div></div></div></div><div class="sect1"><h2 id="_参考">参考：</h2><div class="sectionbody"><div class="ulist bibliography"><ul class="bibliography"><li><p><a href="https://dev.mysql.com/doc/refman/5.7/en/select.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/select.html</a></p></li><li><p><a href="https://dev.mysql.com/doc/refman/5.7/en/lock-tables.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/lock-tables.html</a></p></li><li><p><a href="https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_databases" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/mysqldump.html#option_mysqldump_databases</a></p></li></ul></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div id=&quot;preamble&quot;&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;一个业务反应，环境多次出现大量服务不可使用，如app导入不响应，用户更新超时，bpm创单超时等等。查看数据库的processlist，
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="https://snzhaoyua.github.io/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql gtid 主从复制数据迁移(物理备份)</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190212%20mysql_gtid_%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190212 mysql_gtid_数据迁移/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect2"><h3 id="_方案整体概览">方案整体概览</h3><div class="olist arabic"><ol class="arabic"><li><p>安装好商业版本的mysql</p></li><li><p>使用mysqlbackup备份旧库主机的数据</p></li><li><p>停掉新库两台mysql，清空后台文件，恢复数据</p></li><li><p>新库相互配置主从复制</p></li><li><p>新库主机作为从机对接到旧库主机，同步数据</p></li><li><p>切断新库主机和旧库主机的主从复制</p></li><li><p>除第6步外，全innodb的库（netcare满足）不需要锁表</p></li></ol></div></div><div class="sect2"><h3 id="_解决问题记录">解决问题记录：</h3><div class="olist arabic"><ol class="arabic"><li><p>mysqldump报错</p></li><li><p>mysqldump过慢，修复报错后备份也需要2个半小时</p></li><li><p>开发多线程mysqldump，最终90分钟，太慢，弃用</p></li><li><p>mysqlpump 多线程 优化到22分钟</p></li><li><p>mysqlpump 多线程 lz4 压缩 17分钟</p></li><li><p>mysqlpump 等逻辑备份导入过慢且表现不稳定（每次备份数据不一致），弃用逻辑备份方案</p></li><li><p>mysqlbackup 文件夹备份 20分钟 压缩过慢 一个小时未结束</p></li><li><p>mysqlbackup 单文件本地备份 lz4 压缩 15分钟</p></li><li><p>mysqlbackup 无法恢复数据</p></li><li><p>恢复数据后无法启动的几种错误</p></li><li><p>mysqlbackup 恢复数据4分钟</p></li><li><p>GITD 主从复制恢复</p></li><li><p>主从复制新主-旧主恢复</p></li><li><p>主从复制新主-新从恢复</p></li></ol></div></div><div class="sect2"><h3 id="_前提">前提</h3><div class="paragraph"><p>安装好软件平台 mysql。</p></div></div><div class="sect2"><h3 id="_步骤_0_检查环境">步骤 0 检查环境</h3><div class="olist arabic"><ol class="arabic"><li><p>版本</p><div class="paragraph"><p>旧库5.7.23 community， 新库5.7.24 commercial</p></div></li><li><p>(netcare specified) 表和视图等，自检</p><div class="paragraph"><p>业务自行检查库是否正常，可以使用我们开发的小工具checkViews.sh（请索要）检查部分视图（此工具只检查视图，不排除还有其它非视图问题引起的问题）。</p></div><div class="paragraph"><p>本例中netcare视图有问题，已做删除处理。</p></div></li><li><p>旧库复制状态</p><div class="paragraph"><p>比如组网，和当前状态。</p></div><div class="paragraph"><p>netcare为单向主备。在备机SHOW SLAVE STATUS\G查看复制状态正常。</p></div></li><li><p>表的存储引擎</p><div class="exampleblock"><div class="content"><div class="paragraph"><p>select table_name,table_schema,engine from information_schema.tables where engine='innodb' and table_schema not in('mysql','information_schema','performance_schema','sys');</p></div></div></div><div class="paragraph"><p>本例业务表全是innodb，不需要考虑锁表问题，也好选择备份工具，方便很多。</p></div></li><li><p>是否开启GTID的主从复制</p><div class="paragraph"><p>查看/opt/mysql/.my.cnf里gtid_mode=ON还是OFF。未开GTID模式的库不适用此文。</p></div></li><li><p>当前机器有mysqlbackup工具吗</p></li><li><p>检查磁盘和数据的大小</p></li><li><p>检查当前mysql的状态</p></li><li><p>检查端口</p><div class="paragraph"><p>检查mysql的端口，本例是3306，是否开启了防火墙策略，如果没有开启（在新机器上telnet ip 3306看一下），需要走电子流。</p></div><div class="paragraph"><p>检查22端口（高危，不好开）是否互通，如果不互通，需要花费时间下载文件到中转机，再上传到新库；如果互通，可以使用mysqlbackup直接备份到远端，可以节省大量时间（本例3个小时）。</p></div></li></ol></div></div><div class="sect2"><h3 id="_步骤_1_导出备份数据">步骤 1 导出备份数据</h3><div class="olist arabic"><ol class="arabic"><li><p>准备</p><div class="olist loweralpha"><ol class="loweralpha" type="a"><li><p>安装 mysqlbackup 工具</p><div class="paragraph"><p>如果旧库没有mysqlbackup，需要从新库中拷贝一个mysqlbackup到旧库任意位置，比如/root；然后赋予其可执行权限。</p></div></li><li><p>准备好各种用户名和密码</p></li></ol></div></li><li><p>备份 此过程花费约20分钟</p><div class="listingblock"><div class="title">登录旧库主机，例如 10.1.9.195，拷贝以下命令执行</div><div class="content"><pre>unset tempdirtempdir=/data03/backup_`date '+%y%m%d%H%M%S'`mkdir $&#123;tempdir&#125;</pre></div></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>~/mysqlbackup -u<em>username</em> -p<em>xxxxxx</em> --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=$&#123;tempdir&#125; --backup-image=/data03/`basename $&#123;tempdir&#125;`.bin backup-to-image</p></div></div></div><div class="exampleblock"><div class="content"><div class="paragraph"><p><span class="line-through"> ~/mysqlbackup -uusername -pxxxxxx --backup-dir=$&#123;tempdir&#125; --compress backup老机器22端口被限制，通过跳板机下载上传一把就要5个小时。如果可以打开的话，可以通过类似下面这种命令直接备份到新机器，可以节省大量时间~/mysqlbackup -uusername -pxxxxxx --compress --compress-level=5 --limit-memory=1024 --read-threads=10 --process-threads=15 --write-threads=10 --backup-dir=$&#123;tempdir&#125; --backup-image=- backup-to-image | ssh root@10.15.32.73 'cat &gt; /opt/temp_for_restore/my_backup.bin'</span></p></div></div></div></li></ol></div></div><div class="sect2"><h3 id="_步骤_2_验证备份数据">步骤 2 验证备份数据</h3><div class="olist arabic"><ol class="arabic"><li><p>拷贝</p><div class="paragraph"><p>如果22端口不开，出于上面已经描述过的原因，建议先将备份文件拷贝到新库主机，再从主机scp到备机。</p></div></li><li><p>验证</p><div class="paragraph"><p>出于性能考虑，建议在新库验证。本例中，先将备份的文件 my_backup.bin 上传到了新机器的备机 /opt/temp_for_restore/ 验证。此过程花费数分钟。</p></div><div class="listingblock"><div class="content"><pre>mysqlbackup --backup-image=/opt/temp_for_restore/my_backup.bin validate</pre></div></div></li></ol></div></div><div class="sect2"><h3 id="_步骤_3_准备数据到可恢复的状态_可省略">步骤 3 准备数据到可恢复的状态（可省略）</h3><div class="paragraph"><p>受制于物理备份的限制，备份过程中，正在备份的数据可能有修改，因此正常流程需要执行以下两个命令，先进行apply-log（把日志变化应用到数据中，使数据达到一致状态），再进行copy-back（恢复数据文件）。</p></div><div class="paragraph"><p>如下：</p></div><div class="listingblock"><div class="content"><pre>mysqlbackup .... apply-logmysqlbackup .... copy-back</pre></div></div><div class="paragraph"><p>但是本例在步骤5用一句命令代替，所以此步可省略。</p></div><div class="listingblock"><div class="content"><pre>mysqlbackup .... copy-back-and-apply-log</pre></div></div></div><div class="sect2"><h3 id="_步骤_4_新库准备">步骤 4 新库准备</h3><div class="olist arabic"><ol class="arabic"><li><p>备份配置文件</p><div class="listingblock"><div class="title">在新主和新从都要执行</div><div class="content"><pre>mkdir /opt/backupcp /opt/mysql/.my.cnf /opt/backup/my.cnf.bak</pre></div></div></li><li><p>冻结hacs集群管理</p><div class="paragraph"><p>后续步骤会将mysql停止，为了防止hacs切换、拉起mysql造成干扰，需要先停止hacs集群管理功能。</p></div><div class="listingblock"><div class="title">在新主上执行</div><div class="content"><pre># 冻结和解冻集群crm configure property maintenance-mode=true   # 冻结，不会发生切换crm configure property maintenance-mode=false  # 解冻</pre></div></div></li><li><p>停止mysql</p><div class="listingblock"><div class="title">在新主和新从都要执行</div><div class="content"><pre>su - mysqlmysql.server stop</pre></div></div></li><li><p>清理文件</p><div class="paragraph"><p>按照规范，两台机器 /opt/mysql/app/mysql-files/my.cnf 中的datadir、innodb_undo_directory、innodb_log_group_home_dir、log-bin、relay-log 的参数配置的路径下要为空。</p></div><div class="listingblock"><div class="content"><pre>## 本例中，所有文件都在data下面，所以直接mv /opt/mysql/data /opt/backup/data.bak</pre></div></div></li></ol></div></div><div class="sect2"><h3 id="_步骤_5_恢复数据">步骤 5 恢复数据</h3><div class="olist arabic"><ol class="arabic"><li><p>准备一些配置</p><div class="paragraph"><p>由于新旧库几个关键配置不同，所以直接执行下面的语句会失败。</p></div><div class="exampleblock"><div class="content"><div class="paragraph"><p><span class="line-through"># ~/mysqlbackup --defaults-file=/opt/mysql/.my.cnf --backup-dir=/opt/temp_for_restore/ –datadir=/opt/mysql/data --uncompress copy-back-and-apply-log</span></p></div></div></div><div class="paragraph"><p>在旧库主机上，找到你指定的backup-dir路径，比如/data03/backupxxxxx，找到backup-my.cnf，执行以下命令：</p></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>cat /data03/&lt;backup-dir&gt;/backup-my.cnf|grep innodb</p></div></div></div><div class="paragraph"><p>手动整理输出的结果，填入命令，最终使命令如下所示：</p></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>/opt/mysql/app/product/bin/mysqlbackup --defaults-file=/opt/mysql/.my.cnf  -u<em>new_name</em> -p<em>new_password</em> --backup-image=/opt/temp_for_restore/backup_190212153601.bin --backup-dir=/opt/temp_for_restore/ --datadir=/opt/mysql/data/workdbs <code>--innodb_data_file_path=ibdata1:12M:autoextend --innodb_log_file_size=1073741824 --innodb_log_files_in_group=4 --innodb_page_size=16384 --innodb_checksum_algorithm=crc32 --innodb_buffer_pool_filename=ib_buffer_pool --innodb_undo_tablespaces=4 --innodb_undo_logs=128 --innodb_buffer_pool_filename=ib_buffer_pool</code> --uncompress copy-back-and-apply-log</p></div></div></div></li><li><p>开始恢复数据</p><div class="listingblock"><div class="title">在新主新备两台机器上，拷贝以下命令执行</div><div class="content"><pre># 创建data文件夹mkdir /opt/mysql/data/workdbs# 执行数据准备和恢复/opt/mysql/app/product/bin/mysqlbackup --defaults-file=/opt/mysql/.my.cnf  -u__new_name__ -p__new_password__ --backup-image=/opt/temp_for_restore/backup_190212153601.bin --backup-dir=/opt/temp_for_restore/ --datadir=/opt/mysql/data/workdbs `--innodb_data_file_path=ibdata1:12M:autoextend --innodb_log_file_size=1073741824 --innodb_log_files_in_group=4 --innodb_page_size=16384 --innodb_checksum_algorithm=crc32 --innodb_buffer_pool_filename=ib_buffer_pool --innodb_undo_tablespaces=4 --innodb_undo_logs=128 --innodb_buffer_pool_filename=ib_buffer_pool` --uncompress copy-back-and-apply-log## 恢复一些目录，防止启动失败cp -r /opt/backup/data.bak/log /opt/mysql/data/cp -r /opt/backup/data.bak/backup /opt/mysql/data/mkdir -p /opt/mysql/data/binlog/binlogmkdir -p /opt/mysql/data/binlog/relaymkdir -p /opt/mysql/data/tmp## 修改 /opt/mysql/.my.cnf 的配置，将此处配置修改为与旧主一样，防止启动失败vi /opt/mysql/.my.cnfinnodb_data_file_path=ibdata1:12M:autoextend## 最后更改权限chown -R mysql: /opt/mysql/data/</pre></div></div></li></ol></div><div class="paragraph"><p>参考 <a href="https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/restore.compressed-backup.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/restore.compressed-backup.html</a></p></div></div><div class="sect2"><h3 id="_步骤_6_启动后清理">步骤 6 启动后清理</h3><div class="olist arabic"><ol class="arabic"><li><p>启动</p><div class="listingblock"><div class="content"><pre>su - mysqlmysql.server start</pre></div></div></li><li><p>清理</p><div class="paragraph"><p>暂未发现要清理项。</p></div></li></ol></div></div><div class="sect2"><h3 id="_步骤_7_重新配置主从复制">步骤 7 重新配置主从复制</h3><div class="imageblock"><div class="content"><img src="topo.png" alt="topo"></div></div><div class="olist arabic"><ol class="arabic"><li><p>配置新主到旧主的复制 注意以下填写的 ip，基本都是对方的 ip，如果不清楚可以先查询官方文档。</p><div class="listingblock"><div class="title">在旧主执行</div><div class="content"><pre>SET sql_log_bin=0;create user 'rpl_user'@'10.15.32.73' identified by 'rplMql_179itiADb';grant replication slave on *.* to 'rpl_user'@'10.15.32.73';flush privileges;SET sql_log_bin=1;</pre></div></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>在新主执行<span class="line-through">vi /path-to-backup_gtid_executed.sql/backup_gtid_executed.sqlsource /path-to-backup_gtid_executed.sql/backup_gtid_executed.sql&#8201;&#8212;&#8201;如果这里报错，show globale variables like "GTID_EXECUTED"; 与文件中是否一致，如果一致，直接执行下一步即可。</span></p></div></div></div><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre>change master to master_host='10.1.9.195',master_port=3306, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl_temp';UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';</pre></div></div></li><li><p>恢复新主和新从之间的主从复制</p><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre>SET sql_log_bin=0;create user 'rpl_user'@'10.15.36.5' identified by 'rplMql_179itiADb';grant replication slave on *.* to 'rpl_user'@'10.15.36.5';flush privileges;SET sql_log_bin=1;</pre></div></div><div class="listingblock"><div class="title">在新从执行</div><div class="content"><pre>change master to master_host='10.15.32.73',master_port=3310, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl1';UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl1';</pre></div></div><div class="listingblock"><div class="title">在新从执行</div><div class="content"><pre>SET sql_log_bin=0;create user 'rpl_user'@'10.15.32.73' identified by 'rplMql_179itiADb';grant replication slave on *.* to 'rpl_user'@'10.15.32.73';flush privileges;SET sql_log_bin=1;</pre></div></div><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre>change master to master_host='10.15.36.5',master_port=3310, master_user='rpl_user',master_password='rplMql_179itiADb', master_auto_position=1 for channel 'rpl1';UPDATE mysql.event SET status = 'SLAVESIDE_DISABLED';// 此处不要执行，留给hacs 管理 start slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl1';</pre></div></div></li><li><p>开启新主对旧主的复制</p><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre># 开启级联复制，旧主-&gt;新主-&gt;新从vi /opt/mysql/.my.cnflog-slave-updates=1mysql.server restartstart slave user='rpl_user' password='rplMql_179itiADb' for channel 'rpl_temp';</pre></div></div></li></ol></div><div class="paragraph"><p>参考 <a href="https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/advanced.slave.html" class="bare" target="_blank" rel="noopener">https://dev.mysql.com/doc/mysql-enterprise-backup/4.1/en/advanced.slave.html</a></p></div></div><div class="sect2"><h3 id="_步骤_8_观察同步状态">步骤 8 观察同步状态</h3><div class="olist arabic"><ol class="arabic"><li><p>状态查看</p><div class="listingblock"><div class="title">在新主和新从执行</div><div class="content"><pre>show slave status\G</pre></div></div></li><li><p>测试</p><div class="listingblock"><div class="title">在旧主执行</div><div class="content"><pre>create database test;</pre></div></div><div class="listingblock"><div class="title">在新主和新从执行</div><div class="content"><pre>show database;</pre></div></div></li></ol></div><div class="paragraph"><p>状态应如下图所示</p></div><div class="imageblock"><div class="content"><img src="status.png" alt="status"></div></div><div class="olist arabic"><ol class="arabic"><li><p>更多测试请自行测试</p></li></ol></div></div><div class="sect2"><h3 id="_步骤_9_恢复hacs状态">步骤 9 恢复hacs状态</h3><div class="paragraph"><p>hacs 有对mysql的很多操作，肯定用到了mysql的原来的密码。因本次只为测试用途，所以未更改此处。后续需要软件人员支撑如何修改。</p></div></div><div class="sect2"><h3 id="_步骤_10_切断与切换数据库">步骤 10 切断与切换数据库</h3><div class="olist arabic"><ol class="arabic"><li><p>停止新主和旧主之间的复制</p><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre>STOP SLAVE FOR CHANNEL "rpl_temp";# 要不要还reset，有必要清除信息吗？可以暂时保留，只停线程就行# 但是这样hacs会不会又拉起？软件的hacs检查脚本会检查这个slave的状态吗？</pre></div></div></li><li><p>浮动 ip 绑定</p><div class="paragraph"><p>这里需要业务管理员在hic上自行操作。</p></div></li><li><p>改回级联复制</p><div class="listingblock"><div class="title">在新主执行</div><div class="content"><pre>vi /opt/mysql/.my.cnflog-slave-updates=0</pre></div></div></li></ol></div></div><div class="sect1"><h2 id="_错误_faq">错误 FAQ</h2><div class="sectionbody"><div class="olist arabic"><ol class="arabic"><li><p>恢复时，新库旧库关键参数配置不同，导致mysqlbackup执行失败</p><div class="imageblock"><div class="content"><img src="error1.png" alt="error1"></div></div><div class="paragraph"><p>【解决办法】</p></div><div class="paragraph"><p>参照步骤5 准备一些配置 一节。</p></div></li><li><p>恢复后，启动失败1</p><div class="imageblock"><div class="content"><img src="error4.png" alt="error4"></div></div><div class="imageblock"><div class="content"><img src="error5.png" alt="error5"></div></div><div class="imageblock"><div class="content"><img src="error6.png" alt="error6"></div></div><div class="paragraph"><p>【解决办法】</p></div><div class="paragraph"><p>所有启动失败的问题，思路都是看当前启动命令执行后的控制台信息，或者/opt/mysql/data/log/&#8230;&#8203;/mysqld.log。此例解决方法为：参考步骤5 开始恢复数据 一节中的创建文件夹步骤。</p></div></li><li><p>恢复后，启动失败2</p><div class="imageblock"><div class="content"><img src="error7.png" alt="error7"></div></div><div class="paragraph"><p>【解决办法】</p></div><div class="paragraph"><p>参照步骤5 开始恢复数据 中修改my.cnf的配置项</p></div><div class="listingblock"><div class="content"><pre>innodb_data_file_path=ibdata1:12M:autoextend</pre></div></div></li></ol></div></div></div><div class="sect1"><h2 id="_其它重要事项记录">其它重要事项记录</h2><div class="sectionbody"><div class="dlist"><dl><dt class="hdlist1">部分数据表设计不合理</dt><dd><p>物理备份时发现只有6万多数据的表，表文件有9.4个G大。还有其他数据量也不大的表，物理文件要比最大数据量的表还要大。describe 看表发现有大量varchar(4000) varchar(256) longtext 等类型的字段，导致索引文件巨大。会导致物理备份：</p><div class="olist arabic"><ol class="arabic"><li><p>耗时长</p></li><li><p>占用空间大</p></li><li><p>旧库性能差，目前尚未定位原因，是否会将引起性能差的因素原样拷贝过来?但是如果采用逻辑备份，新库是否需要重建索引的时间？</p></li></ol></div></dd><dt class="hdlist1">软件的方案优化</dt><dd><p>软件平台目前采用mysqlbackup到文件夹，然后tar压缩的方式，实测tar极慢（由于上面大文件的原因）。所以本案例采用直接压缩成一个镜像的方式（压缩默认是lz4算法，极快），时间与只备份不压缩差不了多少。</p></dd><dt class="hdlist1">修改了软件的配置</dt><dd><p>innodb_data_file_path 软件是1024M，老库是12M。不改成12无法启动。是否有其它影响？需要维护人员关注。</p></dd><dt class="hdlist1">镜像库</dt><dd><p>本例使用镜像库测试，不知道在备份过程中数据有无刷新，此项需要业务关注测试。</p></dd></dl></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect2&quot;&gt;
+&lt;h3 id=&quot;_方案整体概览&quot;&gt;方案整体概览&lt;/h3&gt;
+&lt;div class=&quot;olist arabic&quot;&gt;
+&lt;ol class=&quot;arabic&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;安装好商业版本的mysql&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用my
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="https://snzhaoyua.github.io/tags/mysql/"/>
+    
+      <category term="mysqlbackup" scheme="https://snzhaoyua.github.io/tags/mysqlbackup/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>20190626 问题定位记录</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190626%20%E9%97%AE%E9%A2%98%E5%AE%9A%E4%BD%8D%E8%AE%B0%E5%BD%95/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190626 问题定位记录/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="20190626-问题定位记录"><a href="#20190626-问题定位记录" class="headerlink" title="20190626 问题定位记录"></a>20190626 问题定位记录</h2><table><thead><tr><th>序号</th><th>提出人</th><th>所属服务</th><th>提出时间</th><th>问题描述</th><th>问题根因</th><th>解决时间(h)</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td>20190524</td><td>mysql使用mysqldump无法恢复，报错无权限；使用apaas恢复报错gtid相关错误；</td><td>解决：使用新版mysqlbackup的相关脚本，参照文档操作即可；或者mysqldump过程中指定–gtid-purged</td><td>0.1h</td></tr><tr><td>2</td><td></td><td></td><td>20190524</td><td>mysql 备份恢复始终卡住；</td><td>查看备份脚本打印出的备份路径中的日志，发现mysql进程已经停止，经咨询其在测试可靠性，备份过程中杀掉了mysql，所以备份当然失败，该用例已删除</td><td>0.1h</td></tr><tr><td>3</td><td></td><td>notice</td><td>20190524</td><td>select * from tbl_rn_log order by sender; 两条语句的 select sn, sender from tbl_rn_log order by sender; 顺序不同</td><td>mysql自身filesort排序算法问题，设置max_length_for_sort_data可以对算法选择有影响，但是最终建议是在order by中增加主键列或者其它索引列作为副排序字段</td><td>4h</td></tr><tr><td>4</td><td></td><td></td><td>20190524</td><td>修改一个字段类型为text、列名为blob的字段问题</td><td>blob为保留字段，需要改为<code>blob</code></td><td>0.1h</td></tr><tr><td>5</td><td></td><td></td><td>20190527</td><td>安装失败，报错153</td><td>mysql linux的密码为Huawei!12345678r，不符合镜像要求</td><td>0.1h</td></tr><tr><td>6</td><td></td><td>ms</td><td>20190531</td><td>jdbc 连接 mysql 报错 operation not allowed when statement closed</td><td>给业务代码加debug日志，发现该处逻辑走了两次。第一次走正常，然后关闭了连接；第二次因为是静态方法，且connection是静态字段，使用的仍然是第一次的连接，所以报错。帮业务将其spring context定义文件中的bean限制为singleton，静态方法重构解决</td><td>1h</td></tr><tr><td>7</td><td></td><td></td><td>20190531</td><td>合设节点使用最新版本的mysql性能测试，jmeter测试吞吐量极低，与单独安装的mysql相差万倍</td><td>“定位了cpu，内存，硬盘，网络，合设与否，发现硬盘读写util%占用百分比非常高。最后与老版本mysql对比，排除到审计日志策略audit_log_strategy=SYNCHRONOUS影响，修改为异步问题消失；</td></tr><tr><td>vi /opt/mysql/.my.cnf</td></tr><tr><td>将audit_log_strategy=SYNCHRONOUS</td></tr><tr><td>改为audit_log_strategy=ASYNCHRONOUS</td></tr><tr><td>mysql.server restart”</td><td>4h</td></tr><tr><td>8</td><td></td><td></td><td>20190531</td><td>修改long_query_time为1，仍然有ms级别信息</td><td>该变量只影响更改后新建的连接</td><td>0.1h</td></tr><tr><td>9</td><td></td><td></td><td>20190610</td><td>mysql安装报错_Mysql_Server_SetPassword</td><td>系统不干净，更改了系统目录/run权限</td><td>0.1h</td></tr><tr><td>10</td><td></td><td></td><td>20190610</td><td>mysql 主机启动的pid文件不对</td><td>系统不干净，残留了/etc/my.cnf</td><td>0.2h</td></tr><tr><td>11</td><td></td><td></td><td>20190610</td><td>mysql 启动的pid文件与配置文件不对</td><td>配置文件中pid_file改为pid-file解决</td><td>0.3h</td></tr><tr><td>12</td><td></td><td></td><td>20190612</td><td>gauss vip 无法访问</td><td>使用arping -I eth0 ${vip}发现vip冲突，业务自行解决</td><td>0.1h</td></tr></tbody></table>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;20190626-问题定位记录&quot;&gt;&lt;a href=&quot;#20190626-问题定位记录&quot; class=&quot;headerlink&quot; title=&quot;20190626 问题定位记录&quot;&gt;&lt;/a&gt;20190626 问题定位记录&lt;/h2&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="https://snzhaoyua.github.io/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>centos7 docker 入门</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190217%20centos7%20docker%20%E5%85%A5%E9%97%A8/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190217 centos7 docker 入门/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_快速上手">快速上手</h2><div class="sectionbody"><div class="listingblock"><div class="title">install(offline)</div><div class="content"><pre># 在有网络的机器上，执行以下命令，获取安装所需的包$ yum install --downloadonly --downloaddir=/opt/utils yum-utils device-mapper-persistent-data lvm2$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo$ yum install --downloadonly --downloaddir=/opt/all_packages docker-ce docker-ce-cli containerd.ioroot@192.168.31.201:/opt/all_packages #0$ laudit-libs-python-2.8.4-4.el7.x86_64.rpm  libcgroup-0.41-20.el7.x86_64.rpmcheckpolicy-2.5-8.el7.x86_64.rpm          libsemanage-python-2.5-14.el7.x86_64.rpmcontainerd.io-1.2.2-3.3.el7.x86_64.rpm    policycoreutils-2.5-29.el7_6.1.x86_64.rpmcontainer-selinux-2.74-1.el7.noarch.rpm   policycoreutils-python-2.5-29.el7_6.1.x86_64.rpmdocker-ce-18.09.2-3.el7.x86_64.rpm        python-IPy-0.75-6.el7.noarch.rpmdocker-ce-cli-18.09.2-3.el7.x86_64.rpm    setools-libs-3.3.8-4.el7.x86_64.rpmroot@192.168.31.201:/opt/all_packages #0$ l ../utils/device-mapper-1.02.149-10.el7_6.3.x86_64.rpm             lvm2-2.02.180-10.el7_6.3.x86_64.rpmdevice-mapper-event-1.02.149-10.el7_6.3.x86_64.rpm       lvm2-libs-2.02.180-10.el7_6.3.x86_64.rpmdevice-mapper-event-libs-1.02.149-10.el7_6.3.x86_64.rpm  python-chardet-2.2.1-1.el7_1.noarch.rpmdevice-mapper-libs-1.02.149-10.el7_6.3.x86_64.rpm        python-kitchen-1.1.1-5.el7.noarch.rpmlibxml2-python-2.9.1-6.el7_2.3.x86_64.rpm                yum-utils-1.1.31-50.el7.noarch.rpm# 在离线机器上， 执行以下命令以安装$ yum localinstall /opt/utils/*.rpm$ yum localinstall /opt/all_packages/*.rpm</pre></div></div><div class="listingblock"><div class="title">install docker-compose</div><div class="content"><pre>$ curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" \-o /usr/local/bin/docker-composechmod +x /usr/local/bin/docker-compose$ docker-compose --version</pre></div></div><div class="listingblock"><div class="title">install docker-machine</div><div class="content"><pre>$ base=https://github.com/docker/machine/releases/download/v0.16.1 &amp;&amp;  curl -L $base/docker-machine-$(uname -s)-$(uname -m) &gt;/tmp/docker-machine &amp;&amp;  install /tmp/docker-machine /usr/local/bin/docker-machine</pre></div></div><div class="listingblock"><div class="title">基本命令</div><div class="content"><pre>$ service docker start或者systemctl start docker$ docker run helloworld$ docker version$ docker info$ docker image ls$ docker container ls$ docker container ls -a$ docker container ls -aq</pre></div></div><div class="listingblock"><div class="title">镜像制作、分发</div><div class="content"><pre>$ docker build --tag=zhaoyu/helloworld:0.0.1 .$ docker save zhaoyu/helloworld -o zhaoyu_helloworld_0.0.1.tar$ docker load &lt; zhaoyu_helloworld_0.0.1.tar$ docker tag zhaoyu/helloworld:0.0.1 zhaoyu/helloworld:0.0.2$ docker image lsREPOSITORY          TAG                 IMAGE ID            CREATED             SIZEzhaoyu/helloworld   0.0.1               8a2ec1b2d523        14 hours ago        131MBzhaoyu/helloworld   0.0.2               8a2ec1b2d523        14 hours ago        131MBpython              2.7-slim            99079b24ed51        4 days ago          120MB</pre></div></div><div class="listingblock"><div class="title">运行，查看，停止，删除</div><div class="content"><pre>$ docker run -p 4000:80 zhaoyu/helloworld$ docker run -p -d 4000:80 zhaoyu/helloworld$ docker run -it --name=zhaoyu zhaoyu/helloworld:0.0.1 /bin/bash$ docker attach zhaoyu$ docker container ls$ docker container top &lt;container_id&gt;$ docker container stop &lt;container_id&gt;$ docker rm &lt;container_id&gt;$ docker rmi &lt;image_id&gt;$ docker container stop $(docker ps -a -q)$ docker rm $(docker ps -a -q)</pre></div></div><div class="listingblock"><div class="title">swarm/stack</div><div class="content"><pre>$ docker swarm init$ docker node ls$ docker stack deploy -c docker-compose.yml helloworld_swarm$ docker stack ls$ docker stack ps helloworld_swarmID                  NAME                     IMAGE                     NODE                DESIRED STATE       CURRENT STATE              ERROR               PORTSl8c3a4haeccd        helloworld_swarm_web.1   zhaoyu/helloworld:0.0.1   host1               Running             Running 8 seconds agoz8pz8s0zh6b1        helloworld_swarm_web.2   zhaoyu/helloworld:0.0.1   host1               Running             Preparing 17 seconds agoyd5qyb7q146x        helloworld_swarm_web.3   zhaoyu/helloworld:0.0.1   host1               Running             Running 1 second ago82o2in6wudci        helloworld_swarm_web.4   zhaoyu/helloworld:0.0.1   host1               Running             Preparing 17 seconds agolidmd9n70wnz        helloworld_swarm_web.5   zhaoyu/helloworld:0.0.1   host1               Running             Running 2 seconds ago$ docker service ps helloworld_swarm$ docker stack rm helloworld_swarm$ docker swarm leave --force</pre></div></div></div></div><div class="sect1"><h2 id="_概览">概览</h2><div class="sectionbody"><div class="olist arabic"><ol class="arabic"><li><p>docker daemon</p></li><li><p>docker client</p></li><li><p>docker registries</p></li><li><p>docker objects</p><div class="ulist"><ul><li><p>images</p></li><li><p>containers</p></li><li><p>services</p></li></ul></div></li><li><p>underlying technology</p><div class="ulist"><ul><li><p>namespaces</p></li><li><p>control group</p></li><li><p>union file systems</p></li><li><p>container format</p></li></ul></div></li></ol></div></div></div><div class="sect1"><h2 id="_开始入门">开始入门</h2><div class="sectionbody"></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_快速上手&quot;&gt;快速上手&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;listingblock&quot;&gt;
+&lt;div class=&quot;title&quot;&gt;install(offline)&lt;/div&gt;
+
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="centos7" scheme="https://snzhaoyua.github.io/tags/centos7/"/>
+    
+      <category term="docker" scheme="https://snzhaoyua.github.io/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>让git在windows上使用LF换行符</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190322%20%E8%AE%A9git%E5%9C%A8windows%E4%B8%8A%E4%BD%BF%E7%94%A8LF%E6%8D%A2%E8%A1%8C%E7%AC%A6/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190322 让git在windows上使用LF换行符/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<p>= 让git在windows上使用LF换行符<br>:stem: latexmath<br>:icons: font</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global core.eol lf</span><br><span class="line">git config --global core.autocrlf input</span><br></pre></td></tr></table></figure><p>For repos that were checked out after those global settings were set, everything will be checked out as whatever it is in the repo – hopefully LF (\n). Any CRLF will be converted to just LF on checkin.</p><p>With an existing repo that you have already checked out – that has the correct line endings in the repo but not your working copy – you can run the following commands to fix it:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git rm -rf --cached .</span><br><span class="line">git reset --hard HEAD</span><br></pre></td></tr></table></figure><p>This will delete (rm) recursively (r) without prompt (-f), all files except those that you have edited (–cached), from the current directory (.). The reset then returns all of those files to a state where they have their true line endings (matching what’s in the repo).</p><p>If you need to fix the line endings of files in a repo, I recommend grabbing an editor that will let you do that in bulk like IntelliJ or Sublime Text, but I’m sure any good one will likely support this.</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;= 让git在windows上使用LF换行符&lt;br&gt;:stem: latexmath&lt;br&gt;:icons: font&lt;/p&gt;
+&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span cl
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql 检查清单</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190416%20mysql%20%E5%8E%9F%E5%8E%82%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190416 mysql 原厂检查清单/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_oracle检查清单">oracle检查清单</h2><div class="sectionbody"><div class="paragraph"><p>根据电话沟通情况，请收集上传以下数据进行进一步分析：</p></div><div class="paragraph"><p>1) MySQL配置文件 （my.cnf 或 my.ini）</p></div><div class="paragraph"><p>2) MySQL完整的错误日志文件 （error log file）.（如果文件太大，可以压缩后上传）</p></div><div class="paragraph"><p>3) MySQL的 slow query log 文件 （如果已经配置收集的话）.</p></div><div class="paragraph"><p>4) 生成下面的mysql_output.txt文本文件（请在查询性能低、响应慢时运行）：</p></div><div class="listingblock"><div class="content"><pre>（请使用具有SUPER权限的MySQL用户（如root）登录MySQL命令行客户端并运行）TEE mysql_output0416.txt;select now(),@@version,@@version_comment,@@hostname,@@port,@@basedir,@@datadir,@@tmpdir,@@log_error,@@slow_query_log_file,user(),current_user(),/*!50600 @@server_uuid,*/@@server_id\GSHOW GLOBAL VARIABLES;SHOW GLOBAL STATUS;SHOW ENGINES\GSHOW PLUGINS\Gselect benchmark(50000000,(1234*5678/37485-1298+8596^2)); #should take less than 20 secondsSELECT ENGINE, COUNT(*), SUM(DATA_LENGTH), SUM(INDEX_LENGTH) FROM information_schema.TABLES GROUP BY ENGINE;SHOW ENGINE INNODB STATUS;/*!50503 SHOW ENGINE performance_schema STATUS */;/*!50503 SELECT * FROM performance_schema.setup_instruments WHERE name LIKE 'wait/sync%' AND (enabled='yes' OR timed='yes')*/;-- Info on transactions and locksSELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_query waiting_query,b.trx_id blocking_trx_id, b.trx_mysql_thread_id blocking_thread, b.trx_query blocking_query,bl.lock_id blocking_lock_id, bl.lock_mode blocking_lock_mode, bl.lock_type blocking_lock_type,bl.lock_table blocking_lock_table, bl.lock_index blocking_lock_index,rl.lock_id waiting_lock_id, rl.lock_mode waiting_lock_mode, rl.lock_type waiting_lock_type,rl.lock_table waiting_lock_table, rl.lock_index waiting_lock_indexFROM information_schema.INNODB_LOCK_WAITS wINNER JOIN information_schema.INNODB_TRX b ON b.trx_id = w.blocking_trx_idINNER JOIN information_schema.INNODB_TRX r ON r.trx_id = w.requesting_trx_idINNER JOIN information_schema.INNODB_LOCKS bl ON bl.lock_id = w.blocking_lock_idINNER JOIN information_schema.INNODB_LOCKS rl ON rl.lock_id = w.requested_lock_id\GSHOW FULL PROCESSLIST;/*!50503 SELECT * FROM information_schema.innodb_trx */;/*!50503 SELECT * FROM performance_schema.threads */;/*!50708 SELECT * FROM sys.session */;SHOW OPEN TABLES;SHOW MASTER STATUS\GSHOW SLAVE STATUS\G/*!50602 SELECT * FROM MYSQL.SLAVE_MASTER_INFO */;/*!50602 SELECT * FROM MYSQL.SLAVE_RELAY_LOG_INFO */;/*!50602 SELECT * FROM MYSQL.SLAVE_WORKER_INFO */;SHOW MASTER LOGS;SELECT SLEEP(300);SHOW GLOBAL STATUS;SHOW ENGINE INNODB STATUS;/*!50503 SHOW ENGINE performance_schema STATUS */;/*!50503 SELECT * FROM performance_schema.setup_instruments WHERE name LIKE 'wait/sync%' AND (enabled='yes' OR timed='yes')*/;-- Info on transactions and locksSELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_query waiting_query,b.trx_id blocking_trx_id, b.trx_mysql_thread_id blocking_thread, b.trx_query blocking_query,bl.lock_id blocking_lock_id, bl.lock_mode blocking_lock_mode, bl.lock_type blocking_lock_type,bl.lock_table blocking_lock_table, bl.lock_index blocking_lock_index,rl.lock_id waiting_lock_id, rl.lock_mode waiting_lock_mode, rl.lock_type waiting_lock_type,rl.lock_table waiting_lock_table, rl.lock_index waiting_lock_indexFROM information_schema.INNODB_LOCK_WAITS wINNER JOIN information_schema.INNODB_TRX b ON b.trx_id = w.blocking_trx_idINNER JOIN information_schema.INNODB_TRX r ON r.trx_id = w.requesting_trx_idINNER JOIN information_schema.INNODB_LOCKS bl ON bl.lock_id = w.blocking_lock_idINNER JOIN information_schema.INNODB_LOCKS rl ON rl.lock_id = w.requested_lock_id\GSHOW FULL PROCESSLIST;/*!50503 SELECT * FROM information_schema.innodb_trx */;/*!50503 SELECT * FROM performance_schema.threads */;/*!50708 SELECT * FROM sys.session */;SHOW OPEN TABLES;SHOW MASTER STATUS\GSHOW SLAVE STATUS\G/*!50602 SELECT * FROM MYSQL.SLAVE_MASTER_INFO */;/*!50602 SELECT * FROM MYSQL.SLAVE_RELAY_LOG_INFO */;/*!50602 SELECT * FROM MYSQL.SLAVE_WORKER_INFO */;select * from information_schema.innodb_trx;select * from information_schema.innodb_locks;select * from information_schema.innodb_lock_waits;select * from performance_schema.events_waits_history;SHOW MASTER LOGS;SELECTt.TABLE_SCHEMA, t.TABLE_NAME, s.TABLE_NAMEFROMinformation_schema.tables tLEFT OUTER JOINinformation_schema.statistics s ON t.TABLE_SCHEMA = s.TABLE_SCHEMAAND t.TABLE_NAME = s.TABLE_NAMEAND s.INDEX_NAME = 'PRIMARY'WHEREs.TABLE_NAME IS NULLAND t.TABLE_SCHEMA not in ('information_schema','mysql','performance_schema')AND t.TABLE_TYPE = 'BASE TABLE';\sNOTEE;（注意：SELECT SLEEP(300)会休眠300秒，请勿中断运行！）</pre></div></div><div class="paragraph"><p>5) 生成下面的query.txt文本文件（请在查询性能低、响应慢时运行）：</p></div><div class="listingblock"><div class="content"><pre>TEE query.txt;EXPLAIN EXTENDED select count(1) from t_intg_dm_0863;SHOW WARNINGS;SHOW CREATE TABLE t_intg_dm_0863\GSHOW INDEXES FROM t_intg_dm_0863;SHOW TABLE STATUS LIKE 't_intg_dm_0863'\GSET PROFILING=1;SHOW SESSION STATUS;select count(1) from t_intg_dm_0863;select sleep(1);select count(1) from t_intg_dm_0863;SHOW SESSION STATUS;SHOW PROFILE ALL FOR QUERY 2;SHOW PROFILE ALL FOR QUERY 4;SELECT *FROM INFORMATION_SCHEMA.PROFILINGWHERE QUERY_ID = 2 OR QUERY_ID = 4 ORDER BY SEQ;SET PROFILING=0;SET optimizer_trace="enabled=on";select count(1) from t_intg_dm_0863;SELECT * FROM INFORMATION_SCHEMA.OPTIMIZER_TRACE;SET optimizer_trace="enabled=off";NOTEE;</pre></div></div><div class="paragraph"><p>6) OS的状态信息，生成文件linuxdiags.txt（使用root用户运行，请在查询性能低、响应慢时运行）：(注意：先单独运行 "script"命令，然后再运行其他命令）</p></div><div class="listingblock"><div class="content"><pre>script /tmp/linuxdiags.txtset -xiduptimeuname -afree -mcat /proc/cpuinfocat /proc/mountsmountls -lrt /dev/mapperpvdisplayvgdisplaylvdisplaydf -hdf -itop -b -d 10 -n 6iostat -x 10 6vmstat 10 6numactl -Hnumastat -mnumastat -nps -ef | grep -i mysqlls -al /etc/init.d/ | grep -i mysqlfor PID in `ps -ef | awk '/mysqld[^_[]/&#123;print $2&#125;'`; doecho "PID=$PID";cat /proc/$PID/limits;doneps auxfww | grep mysqldmesgegrep -i "err|fault|mysql|oom|kill|warn|fail" /var/log/*exit</pre></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_oracle检查清单&quot;&gt;oracle检查清单&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;根据电话沟通情况，请收集上传以下数据进行进一步分析：&lt;/p&gt;
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>suse11sp1 编译 apache 2.4.34</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190418%20suse11sp1%20%E7%BC%96%E8%AF%91%20apache%202.4.34/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190418 suse11sp1 编译 apache 2.4.34/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="paragraph"><p>背景：suse 11 sp1 机器编译安装带有指定模块的 apache 2.4.34. 暂时没有bicp代码访问权限，先放这里第一步 安装opensslcd /data/bicpinstall/tar zxvf openssl-1.1.0i.tar.gzcd openssl-1.1.0iexport LDFLAGS=-ldlexport LIBPATH="/data/bicpinstall/ssl"export LIBS="-L/data/bicpinstall/ssl"export SSL_LIBS="-L/data/bicpinstall/ssl"export CPPFLAGS="-I/data/bicpinstall/ssl/include/openssl"./config --prefix=/data/bicpinstall/ssl sharedmake &amp;&amp; make installrm -rf /data/bicpinstall/ssl/ssl/man第二步 生成证书cd /data/bicpinstall/ssl/binopenssl genrsa -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -des3 -out server.key 1024openssl req -new -out server.csr -key server.key -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -subj /C=CN/O=huawei/CN=10.139.200.36 -config ../ssl/openssl.cnfopenssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifmopenssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm第三步 安装 httpd 2.4.34 依赖的 apr 和 apr-util（该部分不再捆绑发布，需要自行安装，版本需要 1.5 以上，部分功能需要 1.6 以上，版本要求见https://www.apache.org/dist/httpd/Announcement2.4.html下载地址cd /data/bicpinstall/tar zxvf apr-1.6.3.tar.gztar zxvf apr-util-1.6.1.tar.gzaprcd /data/bicpinstall/apr-1.6.3/./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/aprmake &amp; make installapr-utilsexpat （apr-utils依赖 libexpat，https://www.apache.org/dist/apr/CHANGES-APR-UTIL-1.6）cd /data/bicpinstall/tar xvjf expat-2.2.5.tar.bz2cd expat-2.2.5./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/expatmake &amp; make install</p></div><div class="paragraph"><p>cd /data/bicpinstall/apr-util-1.6.1./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/apr-util --with-apr=/data/bicpinstall/httpd-2.4.34/srclib/apr --with-expat=/data/bicpinstall/httpd-2.4.34/srclib/expatmake &amp; make install第四步 安装 pcre，下载地址(<a href="https://ftp.pcre.org/pub/pcre/" class="bare" target="_blank" rel="noopener">https://ftp.pcre.org/pub/pcre/</a>)tar zxvf pcre-8.42.tar.gzcd /data/bicpinstall/pcre-8.42./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/pcremake &amp;&amp; make install安装 zlib，下载地址(<a href="https://zlib.net/zlib-1.2.11.tar.gz" class="bare" target="_blank" rel="noopener">https://zlib.net/zlib-1.2.11.tar.gz</a>)直接 ./configure &amp;&amp; make &amp;&amp; make install</p></div><div class="paragraph"><p>第五步 编译安装 httpdcd /data/bicpinstall/httpd-2.4.34./configure --prefix=/data/bicpinstall/apache --with-ssl=/data/bicpinstall/ssl --with-apr=/data/bicpinstall/httpd-2.4.34/srclib/apr --with-apr-util=/data/bicpinstall/httpd-2.4.34/srclib/apr-util --with-pcre=/data/bicpinstall/httpd-2.4.34/srclib/pcre --enable-headers=shared --enable-rewrite=shared --enable-proxy=shared --enable-proxy-connect=shared --enable-proxy-ftp=shared --enable-proxy-http=shared --enable-proxy-scgi=shared --enable-proxy-ajp=shared --enable-proxy-balancer=shared --enable-ssl=shared --enable-deflate=sharedmake &amp;&amp; make install第六步 压缩包cd /data/bicpinstall/mkdir apache/lib</p></div><div class="paragraph"><p>cp -P /data/bicpinstall/httpd-2.4.34/srclib/apr/lib/libapr-1.so* data/bicpinstall/apache/lib/cp -P /data/bicpinstall/httpd-2.4.34/srclib/apr-util/lib/libaprutil-1.so* data/bicpinstall/apache/lib/cp -P /data/bicpinstall/httpd-2.4.34/srclib/expat/lib/libexpat.so* data/bicpinstall/apache/lib/cp -r /data/bicpinstall/ssl /data/bicpinstall/apache/lib</p></div><div class="paragraph"><p>cd /data/bicpinstall/apache/manual/mod; rm -rf index.html*cd /data/bicpinstall/apache/manual/rewrite; rm -rf index.html*cd /data/bicpinstall/apache/manual; rm -rf index.html*cd /data/bicpinstall/apache/manual/ssl; rm -rf index.html*cd /data/bicpinstall/apache/manual/programs; rm -rf index.html*cd /data/bicpinstall/apache/manual/developer;rm -rf index.html*cd /data/bicpinstall/apache/manual/misc; rm -rf index.html*cd /data/bicpinstall/apache/manual/howto; rm -rf index.html*cd /data/bicpinstall/apache/manual/platform; rm -rf index.html*cd /data/bicpinstall/apache/manual/faq; rm -rf index.html*cd /data/bicpinstall/apache/manual/vhosts; rm -rf index.html*cd /data/bicpinstall/apache/htdocs; rm -rf index.html*cd /data/bicpinstall/apache/cgi-bin;rm -rf *</p></div><div class="paragraph"><p>zip -r apache.zip apache附录一 部分软件apr-1.6.3.tar.gzapr-util-1.6.1.tar.gzexpat-2.2.5.tar.bz2.remove.aschttpd-2.4.34.tar.gzopenssl-1.1.0i.tar.gzpcre-8.42.tar.gzzlib-1.2.11.tar.gz</p></div><div class="paragraph"><p>附录二 部分编译工具版本或环境cat /etc/SuSE-releaseSUSE Linux Enterprise Server 11 (x86_64)VERSION = 11PATCHLEVEL = 1</p></div><div class="paragraph"><p>gcc --versiongcc (SUSE Linux) 4.3.4 [gcc-4_3-branch revision 152973]Copyright &#169; 2008 Free Software Foundation, Inc.This is free software; see the source for copying conditions.  There is NOwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p></div><div class="paragraph"><p>gunzip --versiongzip 1.3.12Copyright &#169; 2007 Free Software Foundation, Inc.Copyright &#169; 1993 Jean-loup Gailly.This is free software.  You may redistribute copies of it under the terms ofthe GNU General Public License <a href="http://www.gnu.org/licenses/gpl.html" class="bare" target="_blank" rel="noopener">http://www.gnu.org/licenses/gpl.html</a>.There is NO WARRANTY, to the extent permitted by law.</p></div><div class="paragraph"><p>Written by Jean-loup Gailly.</p></div><div class="paragraph"><p>make --versionGNU Make 3.81Copyright &#169; 2006  Free Software Foundation, Inc.This is free software; see the source for copying conditions.There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR APARTICULAR PURPOSE.</p></div><div class="paragraph"><p>This program built for x86_64-unknown-linux-gnu附录三 错误解决报错：/bin/sh: gcc: command not foundmake[1]: <strong>* [crypto/aes/aes-x86_64.o] Error 127make[1]: Leaving directory `/data/bicpinstall/openssl-1.1.0i'make: </strong>* [all] Error 2解决：安装gcc</p></div><div class="paragraph"><p>报错：checking for APR&#8230;&#8203; noconfigure: error: APR not found.  Please read the documentation.</p></div><div class="paragraph"><p>报错： pcre-config for libpcre not found. PCRE is required and available from <a href="http://pcre.org/" class="bare" target="_blank" rel="noopener">http://pcre.org/</a> 解决：见编译指导.md</p></div><div class="paragraph"><p>报错：checking dirent.h presence&#8230;&#8203; yeschecking for dirent.h&#8230;&#8203; yeschecking windows.h usability&#8230;&#8203; nochecking windows.h presence&#8230;&#8203; nochecking for windows.h&#8230;&#8203; noconfigure: error: Invalid C compiler or C compiler flags 解决： zypper in gcc-c++</p></div><div class="paragraph"><p>报错： checking for zlib location&#8230;&#8203; not foundchecking whether to enable mod_deflate&#8230;&#8203; configure: error: mod_deflate has been requested but can not be built due to prerequisite failures 解决：编译安装zlib</p></div><div class="paragraph"><p>报错：checking whether to enable mod_deflate&#8230;&#8203; checking dependencies  adding "-I/lib64/include" to INCLUDES  setting MOD_INCLUDES to "-I/lib64/include"  adding "-L/lib64/lib" to LDFLAGS  setting ap_zlib_ldflags to "-L/lib64/lib"  adding "-lz" to LIBSchecking for zlib library&#8230;&#8203; not foundconfigure: error: &#8230;&#8203; Error, zlib was missing or unusable 解决：安装 zlib</p></div><div class="paragraph"><p>报错：od_proxy_balancer.c &amp;&amp; touch mod_proxy_balancer.slomod_proxy_balancer.c:25:24: error: apr_escape.h: No such file or directorymod_proxy_balancer.c: In function 'make_server_id':mod_proxy_balancer.c:779: warning: implicit declaration of function 'apr_pescape_hex'mod_proxy_balancer.c:779: warning: return makes pointer from integer without a castmake[4]: <strong>* [mod_proxy_balancer.slo] Error 1make[4]: Leaving directory `/data/bicpinstall/httpd-2.4.34/modules/proxy'make[3]: </strong>* [shared-build-recursive] Error 1make[3]: Leaving directory `/data/bicpinstall/httpd-2.4.34/modules/proxy'make[2]: <strong>* [shared-build-recursive] Error 1make[2]: Leaving directory `/data/bicpinstall/httpd-2.4.34/modules'make[1]: </strong>* [shared-build-recursive] Error 1make[1]: Leaving directory `/data/bicpinstall/httpd-2.4.34'make: <strong>*</strong> [all-recursive] Error 1 解决：安装 apr-util</p></div><div class="paragraph"><p>报错：xml/apr_xml.c:35:19: error: expat.h: No such file or directoryxml/apr_xml.c:66: error: expected specifier-qualifier-list before ‘XML_Parser’xml/apr_xml.c: In function ‘cleanup_parser’:xml/apr_xml.c:364: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:365: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c: At top level:xml/apr_xml.c:384: error: expected ‘;’, ‘,’ or ‘)’ before ‘*’ tokenxml/apr_xml.c: In function ‘apr_xml_parser_create’:xml/apr_xml.c:401: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:402: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:410: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:411: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:412: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:424: error: ‘apr_xml_parser’ has no member named ‘xp’xml/apr_xml.c:424: error: ‘default_handler’ undeclared (first use in this function)xml/apr_xml.c:424: error: (Each undeclared identifier is reported only once 解决：安装 expat，方法见上</p></div><div class="paragraph"><p>报错：aclocal: couldn&#8217;t open directory `m4': No such file or directory解决 直接在当前目录 mkdir m4</p></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;背景：suse 11 sp1 机器编译安装带有指定模块的 apache 2.4.34. 暂时没有bicp代码访问权限，先放这里
+第一步 安装openssl
+cd /data/bicpinstall/
+tar zxvf open
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>suse12 安装 nginx rpm</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190418%20suse12%20%E5%AE%89%E8%A3%85%20nginx%20rpm/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190418 suse12 安装 nginx rpm/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="paragraph"><p><a href="http://nginx.org/packages/mainline/" class="bare" target="_blank" rel="noopener">http://nginx.org/packages/mainline/</a><a href="http://nginx.org/packages/mainline/sles/12/x86_64/" class="bare" target="_blank" rel="noopener">http://nginx.org/packages/mainline/sles/12/x86_64/</a><a href="http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1.15.12-1.sles12.ngx.x86_64.rpm" class="bare" target="_blank" rel="noopener">http://nginx.org/packages/mainline/sles/12/x86_64/RPMS/nginx-1.15.12-1.sles12.ngx.x86_64.rpm</a></p></div><div class="paragraph"><p>rpm -ivh nginx-1.15.12-1.sles12.ngx.x86_64.rpm</p></div><div class="paragraph"><p>autoindexvi /etc/nginx/conf.d/default.conf</p></div><div class="listingblock"><div class="content"><pre>    location / &#123;        root   /var/www/html;        index  index.html index.htm;        autoindex on;        autoindex_exact_size off;        autoindex_localtime on;    &#125;</pre></div></div><div class="paragraph"><p>chmod -R 777 /var/www/usr/sbin/nginx -c /etc/nginx/nginx.conf</p></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;paragraph&quot;&gt;
+&lt;p&gt;&lt;a href=&quot;http://nginx.org/packages/mainline/&quot; class=&quot;bare&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://nginx.org/packag
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>docker phpmyadmin</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190419%20docker%20phpmyadmin/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190419 docker phpmyadmin/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_docker_phpmyadmin">docker phpmyadmin</h2><div class="sectionbody"></div></div><div class="sect1"><h2 id="_路线1_公司suse12容器导出包作为基础镜像_使用xampp作为服务器">路线1 公司suse12容器导出包作为基础镜像，使用xampp作为服务器</h2><div class="sectionbody"><div class="listingblock"><div class="title">探索镜像内容</div><div class="content"><pre>docker run -v /root/temp:/root/temp -it test/suse12sp2:20190418 bashdocker run -d -p 4000:80 -v /root/temp:/root/temp test/suse12sp2:20190418 /bin/sh -c "while true; do ping 127.0.0.1; done"</pre></div></div><div class="listingblock"><div class="title">制作安装xampp的镜像</div><div class="content"><pre>FROM test/suse12sp2:20190418COPY xampp-linux-x64-7.3.4-0-installer.run configure.sh /tmp/RUN chmod +x /tmp/xampp-linux-x64-7.3.4-0-installer.run \    &amp;&amp; /tmp/xampp-linux-x64-7.3.4-0-installer.run --mode unattended --disable-components xampp_developer_files \    &amp;&amp; chmod 755 /opt/lampp -R \    &amp;&amp; mkdir -p /opt/lampp/phpmyadmin/tmp \    &amp;&amp; chmod 777 /opt/lampp/phpmyadmin/tmp -R \    &amp;&amp; rm /opt/lampp/mysql -rf \    &amp;&amp; sed 's/function startMySQL() &#123;/function startMySQL() &#123;\nreturn 0/g' -i /opt/lampp/xampp \    &amp;&amp; sh /tmp/configure.sh</pre></div></div><div class="listingblock"><div class="title">运行查看</div><div class="content"><pre>docker build -t test/testmysqlconsole:latest .Successfully tagged test/testmysqlconsole:latest[root@node1 build]# docker run -d -p 4000:80 -v /root/temp:/root/temp test/testmysqlconsole /bin/sh -c "while true; do ping 127.0.0.1; done"3a5c223bcad7727ff0bdd72e030f825317959cc82809b612ccb3f0f8cfdbe09e[root@node1 build]# docker exec -it 3a5c223bcad7727ff0bdd72e030f825317959cc82809b612ccb3f0f8cfdbe09e /bin/bash3a5c223bcad7:/ # ps -efUID        PID  PPID  C STIME TTY          TIME CMDroot         1     0  0 04:11 ?        00:00:00 /bin/sh -c while true; do ping 127.0.0.1; doneroot         6     1  0 04:11 ?        00:00:00 ping 127.0.0.1root         7     0  3 04:12 pts/0    00:00:00 /bin/bashroot        25     7  0 04:12 pts/0    00:00:00 ps -ef3a5c223bcad7:/ # cd /opt/lampp/3a5c223bcad7:/opt/lampp # ./lampp startStarting XAMPP for Linux 7.3.4-0...XAMPP: Starting Apache...ok.XAMPP: Starting ProFTPD...ok.</pre></div></div><div class="exampleblock"><div class="title">Example 1. 访问链接</div><div class="content"><div class="paragraph"><p><a href="http://10.90.182.122:4000/phpmyadmin/" class="bare" target="_blank" rel="noopener">http://10.90.182.122:4000/phpmyadmin/</a></p></div></div></div></div></div><div class="sect1"><h2 id="_路线2_官方phpmyadmin_phpmyadmin作为基础镜像">路线2 官方phpmyadmin/phpmyadmin作为基础镜像</h2><div class="sectionbody"><div class="listingblock"><div class="content"><pre>FROM phpmyadmin/phpmyadmin:latestENV HTML_DIR /usr/src/phpmyadmin/COPY configure.sh /tmp/RUN sh /tmp/configure.sh</pre></div></div><div class="exampleblock"><div class="content"><div class="paragraph"><p>docker build -t test/phpmyadmin:latest .docker run --name zhaoyu -d -p 5001:80 test/phpmyadmin:latest</p></div></div></div></div></div><div class="sect1"><h2 id="_路线3_官方phpmyadmin_phpmyadmin的容器导出作为基础镜像">路线3 官方phpmyadmin/phpmyadmin的容器导出作为基础镜像</h2><div class="sectionbody"><div class="listingblock"><div class="content"><pre># docker export ea681f9b151c -o phpmyadmin_export.tar# docker import phpmyadmin_export.tar test/phpmyadmin_export:latest</pre></div></div><div class="listingblock"><div class="content"><pre>FROM test/phpmyadmin_export:latestENV HTML_DIR /var/www/html/COPY configure.sh /tmp/RUN sh /tmp/configure.shENTRYPOINT ["/run.sh"]CMD ["supervisord","-n","-j","/supervisord.pid"]</pre></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_docker_phpmyadmin&quot;&gt;docker phpmyadmin&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql 主从复制异常恢复</title>
+    <link href="https://snzhaoyua.github.io/2019/09/19/2019/20190425%20mysql%20%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%BC%82%E5%B8%B8%E6%81%A2%E5%A4%8D/"/>
+    <id>https://snzhaoyua.github.io/2019/09/19/2019/20190425 mysql 主从复制异常恢复/</id>
+    <published>2019-09-19T03:41:58.626Z</published>
+    <updated>2019-09-19T03:41:58.626Z</updated>
+    
+    <content type="html"><![CDATA[<div class="sect1"><h2 id="_mysql_主从复制异常恢复">mysql 主从复制异常恢复</h2><div class="sectionbody"><div class="sect3"><h4 id="_检查版本">检查版本</h4><div class="paragraph"><p>如果版本较老，基于binlog而不是gtid的版本，数据量较小，可以参考  基于binlog的老版本。</p></div></div><div class="sect3"><h4 id="_基于binlog的老版本">基于binlog的老版本</h4><div class="listingblock"><div class="content"><pre>1. 登录主机数据库，mysql --login-path=local执行mysql&gt; stop slave;mysql&gt; show master status;记录以上master status的 log_file 和 log_pos 信息mysql&gt; exit;2. 进入备份脚本目录（根据版本不同，可能在以下位置）cd /opt/backup/mysql/backup_script或者cd /opt/backup/mysql/backup_script执行./backupandDelete.sh3. 找到最新备份的文件，如cd /opt/backup/mysql/backup_data/xxxxx或者cd /opt/backup/mysql/backup_data/xxxxx找到备份文件xxxxx.sql.gz将其拷贝到另外一台机器scp .. ..4. 在另外一台机器，解压gunzip -d xxxx.sql.gz得到如 /root/xxxx.sql 的文件5. 登录mysqlmysql --login-path=local执行(注意替换路径，和ip，端口，密码等信息)mysql&gt; set sql_log_bin=0;mysql&gt; source /root/xxxx.sqlmysql&gt; select user,host from mysql.user;mysql&gt; update mysql.user set host="另外一台机器ip" where user="replicator";mysql&gt; flush privileges;mysql&gt; set sql_log_bin=1;mysql&gt; change master to master_host="另外一台机器ip", master_port=13307, master_log_file="上面记录的log_file", master_log_pos='上面记录的log_pos';mysql&gt; start slave;6. 查看主从状态是否正常show slave status\G</pre></div></div></div><div class="sect2"><h3 id="_基于gtid的版本">基于gtid的版本</h3><div class="listingblock"><div class="content"><pre>1. 登录主机数据库，mysql --login-path=local执行mysql&gt; stop slave;mysql&gt; exit;2. 进入备份脚本目录（根据版本不同，可能在以下位置）cd /opt/backup/mysql/backup_script或者cd /opt/backup/mysql/backup_script执行./backupandDelete.sh3. 找到最新备份的文件，如cd /opt/backup/mysql/backup_data/xxxxx或者cd /opt/backup/mysql/backup_data/xxxxx找到备份文件xxxxx.sql.bin（如果不是bin格式的文件，说明版本不对，此时不是商业版，或者没有做使用mysqlbackup备份恢复的需求，后者直接拷贝最新版backupandDelete.sh使用即可，或者使用binlog的方案）将其拷贝到另外一台机器scp .. ..在另一台机器上，将备份文件的权限更改为mysql的属组chown mysql: xxxx.sql.bin4. 在要恢复的机器上，执行以下检查：4.1 检查是否有mysqlbackup程序mysqlbackup --version4.2 检查/opt/mysql/.bashrc是否有ip_cluster_a的字样，其中ip_cluster_a或者ip_cluster_b中，一个是本机ip，一个是对端ip如果以上条件满足，进行第5_a步，否则执行5_b步骤。5_a. 进行恢复以下命令中的false或者true代表是否备份机器的/opt/mysql/data/目录，请根据机器磁盘剩余空间选择/opt/mysql/dataRecover.sh xxxx.sql.bin false或者/opt/mysql/dataRecover.sh xxxx.sql.bin5_b. 如果在第4步检查通过，此步可以跳过。否则，如果bashrc里没有ip_cluster_a或者ip_cluster_b，说明版本较老。   方法一：可以取该版本对应的资料，按照资料进行操作（四个步骤：       1.关闭sql_log_bin，更改mysql.user表的用户ip为对端ip       2 清空binlog和relaylog信息       stop slave; reset slave; reset master;       3. 设置主从       STOP SLAVE;CHANGE MASTER TO MASTER_HOST='$&#123;another_ip&#125;', MASTER_AUTO_POSITION=1 FOR CHANNEL 'rpl1';START SLAVE   方法二：也可以将两个ip手动写入该文件，并且拷贝最新版本的dataRecover.sh，然后执行步骤5_a       注意替换值为实际ip       ip_cluster_a=$&#123;master_ip&#125;       ip_cluster_b=$&#123;slave_ip&#125;6. 恢复完成后，登录两台机器查看主从复制状态。</pre></div></div></div></div></div>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;div class=&quot;sect1&quot;&gt;
+&lt;h2 id=&quot;_mysql_主从复制异常恢复&quot;&gt;mysql 主从复制异常恢复&lt;/h2&gt;
+&lt;div class=&quot;sectionbody&quot;&gt;
+&lt;div class=&quot;sect3&quot;&gt;
+&lt;h4 id=&quot;_检查版本&quot;&gt;检查版本&lt;/h4&gt;
+&lt;div
+      
+    
+    </summary>
+    
+      <category term="备忘" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/"/>
+    
+      <category term="技术" scheme="https://snzhaoyua.github.io/categories/%E5%A4%87%E5%BF%98/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="[object Object]" scheme="https://snzhaoyua.github.io/tags/object-Object/"/>
+    
+  </entry>
+  
+</feed>
