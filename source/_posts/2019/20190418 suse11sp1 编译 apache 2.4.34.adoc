@@ -12,7 +12,8 @@ tags:
 
 
 背景：suse 11 sp1 机器编译安装带有指定模块的 apache 2.4.34. 暂时没有bicp代码访问权限，先放这里
-第一步 安装openssl
+== 第一步 安装openssl
+----
 cd /data/bicpinstall/
 tar zxvf openssl-1.1.0i.tar.gz
 cd openssl-1.1.0i
@@ -24,14 +25,21 @@ export CPPFLAGS="-I/data/bicpinstall/ssl/include/openssl"
 ./config --prefix=/data/bicpinstall/ssl shared
 make && make install
 rm -rf /data/bicpinstall/ssl/ssl/man
-第二步 生成证书
+----
+
+== 第二步 生成证书
+----
 cd /data/bicpinstall/ssl/bin
 openssl genrsa -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -des3 -out server.key 1024
 openssl req -new -out server.csr -key server.key -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -subj /C=CN/O=huawei/CN=10.139.200.36 -config ../ssl/openssl.cnf
 openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm
 openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -passin pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm -passout pass:cHpxHUm+v5teANoYurlMvA2+Gdg+ifm
-第三步 安装 httpd 2.4.34 依赖的 apr 和 apr-util（该部分不再捆绑发布，需要自行安装，版本需要 1.5 以上，部分功能需要 1.6 以上，版本要求见https://www.apache.org/dist/httpd/Announcement2.4.html
-下载地址
+----
+
+== 第三步 安装 httpd 2.4.34 依赖的 apr 和 apr-util
+该部分不再捆绑发布，需要自行安装，版本需要 1.5 以上，部分功能需要 1.6 以上，版本要求见https://www.apache.org/dist/httpd/Announcement2.4.html
+
+----
 cd /data/bicpinstall/
 tar zxvf apr-1.6.3.tar.gz
 tar zxvf apr-util-1.6.1.tar.gz
@@ -50,19 +58,28 @@ make & make install
 cd /data/bicpinstall/apr-util-1.6.1
 ./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/apr-util --with-apr=/data/bicpinstall/httpd-2.4.34/srclib/apr --with-expat=/data/bicpinstall/httpd-2.4.34/srclib/expat
 make & make install
-第四步 安装 pcre，下载地址(https://ftp.pcre.org/pub/pcre/)
+----
+
+
+== 第四步 安装 pcre，下载地址(https://ftp.pcre.org/pub/pcre/)
+----
 tar zxvf pcre-8.42.tar.gz
 cd /data/bicpinstall/pcre-8.42
 ./configure --prefix=/data/bicpinstall/httpd-2.4.34/srclib/pcre
 make && make install
+----
 安装 zlib，下载地址(https://zlib.net/zlib-1.2.11.tar.gz)
 直接 ./configure && make && make install
 
-第五步 编译安装 httpd
+== 第五步 编译安装 httpd
+----
 cd /data/bicpinstall/httpd-2.4.34
 ./configure --prefix=/data/bicpinstall/apache --with-ssl=/data/bicpinstall/ssl --with-apr=/data/bicpinstall/httpd-2.4.34/srclib/apr --with-apr-util=/data/bicpinstall/httpd-2.4.34/srclib/apr-util --with-pcre=/data/bicpinstall/httpd-2.4.34/srclib/pcre --enable-headers=shared --enable-rewrite=shared --enable-proxy=shared --enable-proxy-connect=shared --enable-proxy-ftp=shared --enable-proxy-http=shared --enable-proxy-scgi=shared --enable-proxy-ajp=shared --enable-proxy-balancer=shared --enable-ssl=shared --enable-deflate=shared
 make && make install
-第六步 压缩包
+----
+
+== 第六步 压缩包
+----
 cd /data/bicpinstall/
 mkdir apache/lib
 
@@ -85,9 +102,11 @@ cd /data/bicpinstall/apache/manual/vhosts; rm -rf index.html*
 cd /data/bicpinstall/apache/htdocs; rm -rf index.html*
 cd /data/bicpinstall/apache/cgi-bin;rm -rf *
 
-
 zip -r apache.zip apache
-附录一 部分软件
+----
+
+=== 附录一 部分软件
+----
 apr-1.6.3.tar.gz
 apr-util-1.6.1.tar.gz
 expat-2.2.5.tar.bz2.remove.asc
@@ -95,8 +114,10 @@ httpd-2.4.34.tar.gz
 openssl-1.1.0i.tar.gz
 pcre-8.42.tar.gz
 zlib-1.2.11.tar.gz
+----
 
-附录二 部分编译工具版本或环境
+==== 附录二 部分编译工具版本或环境
+----
 cat /etc/SuSE-release
 SUSE Linux Enterprise Server 11 (x86_64)
 VERSION = 11
@@ -127,7 +148,10 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
 
 This program built for x86_64-unknown-linux-gnu
-附录三 错误解决
+----
+
+=== 附录三 错误解决
+----
 报错：
 /bin/sh: gcc: command not found
 make[1]: *** [crypto/aes/aes-x86_64.o] Error 127
@@ -217,7 +241,7 @@ xml/apr_xml.c:424: error: (Each undeclared identifier is reported only once
 报错：
 aclocal: couldn't open directory `m4': No such file or directory
 解决 直接在当前目录 mkdir m4
-
+----
 
 
 
